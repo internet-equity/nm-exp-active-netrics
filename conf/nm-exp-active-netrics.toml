@@ -1,0 +1,9 @@
+title = "nm-exp-active-netrics"
+description = "Configuration file for NetMicroscope - Netrics active measurements"
+
+[databases]
+
+tinydb_enable = true
+tinydb_path = "databases/"
+
+
