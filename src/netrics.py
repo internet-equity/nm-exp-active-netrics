@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-import sys
+import os, sys
 import argparse
 import logging
-import json
+from datetime import datetime
 from netrics.netson import Measurements
 from nmexpactive.experiment import NetMicroscopeControl
+
+from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb import InfluxDBClient
 
 log = logging.getLogger(__name__)
 
@@ -113,6 +116,46 @@ def build_parser():
 
     return parser
 
+
+def upload(upload_results, measurements):
+
+    if not upload_results:
+        return
+
+    server = None
+    port = 0
+    username = None
+    password = None
+    installid = None
+
+    server = os.getenv("INFLUXDB_SERVER")
+    port = os.getenv("INFLUXDB_PORT")
+    username = os.getenv("INFLUXDB_USERNAME")
+    password = os.getenv("INFLUXDB_PASSWORD")
+    db = os.getenv("INFLUXDB_DATABASE")
+    installid = os.getenv("INSTALL_ID")
+
+    if server is None:
+        log.error("Unable to insert data (influxdb), missing .env or INFLUXDB_* not set.")
+        print(("Unable to insert data (influxdb), missing .env or INFLUXDB_* not set."))
+        return
+ 
+    creds = InfluxDBClient(host=server, port=port, username=username,
+                password=password, database=db, ssl=True, verify_ssl=True)
+
+    ret=creds.write_points([{"measurement": "networks",
+                         "tags"        : {"install": installid},
+                         "fields"      : measurements,
+                         "time"        : datetime.utcnow()}])
+    if not ret:
+        log.error("influxdb write_points return: false")
+        print("influxdb write_points return: false")
+        return
+    log.info("influxdb write_points return: OK")
+    
+
+################################# MAIN #######################################
+
 parser = build_parser()
 args = parser.parse_args()
 
@@ -147,6 +190,11 @@ output['connected_devices_arp'] = test.connected_devices_arp(args.ndev)
 
 """ Run iperf3 bandwidth test """
 if args.iperf:
+  if nma.conf['iperf']['targets'][0] == "":
+    log.error("[iperf][targets] not properly set")
+    print("[iperf][targets] not properly set")
+    os.exit(1)
+    
   for target in nma.conf['iperf']['targets']:
     server=target.split(':')[0]
     port=target.split(':')[1]
@@ -158,3 +206,7 @@ if not args.quiet:
 
 nma.save_str(test.results, 'netrics_results')
 nma.save_pkl(output, 'netrics_output')
+
+if args.upload:
+  upload(test.results, test.results)
+
