@@ -47,7 +47,7 @@ class NetMicroscopeControl:
           #filemode='w', 
           level=logging.INFO)
 
-        env_path = Path('.').absolute() / 'env' / ' .env'
+        env_path = Path('.').absolute() / 'env' / '.env'
         if os.path.exists(env_path):
             load_dotenv(env_path)
             log.info("ENV using {0}".format(env_path))
@@ -55,7 +55,7 @@ class NetMicroscopeControl:
             load_dotenv(ETC_ENV)
             log.info("ENV using {0}".format(ETC_ENV))
         else:
-            log.warn("ENV not set.")
+            log.warn("ENV not set: ({0},{1}).".format(env_path, ETC_ENV))
         
         cfg_path = Path('.').absolute() / 'conf' / CFG
         try: 

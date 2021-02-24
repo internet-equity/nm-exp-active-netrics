@@ -27,7 +27,6 @@ class Measurements:
         self.quiet = args.quiet
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
-        print(self.labels)
         if self.nma.conf['databases']['tinydb_enable']:
             try:
                 Path(Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'])).mkdir(parents=True, exist_ok=True)
