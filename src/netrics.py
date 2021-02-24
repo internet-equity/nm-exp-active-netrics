@@ -50,18 +50,18 @@ def build_parser():
     parser.add_argument(
             '-b', '--backbone',
             default=False,
-            const='www.google.com',
-            nargs='?',
-            action='store',
+            #const='www.google.com',
+            #nargs='?',
+            action='store_true',
             help='Count hops to Chicago backbone (ibone)'
     )
 
     parser.add_argument(
             '-t', '--target',
             default=False,
-            const='www.google.com',
-            nargs='?',
-            action='store',
+            #const='www.google.com',
+            #nargs='?',
+            action='store_true',
             help='Count hops to target website'
     )
 
@@ -128,28 +128,29 @@ log.info("Initializing.")
 test = Measurements(args, nma)
 
 """ Run ookla speed test """
-test.speed(args.ookla)
+output['ookla'] = test.speed(args.ookla)
 
 """ Measure ping latency to list of websites """
-test.ping_latency(args.ping)
+output['ping_latency'] = test.ping_latency(args.ping)
 
 """ Measure DNS latency """
-test.dns_latency(args.dns)
+output['dns_latency'] = test.dns_latency(args.dns)
 
 """ Count hops to local backbone """
-test.hops_to_backbone(args.backbone)
+output['hops_to_backbone'] = test.hops_to_backbone(args.backbone)
 
 """ Count hops to target website """
-test.hops_to_target(args.target)
+output['hops_to_target'] = test.hops_to_target(args.target)
 
 """ Count number of devices on network """
-test.connected_devices_arp(args.ndev)
+output['connected_devices_arp'] = test.connected_devices_arp(args.ndev)
 
 """ Run iperf3 bandwidth test """
-for target in nma.conf['iperf3']['iperf3_targets']:
-  server=target.split(':')[0]
-  port=target.split(':')[1]
-  output['iperf3_bandwidth'] = test.iperf3_bandwidth(client=server, port=port)
+if args.iperf:
+  for target in nma.conf['iperf']['targets']:
+    server=target.split(':')[0]
+    port=target.split(':')[1]
+    output['iperf'] = test.iperf3_bandwidth(client=server, port=port)
 
 if not args.quiet:
   print(test.results)

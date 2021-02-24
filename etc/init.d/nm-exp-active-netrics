@@ -52,7 +52,7 @@ case "$1" in
     rm -f /etc/cron.d/cron-nm-exp-active-netrics
     ;;
   status)
-    echo TBD
+    echo "TODO:tail log for errors, count pending, archive etc"
     ;;
   *)
     echo "Usage: /etc/init.d/cron-nm-exp-active-netrics {start|stop|status}"

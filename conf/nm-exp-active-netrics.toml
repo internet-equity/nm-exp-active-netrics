@@ -12,11 +12,27 @@ deployment = "1940e236a6a6717f23bd700738c4dec9"
 #deployment = "49640f8ac1ce0ea25c5582394d6c96e3"
 
 [databases]
+    tinydb_enable = true
+    tinydb_path = "databases/"
 
-tinydb_enable = true
-tinydb_path = "databases/"
+[reference_site_dict]
+    "www.google.com" = "google"
+    "www.youtube.com" = "youtube"
+    "www.facebook.com" = "facebook"
+    "www.amazon.com" = "amazon"
+    "www.wikipedia.org" = "wikipedia"
+    "www.chicagotribune.com" = "tribune"
+    "chicago.suntimes.com" = "suntimes"
+    "cs.uchicago.edu" = "uchicago"
 
-[iperf3]
+[iperf]
+    targets = [""]
 
-iperf3_targets = [""]
+[dns_latency]
+    target = "8.8.8.8"
 
+[hops_to_backbone]
+    target = "google.com"
+
+[hops_to_target]
+    target = "google.com"
