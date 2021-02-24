@@ -97,22 +97,28 @@ def build_parser():
             help='Text file containing sites to visit during test'
     )
 
-    ## NEW ##
     parser.add_argument(
             '-c', '--config',
             default=None,
             action='store',
-            help='Provide toml configuration file'
+            help='Provide an alternative toml configuration file'
     )
 
-    ## NEW ##
+    ## Non-test 
     parser.add_argument(
-            '-g', '--get-times',
+            '-G', '--get-times',
             default=False,
             action='store_true',
             help='Get test profiles and (netrics.json deployment_json_url from toml)'
     )
 
+    ## Non-test
+    parser.add_argument(
+            '-C', '--check',
+            default=False,
+            action='store_true',
+            help='Check dependencies.'
+    )
 
     return parser
 
@@ -143,7 +149,7 @@ def upload(upload_results, measurements):
     creds = InfluxDBClient(host=server, port=port, username=username,
                 password=password, database=db, ssl=True, verify_ssl=True)
 
-    ret=creds.write_points([{"measurement": "networks",
+    ret = creds.write_points([{"measurement": "networks",
                          "tags"        : {"install": installid},
                          "fields"      : measurements,
                          "time"        : datetime.utcnow()}])
@@ -165,6 +171,14 @@ nma = NetMicroscopeControl(args)
 
 if args.get_times:
   nma.get_times()
+  sys.exit(0)
+
+if args.logs:
+  #TBD tail logs, count errors, etc.
+  sys.exit(0)
+
+if args.check:
+  #TBD check dependencies, binaries etc.
   sys.exit(0)
 
 log.info("Initializing.")

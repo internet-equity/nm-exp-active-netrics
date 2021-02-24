@@ -37,7 +37,7 @@ fi
 case "$1" in
   start)
     echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
-    /usr/bin/netrics -g > /tmp/netrics.initd.out
+    /usr/bin/netrics -G > /tmp/netrics.initd.out
     IPERF_TIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print 2}')
 
     cat << "EOF" | tee /etc/cron.d/cron-nm-exp-active-netrics > /dev/null
