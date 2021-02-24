@@ -15,19 +15,6 @@ from tinydb.operations import set as tdb_set
 
 log = logging.getLogger(__name__)
 
-reference_site_dict = {
-        "www.google.com": "google",
-        "www.youtube.com": "youtube",
-        "www.facebook.com": "facebook",
-        "www.amazon.com": "amazon",
-        "www.wikipedia.org": "wikipedia",
-        "www.chicagotribune.com": "tribune",
-        "chicago.suntimes.com": "suntimes",
-        "cs.uchicago.edu": "uchicago"
-}
-
-reference_sites = list(reference_site_dict.keys())
-
 class Measurements:
     """ Take network measurements """
 
@@ -38,8 +25,9 @@ class Measurements:
             os.exit(1)
         self.results = {}
         self.quiet = args.quiet
-        self.sites = reference_sites
-        self.labels = reference_site_dict
+        self.sites = list(self.nma.conf['reference_site_dict'].keys())
+        self.labels = self.nma.conf['reference_site_dict']
+        print(self.labels)
         if self.nma.conf['databases']['tinydb_enable']:
             try:
                 Path(Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'])).mkdir(parents=True, exist_ok=True)
@@ -130,6 +118,7 @@ class Measurements:
             print('\n --- Ookla speed tests ---')
             print(f'Download: {download_speed} Mb/s')
             print(f'Upload:   {upload_speed} Mb/s')
+        return test_results
 
     def ping_latency(self, run_test):
         """
@@ -138,6 +127,8 @@ class Measurements:
 
         if not run_test:
             return
+
+        ping_res = None
 
         for site in self.sites:
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
@@ -169,6 +160,8 @@ class Measurements:
                 print(f'Minimum RTT: {ping_rtt_ms[1]} (ms)')
                 print(f'Maximum RTT: {ping_rtt_ms[2]} (ms)')
                 print(f'RTT Std Dev: {ping_rtt_ms[3]} (ms)')
+        
+        return ping_res
 
     def dns_latency(self, run_test):
         """
@@ -178,16 +171,23 @@ class Measurements:
         if not run_test:
             return
 
+        dig_res = None
+
+        target = '8.8.8.8'
+
+        if 'target' in self.nma.conf['dns_latency'].keys():
+            target = self.nma.conf['dns_latency']['target']
+
         dig_delays = []
 
         for site in self.sites:
-            dig_cmd = f'dig @8.8.8.8 {site}'
+            dig_cmd = f'dig @{target} {site}'
             dig_res = Popen(dig_cmd, shell=True,
                             stdout=PIPE).stdout.read().decode('utf-8')
 
-            dig_res = re.findall('Query time: ([0-9]*) msec',
+            dig_res_qt = re.findall('Query time: ([0-9]*) msec',
                                  dig_res, re.MULTILINE)[0]
-            dig_delays.append(int(dig_res))
+            dig_delays.append(int(dig_res_qt))
 
         self.results["dns_query_avg_ms"] = sum(dig_delays) / len(dig_delays)
         self.results["dns_query_max_ms"] = max(dig_delays)
@@ -196,6 +196,8 @@ class Measurements:
             print(f'\n --- DNS Delays (n = {len(dig_delays)}) ---')
             print(f'Avg DNS Query Time: {self.results["dns_query_avg_ms"]} ms')
             print(f'Max DNS Query Time: {self.results["dns_query_max_ms"]} ms')
+
+        return dig_res
 
     def hops_to_backbone(self, run_test):
         """
@@ -206,14 +208,21 @@ class Measurements:
         if not run_test:
             return
 
-        tr_cmd = 'traceroute -m 15 -N 32 -w3 google.com | grep -m 1 ibone'
+        tr_res = None
+
+        target = 'google.com'
+
+        if 'target' in self.nma.conf['hops_to_backbone']:
+            target = self.nma.conf['hops_to_backbone']['target']
+
+        tr_cmd = 'traceroute -m 15 -N 32 -w3 {0} | grep -m 1 ibone'.format(target)
         tr_res = Popen(tr_cmd, shell=True,
                        stdout=PIPE).stdout.read().decode('utf-8')
 
-        tr_res = tr_res.strip().split(" ")
+        tr_res_s = tr_res.strip().split(" ")
 
-        if len(tr_res):
-            hops = int(tr_res[0])
+        if len(tr_res_s):
+            hops = int(tr_res_s[0])
         else:
             hops = -1
 
@@ -222,6 +231,8 @@ class Measurements:
         if not self.quiet:
             print('\n --- Hops to Backbone ---')
             print(f'Hops: {self.results["hops_to_backbone"]}')
+        
+        return tr_res
 
     def hops_to_target(self, site):
         """
@@ -231,33 +242,44 @@ class Measurements:
         if not site:
             return
 
-        tr_cmd = f'traceroute -m 20 -q 5 -w 2 {site} | tail -1 | awk "{{print $1}}"'
+        tr_res = None
+
+        target = 'google.com'
+
+        if 'target' in self.nma.conf['hops_to_target']:
+            target = self.nma.conf['hops_to_target']['target']
+
+        tr_cmd = f'traceroute -m 20 -q 5 -w 2 {target} | tail -1 | awk "{{print $1}}"'
         tr_res = Popen(tr_cmd, shell=True,
                        stdout=PIPE).stdout.read().decode('utf-8')
 
-        tr_res = tr_res.strip().split(" ")
+        tr_res_s = tr_res.strip().split(" ")
 
         hops = -1
 
-        if len(tr_res):
-            hops = int(tr_res[0])
+        if len(tr_res_s):
+            hops = int(tr_res_s[0])
 
-        label = self.labels[site]
+        label = self.labels[target]
 
         self.results[f'hops_to_{label}'] = hops
 
         if not self.quiet:
             print('\n --- Hops to Target ---')
-            print("Hops to {}: {}".format(site,
+            print("Hops to {}: {}".format(target,
                                           self.results[f'hops_to_{label}']))
+        return tr_res
 
     def connected_devices_arp(self, run_test):
         """
         Method counts the number of active devices on the network.
         """
 
+
         if not run_test:
             return
+
+        res = {}
 
         ts = int(time.time())
 
@@ -266,7 +288,7 @@ class Measurements:
                        stdout=PIPE).stdout.read().decode('utf-8')
 
         nmap_cmd = f'nmap -sn {subnet}'
-        Popen(nmap_cmd, shell=True, stdout=PIPE)
+        res['nmap'] = Popen(nmap_cmd, shell=True, stdout=PIPE)
 
         arp_cmd = ("/usr/sbin/arp -i eth0 -n | grep : |"
                    "grep -v '_gateway' | tr -s ' ' | "
@@ -274,6 +296,7 @@ class Measurements:
 
         arp_res = Popen(arp_cmd, shell=True,
                         stdout=PIPE).stdout.read().decode('utf-8')
+        res['arp'] = arp_res
 
         devices = set(arp_res.strip().split("\n"))
         active_devices = [[dev, ts, 1] for dev in devices]
@@ -311,15 +334,17 @@ class Measurements:
                   f' {self.results["devices_1day"]}')
             print(f'Number of devices in last week:'
                   f' {self.results["devices_1week"]}')
+        return res
 
     def iperf3_bandwidth(self, client, port):
         """
         Method for recorded results of iperf3 bandwidth tests
         """
-        iperf_res = None
 
         if not client:
             return
+
+        iperf_res = None
 
         if self.nma.conf['databases']['tinydb_enable']:
             speed = self.speed_db.all()
