@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-
+import sys
 import argparse
 import logging
+import json
 from netrics.netson import Measurements
 from nmexpactive.experiment import NetMicroscopeControl
 
@@ -80,9 +81,9 @@ def build_parser():
 
     parser.add_argument(
             '-i', '--iperf',
-            default=[False, False],
-            nargs = 2,
-            action='store',
+            #default=[False, False],    #conf moved to toml
+            #nargs = 2,                 #conf moved to toml
+            action='store_true',
             help='Measure connection with remote server. Needs [client] [port]',
     )
 
@@ -93,6 +94,7 @@ def build_parser():
             help='Text file containing sites to visit during test'
     )
 
+    ## NEW ##
     parser.add_argument(
             '-c', '--config',
             default=None,
@@ -100,17 +102,58 @@ def build_parser():
             help='Provide toml configuration file'
     )
 
+    ## NEW ##
+    parser.add_argument(
+            '-g', '--get-times',
+            default=False,
+            action='store_true',
+            help='Get test profiles and (netrics.json deployment_json_url from toml)'
+    )
+
+
     return parser
 
 parser = build_parser()
 args = parser.parse_args()
-parser.print_help()
+
+output = {} #raw output
 
 nma = NetMicroscopeControl(args)
+
+if args.get_times:
+  nma.get_times()
+  sys.exit(0)
+
 log.info("Initializing.")
 test = Measurements(args, nma)
 
+""" Run ookla speed test """
+test.speed(args.ookla)
 
+""" Measure ping latency to list of websites """
+test.ping_latency(args.ping)
 
+""" Measure DNS latency """
+test.dns_latency(args.dns)
 
+""" Count hops to local backbone """
+test.hops_to_backbone(args.backbone)
 
+""" Count hops to target website """
+test.hops_to_target(args.target)
+
+""" Count number of devices on network """
+test.connected_devices_arp(args.ndev)
+
+""" Run iperf3 bandwidth test """
+for target in nma.conf['iperf3']['iperf3_targets']:
+  server=target.split(':')[0]
+  port=target.split(':')[1]
+  output['iperf3_bandwidth'] = test.iperf3_bandwidth(client=server, port=port)
+
+if not args.quiet:
+  print(test.results)
+  print(output)
+
+nma.save_str(test.results, 'netrics_results')
+nma.save_pkl(output, 'netrics_output')

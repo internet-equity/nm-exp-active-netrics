@@ -42,10 +42,21 @@ class Measurements:
         self.labels = reference_site_dict
         if self.nma.conf['databases']['tinydb_enable']:
             try:
-                self.speed_db = TinyDB(
-                        Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'speedtest.json'))
-                self.dev_db = TinyDB(
-                        Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'seen_devices.json'))
+                Path(Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'])).mkdir(parents=True, exist_ok=True)
+                speedtest_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'speedtest.json')
+                seen_devices_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'seen_devices.json')
+
+                if not speedtest_json.exists():
+                    speedtest_json.touch()
+                if not seen_devices_json.exists():
+                    seen_devices_json.touch()
+
+                self.speed_db = TinyDB(speedtest_json)
+                self.dev_db = TinyDB(seen_devices_json)
+
+                log.info("using {0}".format(speedtest_json))
+                log.info("using {0}".format(seen_devices_json))
+
             except Exception as e:
                 log.error("tinydb continuing without tinydb ({0} / {1})".
                     format(self.nma.conf['databases']['tinydb_path'], "{}".format(e)))
@@ -305,20 +316,27 @@ class Measurements:
         """
         Method for recorded results of iperf3 bandwidth tests
         """
+        iperf_res = None
+
         if not client:
             return
 
-        speed = self.speed_db.all()
+        if self.nma.conf['databases']['tinydb_enable']:
+            speed = self.speed_db.all()
 
         measured_bw = {'upload': 0, 'download': 0}
         measured_jitter = {'upload': 0, 'download': 0}
 
         for direction, value in measured_bw.items():
             reverse = False
-            bandwidth = speed[0][direction] + 10
-            if direction == 'download':
-                bandwidth += 40
-                reverse = True
+
+            bandwidth = 0
+
+            if self.nma.conf['databases']['tinydb_enable']:
+                bandwidth = speed[0][direction] + 10
+                if direction == 'download':
+                    bandwidth += 40
+                    reverse = True
 
             iperf_cmd = "/usr/local/bin/iperf3 -c {} -p {} -u -i 0 -b {}M {} | awk 'NR=={}'"\
                 .format(client, port, bandwidth,
@@ -340,5 +358,7 @@ class Measurements:
                 print(f'{direction} bandwidth: {measured_bw[direction]} Mb/s')
                 print(f'{direction} jitter: {measured_jitter[direction]} ms')
 
-        self.update_max_speed(float(measured_bw['download']),
+        if self.nma.conf['databases']['tinydb_enable']:
+            self.update_max_speed(float(measured_bw['download']),
                               float(measured_bw['upload']))
+        return iperf_res

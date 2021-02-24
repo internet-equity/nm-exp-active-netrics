@@ -104,7 +104,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
+#env/ gitignore inside
 venv/
 ENV/
 env.bak/
