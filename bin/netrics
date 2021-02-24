@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /usr/local/src/nm-exp-active-netrics
+source ./venv/bin/activate
+./src/netrics.py $@
