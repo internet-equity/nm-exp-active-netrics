@@ -37,13 +37,13 @@ fi
 case "$1" in
   start)
     echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
-    /usr/bin/netrics -G > /tmp/netrics.initd.out
+    /usr/local/bin/netrics -G > /tmp/netrics.initd.out
     IPERF_TIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print 2}')
 
     cat << "EOF" | tee /etc/cron.d/cron-nm-exp-active-netrics > /dev/null
-    */5 * * * * python3 /usr/bin/cron-nm-exp-active-netrics -p -n -d -t -b -u 
-    1 * * * * python3 /usr/bin/cron-nm-exp-active-netrics -s -u
-    ${IPERF_TIME} * * * * python3 /usr/bin/cron-nm-exp-active-netrics -i -u
+    */5 * * * * python3 /usr/local/bin/netrics -p -n -d -t -b -u 
+    1 * * * * python3 /usr/local/bin/netrics -s -u
+    ${IPERF_TIME} * * * * python3 /usr/local/bin/netrics -i -u
     EOF
 
     ;;
