@@ -41,21 +41,22 @@ stop_nma() {
 }
 
 status_nma() {
-    echo "TODO:tail log for errors, count pending, archive etc"
+    /usr/local/bin/netrics -L
+    /usr/local/bin/netrics -C
 }
 
 case "$1" in
   start)
-	start_nma
+	    start_nma
     ;;
   stop)
-	stop_nma
+	    stop_nma
     ;;
   restart)
-	stop_nma;start_nma
+	    stop_nma;start_nma
     ;;
   status)
-	status_nma
+	    status_nma
     ;;
   *)
     echo "Usage: /etc/init.d/cron-nm-exp-active-netrics {start|stop|restart|status}"
