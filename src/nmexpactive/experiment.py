@@ -11,6 +11,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime
 import pickle
+from subprocess import Popen, PIPE
 
 project = "netrics"
 
@@ -30,6 +31,13 @@ UPLOAD_ARCHIVE = TMP / "upload" / "archive"
 
 CFG = projectname + ".toml"
 ETC_CFG = ETC / CFG
+
+def which(pgm):
+    path=os.getenv('PATH')
+    for p in path.split(os.path.pathsep):
+        p=os.path.join(p,pgm)
+        if os.path.exists(p) and os.access(p,os.X_OK):
+            return p
 
 class NetMicroscopeControl:
     global log
@@ -127,6 +135,65 @@ class NetMicroscopeControl:
                         for k in i['times']:
                             #add random minutes to iperf and other tools execution
                             print("{0} {1}".format(k, i['times'][k] + random.randrange(-3,3)))
+    def get_logs(self):
+        print("{0}\n...".format(TMP_LOG_FILE))
+        cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+        loglines = Popen(cat_log_cmd, shell=True,
+                             stdout=PIPE).stdout.readlines()
+        l = len(loglines)
+        for i in range(l - 10, l):
+            print(loglines[i].decode('utf-8'), end = '')
+        
+        log_from_cron = TMP_LOG / "log.txt"
+        if Path(log_from_cron).exists():
+            cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+            loglines = Popen(cat_log_cmd, shell=True,
+                                stdout=PIPE).stdout.readlines()
+            l = len(loglines)
+            for i in range(l - 10, l):
+                print(loglines[i].decode('utf-8'), end = '')
+
+    def get_checks(self):
+        r = {
+            'ip': which("ip"),
+            'arp': which("arp"),
+            'nmap': which("nmap"),
+            'iperf3': which("iperf3"),
+            'ping': which("ping"),
+            'traceroute': which("traceroute"),
+        }
+
+        print("ip: {0}".format((r['ip'], "OK") if r['ip'] is not None else None))
+        print("arp: {0}".format((r['arp'], "OK") if r['arp'] is not None else None))
+        print("nmap: {0}".format((r['nmap'], "OK") if r['nmap'] is not None else None))
+        print("iperf3: {0}".format((r['iperf3'], "OK") if r['iperf3'] is not None else None))
+        print("ping: {0}".format((r['ping'], "OK") if r['ping'] is not None else None))
+        print("traceroute: {0}".format((r['traceroute'], "OK") if r['traceroute'] is not None else None))
+        cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+        loglines = Popen(cat_log_cmd, shell=True,
+                             stdout=PIPE).stdout.readlines()
+        l = len(loglines)
+        r['log_lines'] = l
+        r['log_lines_cron'] = None
+        r['log_lines_error'] = 0
+        r['log_lines_warns'] = 0
+        for i in range(l - 10, l):
+            if loglines[i].find(b'ERROR') != -1:
+                r['log_lines_error'] += 1
+            if loglines[i].find(b'WARN') != -1:
+                r['log_lines_warns'] += 1
+        print("log_lines: {0}".format(r['log_lines']))
+        print("log_lines_error: {0}".format(r['log_lines_error']))
+        print("log_lines_warns: {0}".format(r['log_lines_warns']))
+        log_from_cron = TMP_LOG / "log.txt"
+        if Path(log_from_cron).exists():
+            cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+            loglines = Popen(cat_log_cmd, shell=True,
+                                stdout=PIPE).stdout.readlines()
+            r['log_lines_cron'] = len(loglines)
+        print("log_lines_cron: {0}".format(r['log_lines_cron']))
+        return r
+
 
     def save_str(self, data, cmd, topic = "default"):
         p = UPLOAD_PENDING / topic / "out"

@@ -126,7 +126,7 @@ def build_parser():
             '-C', '--check',
             default=False,
             action='store_true',
-            help='Check dependencies.'
+            help='Check dependencies and overall health parameters.'
     )
 
     return parser
@@ -183,11 +183,12 @@ if args.get_times:
   sys.exit(0)
 
 if args.logs:
-  #TBD tail logs, count errors, etc.
+  nma.get_logs()
   sys.exit(0)
 
 if args.check:
-  #TBD check dependencies, binaries etc.
+  r = nma.get_checks()
+  #TODO: upload r (health)
   sys.exit(0)
 
 log.info("Initializing.")
