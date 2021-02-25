@@ -63,7 +63,7 @@ class NetMicroscopeControl:
                 self.conf = toml.load(cfg_path)
                 log.info("CONF using {0}".format(cfg_path))
             elif os.path.exists(ETC_CFG):
-                self.conf = toml.loads(ETC_CFG)
+                self.conf = toml.load(ETC_CFG)
                 log.info("CONF using {0}".format(ETC_CFG))
             else:
                 log.warn("CONF not set.")

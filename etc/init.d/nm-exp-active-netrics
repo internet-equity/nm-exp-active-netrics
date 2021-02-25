@@ -8,54 +8,57 @@
 # Short-Description: NetMicroscope Netrics Active Experment
 # Description:       enable NetMicroscope Netrics Active measurements
 ### END INIT INFO
-NMPATH=/usr/local/src/nm-exp-active-netrics/netrics
+NMPATH=/usr/local/src/nm-exp-active-netrics/
 
-if [ ! -f "${NMPATH}" ];then
+mkdir -p /tmp/nm/nm-exp-active-netrics/log/
+
+log=/tmp/nm/nm-exp-active-netrics/log/log.txt
+
+if [ ! -d "${NMPATH}" ];then
    echo "ERROR: Installation of nm-exp-active-netrics in incomplete. Exiting..."
    exit 1
 fi
 
-if [ ! -f "/usr/bin/netrics" ];then
+if [ ! -f "/usr/local/bin/netrics" ];then
    echo "ERROR: Binaries of nm-exp-active-netrics are not in PATH. Exiting..."
    exit 1
 fi
 
-/*
-if [ ! -f "${NMPATH}/.env" ];then
-   echo "ERROR: ${NMPATH}/.env does not exist. Make sure you have nm-mgmt-* packages installed.Exiting..."
-   exit 1
-fi
 
-source ${NMPATH}/.env
+start_nma() {
+    echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
+    /usr/local/bin/netrics -G > /tmp/netrics.initd.out
+    IPERF_TIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print $2}')
 
-if [[ ! -z "${NM_EXP_ACTIVE_NETRICS_TARGET_SERVERS}" ]]; then
-  echo "ERROR: NM_EXP_ACTIVE_NETRICS_TARGET_SERVERS not set in ${NMPATH}/.env. Exiting..."
-  exit 1
-fi
-*/
+    echo "*/5 * * * * root /usr/local/bin/netrics -p -n -d -t -b -u >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
+    echo "1 * * * * root /usr/local/bin/netrics -s -u >>${log} 2>>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
+    echo "${IPERF_TIME} * * * * root /usr/local/bin/netrics -i -u >${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
+}
+
+stop_nma() {
+    echo "Removing nm-exp-active-netrics from crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
+    rm -f /etc/cron.d/cron-nm-exp-active-netrics
+}
+
+status_nma() {
+    echo "TODO:tail log for errors, count pending, archive etc"
+}
 
 case "$1" in
   start)
-    echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
-    /usr/local/bin/netrics -G > /tmp/netrics.initd.out
-    IPERF_TIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print 2}')
-
-    cat << "EOF" | tee /etc/cron.d/cron-nm-exp-active-netrics > /dev/null
-    */5 * * * * python3 /usr/local/bin/netrics -p -n -d -t -b -u 
-    1 * * * * python3 /usr/local/bin/netrics -s -u
-    ${IPERF_TIME} * * * * python3 /usr/local/bin/netrics -i -u
-    EOF
-
+	start_nma
     ;;
   stop)
-    echo "Removing nm-exp-active-netrics from crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
-    rm -f /etc/cron.d/cron-nm-exp-active-netrics
+	stop_nma
+    ;;
+  restart)
+	stop_nma;start_nma
     ;;
   status)
-    echo "TODO:tail log for errors, count pending, archive etc"
+	status_nma
     ;;
   *)
-    echo "Usage: /etc/init.d/cron-nm-exp-active-netrics {start|stop|status}"
+    echo "Usage: /etc/init.d/cron-nm-exp-active-netrics {start|stop|restart|status}"
     exit 0
     ;;
 esac
