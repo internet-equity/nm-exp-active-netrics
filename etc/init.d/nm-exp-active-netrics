@@ -31,7 +31,7 @@ start_nma() {
     IPERF_TIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print $2}')
 
     echo "*/5 * * * * root /usr/local/bin/netrics -p -n -d -t -b -u >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
-    echo "1 * * * * root /usr/local/bin/netrics -s -u >>${log} 2>>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
+    echo "1 * * * * root /usr/local/bin/netrics -s -u >>${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
     echo "${IPERF_TIME} * * * * root /usr/local/bin/netrics -i -u >${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
 }
 
