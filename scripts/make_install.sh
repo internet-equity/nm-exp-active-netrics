@@ -22,7 +22,34 @@ fi
 cd $NMAPATH
 echo "INFO: working dir ("$(pwd)")"
 cd ..
-mkdir -p /usr/local/src/
-cp -R nm-exp-active-netrics /usr/local/src
+
+# /usr/local/src/nm-exp-active-netrics/
+mkdir -p /usr/local/src/nm-exp-active-netrics/
+cp -R nm-exp-active-netrics/bin/ /usr/local/src/nm-exp-active-netrics/
+cp -R nm-exp-active-netrics/src/ /usr/local/src/nm-exp-active-netrics/
 cp /usr/local/src/nm-exp-active-netrics/bin/netrics /usr/local/bin/
-ln -s /usr/local/bin/netrics /usr/bin/nm-exp-active-netrics
+
+if [ ! -f /usr/bin/nm-exp-active-netrics ];then
+  ln -s /usr/local/bin/netrics /usr/bin/nm-exp-active-netrics
+fi
+
+# /etc/nm-exp-active-netrics/nm-exp-active-netrics.toml
+mkdir -p /etc/nm-exp-active-netrics
+cp nm-exp-active-netrics/conf/nm-exp-active-netrics.toml /etc/nm-exp-active-netrics/
+
+# /etc/init.d/nm-exp-active-netrics
+cp nm-exp-active-netrics/etc/init.d/nm-exp-active-netrics /etc/init.d/
+chmod +x /etc/init.d/nm-exp-active-netrics
+update-rc.d nm-exp-active-netrics defaults
+
+# env
+
+cd -
+
+if [ -f env/.env ];then
+  echo "INFO: env detected. copying..."
+  chmod go-rw env/.env
+  cp env/.env /etc/nm-exp-active-netrics/.env
+else
+  echo "INFO: NO env detected."
+fi

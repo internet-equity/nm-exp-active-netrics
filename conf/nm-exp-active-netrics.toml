@@ -32,7 +32,7 @@ deployment = "1940e236a6a6717f23bd700738c4dec9"
     target = "8.8.8.8"
 
 [hops_to_backbone]
-    target = "google.com"
+    target = "www.google.com"
 
 [hops_to_target]
-    target = "google.com"
+    target = "www.google.com"

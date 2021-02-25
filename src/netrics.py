@@ -114,6 +114,15 @@ def build_parser():
 
     ## Non-test
     parser.add_argument(
+            '-L', '--logs',
+            default=False,
+            action='store_true',
+            help='Tail logs and generate summary'
+    )
+
+
+    ## Non-test
+    parser.add_argument(
             '-C', '--check',
             default=False,
             action='store_true',
@@ -207,7 +216,7 @@ if args.iperf:
   if nma.conf['iperf']['targets'][0] == "":
     log.error("[iperf][targets] not properly set")
     print("[iperf][targets] not properly set")
-    os.exit(1)
+    sys.exit(1)
     
   for target in nma.conf['iperf']['targets']:
     server=target.split(':')[0]
@@ -216,7 +225,7 @@ if args.iperf:
 
 if not args.quiet:
   print(test.results)
-  print(output)
+  #print(output)
 
 nma.save_str(test.results, 'netrics_results')
 nma.save_pkl(output, 'netrics_output')

@@ -209,7 +209,7 @@ class Measurements:
 
         tr_res = None
 
-        target = 'google.com'
+        target = 'www.google.com'
 
         if 'target' in self.nma.conf['hops_to_backbone']:
             target = self.nma.conf['hops_to_backbone']['target']
@@ -243,7 +243,7 @@ class Measurements:
 
         tr_res = None
 
-        target = 'google.com'
+        target = 'www.google.com'
 
         if 'target' in self.nma.conf['hops_to_target']:
             target = self.nma.conf['hops_to_target']['target']
@@ -287,7 +287,7 @@ class Measurements:
                        stdout=PIPE).stdout.read().decode('utf-8')
 
         nmap_cmd = f'nmap -sn {subnet}'
-        res['nmap'] = Popen(nmap_cmd, shell=True, stdout=PIPE)
+        Popen(nmap_cmd, shell=True, stdout=PIPE)
 
         arp_cmd = ("/usr/sbin/arp -i eth0 -n | grep : |"
                    "grep -v '_gateway' | tr -s ' ' | "
