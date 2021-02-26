@@ -1,6 +1,6 @@
 from genericpath import exists
 import os, sys
-import logging
+import logging, logging.handlers
 import traceback
 import toml
 import random
@@ -49,11 +49,18 @@ class NetMicroscopeControl:
         Path(UPLOAD_PENDING).mkdir(parents=True, exist_ok=True)
         Path(UPLOAD_ARCHIVE).mkdir(parents=True, exist_ok=True)
 
+
         logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', 
           datefmt='%Y-%m-%dT%H:%M:%S',
           filename=TMP_LOG_FILE,
           #filemode='w', 
           level=logging.INFO)
+
+        handler = logging.handlers.TimedRotatingFileHandler(TMP_LOG_FILE,
+                                       when="d",
+                                       interval=1,
+                                       backupCount=30)
+        log.addHandler(handler)
 
         env_path = Path('.').absolute() / 'env' / '.env'
         if os.path.exists(env_path):
@@ -160,6 +167,7 @@ class NetMicroscopeControl:
             'nmap': which("nmap"),
             'iperf3': which("iperf3"),
             'ping': which("ping"),
+            'dig': which("dig"),
             'traceroute': which("traceroute"),
         }
 
@@ -168,6 +176,7 @@ class NetMicroscopeControl:
         print("nmap: {0}".format((r['nmap'], "OK") if r['nmap'] is not None else None))
         print("iperf3: {0}".format((r['iperf3'], "OK") if r['iperf3'] is not None else None))
         print("ping: {0}".format((r['ping'], "OK") if r['ping'] is not None else None))
+        print("dig: {0}".format((r['dig'], "OK") if r['dig'] is not None else None))
         print("traceroute: {0}".format((r['traceroute'], "OK") if r['traceroute'] is not None else None))
         cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
         loglines = Popen(cat_log_cmd, shell=True,
