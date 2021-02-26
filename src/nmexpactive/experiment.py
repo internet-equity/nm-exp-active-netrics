@@ -169,6 +169,7 @@ class NetMicroscopeControl:
             'ping': which("ping"),
             'dig': which("dig"),
             'traceroute': which("traceroute"),
+            'speedtest': which("speedtest"),
         }
 
         print("ip: {0}".format((r['ip'], "OK") if r['ip'] is not None else None))
@@ -178,6 +179,7 @@ class NetMicroscopeControl:
         print("ping: {0}".format((r['ping'], "OK") if r['ping'] is not None else None))
         print("dig: {0}".format((r['dig'], "OK") if r['dig'] is not None else None))
         print("traceroute: {0}".format((r['traceroute'], "OK") if r['traceroute'] is not None else None))
+        print("speedtest: {0}".format((r['speedtest'], "OK") if r['speedtest'] is not None else None))
         cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
         loglines = Popen(cat_log_cmd, shell=True,
                              stdout=PIPE).stdout.readlines()
