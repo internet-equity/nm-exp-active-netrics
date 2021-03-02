@@ -26,7 +26,7 @@ INFLUXDB_PORT=
 INFLUXDB_USERNAME=
 INFLUXDB_PASSWORD=
 INFLUXDB_DATABASE=
-INSTALL_ID=<b>myid</b> <---- change this
+INSTALL_ID=<b>myid</b> <---- use your lastname here so you can filter out grafana/influxdb queries.
 </pre>
 6. Restart netrics: <b>`sudo /etc/init.d/nm-exp-active-netrics restart`</b>
 7. Check health with `sudo netrics -C` and logs with `sudo netrics -L`
