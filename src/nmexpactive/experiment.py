@@ -148,6 +148,7 @@ class NetMicroscopeControl:
         loglines = Popen(cat_log_cmd, shell=True,
                              stdout=PIPE).stdout.readlines()
         l = len(loglines)
+        if l < 10: l = 0
         for i in range(l - 10, l):
             print(loglines[i].decode('utf-8'), end = '')
         
@@ -188,7 +189,7 @@ class NetMicroscopeControl:
         r['log_lines_cron'] = None
         r['log_lines_error'] = 0
         r['log_lines_warns'] = 0
-        for i in range(l - 10, l):
+        for i in range(0, l):
             if loglines[i].find(b'ERROR') != -1:
                 r['log_lines_error'] += 1
             if loglines[i].find(b'WARN') != -1:
