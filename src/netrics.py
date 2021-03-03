@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import os, sys
+sys.path.append("venv/lib/python3.8/site-packages/")
+sys.path.append("venv/lib64/python3.8/site-packages/")
 import argparse
 import logging
 from datetime import datetime
