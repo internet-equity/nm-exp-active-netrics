@@ -362,7 +362,7 @@ class Measurements:
                     bandwidth += 40
                     reverse = True
 
-            iperf_cmd = "/usr/local/bin/iperf3 -c {} -p {} -u -i 0 -b {}M {} | awk 'NR=={}'"\
+            iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -u -i 0 -b {}M {} | awk 'NR=={}'"\
                 .format(client, port, bandwidth,
                         '-R' if reverse else "", 10 if reverse else 8)
             iperf_res = Popen(iperf_cmd, shell=True,
