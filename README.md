@@ -10,7 +10,8 @@ TBD
 1. Checkout the latest pre-releases and releases at [link](https://github.com/chicago-cdac/nm-exp-active-netrics/releases).
 2. Copy link and login into your Jetson Nano device, download .deb file:<br>
 `wget https://github.com/chicago-cdac/nm-exp-active-netrics/releases/download/v0.1.10-arm64/nm-exp-active-netrics-v0.1.10-arm64.deb`
-3. run `sudo apt install ./nm-exp-active-netrics-v0.1.10-arm64.deb` (use `--reinstall` if you have an old version already installed)
+3. run `sudo apt install ./nm-exp-active-netrics-v0.1.10-arm64.deb`<br>
+(To reinstall run):<br>`sudo apt remove --purge nm-exp-active-netrics`<br>`sudo apt install --reinstall ./nm-exp-active-netrics-v0.1.10-arm64.deb`, and if necessary run:<br>`sudo rm -Rf /usr/local/src/nm-exp-active-netrics`
 4. edit your `/etc/nm-exp-active-netrics/nm-exp-active-netrics.toml` file to include <b>[iperf]</b> target servers:
 ```
 ...
