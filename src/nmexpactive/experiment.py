@@ -128,7 +128,12 @@ class NetMicroscopeControl:
                     nj.close()
                     log.info('OK')
                 netrics_json = json.loads(j)
+
+                randprofile = False
+                ## if user don't have a profile defined, pick one as a baseline
+                ## and rand -3 + 3
                 if deployment is None:
+                  randprofile = True
                   rlen = len(netrics_json['schedule'])
                   r = random.randrange(0, rlen)
                   with open(p, 'w') as dfile:
@@ -140,8 +145,10 @@ class NetMicroscopeControl:
                 for i in netrics_json['schedule']:
                     if i['deployment'] == deployment:
                         for k in i['times']:
-                            #add random minutes to iperf and other tools execution
-                            print("{0} {1}".format(k, i['times'][k] + random.randrange(-3,3)))
+                            if randprofile: ## this will apply to anonymous (user w no profile def) 
+                               print("{0} {1}".format(k, i['times'][k] + random.randrange(-3,3)))
+                            else:
+                               print("{0} {1}".format(k, i['times'][k]))
     def get_logs(self):
         print("{0}\n...".format(TMP_LOG_FILE))
         cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)

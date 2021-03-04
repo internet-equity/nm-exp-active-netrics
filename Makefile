@@ -32,6 +32,9 @@ venv: ## Make virtual enviroment and activate it
 	./scripts/make_venv.sh
 	ln -s /usr/local/src/nm-exp-active-netrics/venv ./venv
 
+build: ## Build .deb package for the current arch
+	cd package/deb/; ./build.sh; cp nm-exp-active-netrics-v0.1.10-arm64.deb ~/
+
 install: ## Copy files to the device filesystem at /usr/local/src, /usr/local/bin, /etc/init.d/ and /etc/nm-exp-active-netrics
 	./scripts/make_install.sh
 

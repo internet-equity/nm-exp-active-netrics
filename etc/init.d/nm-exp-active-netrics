@@ -34,9 +34,10 @@ start_nma() {
     echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
     /usr/local/bin/netrics -G > /tmp/netrics.initd.out
     IPERF_TIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print $2}')
+    SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 )) 
 
     echo "*/5 * * * * root /usr/local/bin/netrics -p -n -d -t -b ${upload} >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
-    echo "1 * * * * root /usr/local/bin/netrics -s ${upload} >>${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
+    echo "${SPEEDTEST_TIME} * * * * root /usr/local/bin/netrics -s ${upload} >>${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
     echo "${IPERF_TIME} * * * * root /usr/local/bin/netrics -i ${upload} >${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
 }
 

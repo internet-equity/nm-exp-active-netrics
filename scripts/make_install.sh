@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PROC=$(uname -p)
-PROC='aarch64'
+#PROC='aarch64'
 
 NMAPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/../
 
@@ -27,6 +27,8 @@ cd ..
 mkdir -p /usr/local/src/nm-exp-active-netrics/
 cp -R nm-exp-active-netrics/bin/ /usr/local/src/nm-exp-active-netrics/
 cp -R nm-exp-active-netrics/src/ /usr/local/src/nm-exp-active-netrics/
+cp -R nm-exp-active-netrics/commands/$PROC/lib /usr/local/src/nm-exp-active-netrics/
+cp -R nm-exp-active-netrics/commands/$PROC/bin /usr/local/src/nm-exp-active-netrics/
 cp /usr/local/src/nm-exp-active-netrics/bin/netrics /usr/local/bin/
 
 if [ ! -f /usr/bin/nm-exp-active-netrics ];then
