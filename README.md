@@ -5,7 +5,23 @@ NetMicroscope Experiment - Active Measurements (AKA Netrics)
 
 TBD
 
-### 1.1 Install (umanaged, direct influxfb data ingestion)
+### 1.1 Source Code, Configuration and Data locations
+
+The python source code, after installed resides on:<br>
+`/usr/local/src/nm-exp-active-netrics/*`<br>
+
+The data is located at:<br>
+`/tmp/nm/nm-exp-active-netrics/upload/pending/*` (pending upload),<br>
+`/tmp/nm/nm-exp-active-netrics/upload/archive/*` (uploaded, safe for deletion)<br>
+
+Configuration can be found at:<br>
+`/etc/nm-exp-active-netrics/*`
+
+## 2. Install
+
+TBD
+
+### 2.1 Install (umanaged, direct influxfb data ingestion)
 
 1. Checkout the latest pre-releases and releases at [link](https://github.com/chicago-cdac/nm-exp-active-netrics/releases).
 2. Copy link and login into your Jetson Nano device, download .deb file:<br>
