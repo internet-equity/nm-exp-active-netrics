@@ -9,10 +9,11 @@ help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 	@echo
 	@echo "Steps:"
-	@echo "1. sudo make iperf"
-	@echo "2. sudo make deps"
-	@echo "3. sudo make venv"
-	@echo "4. sudo make install"
+	@echo "1. sudo make user"
+	@echo "2. sudo make iperf"
+	@echo "3. sudo make deps"
+	@echo "4. sudo make venv"
+	@echo "5. sudo make install"
 
 iperf: ## Install iperf3 command from source, use host arch (no cross compile) 
 	./scripts/make_iperf.sh
@@ -37,6 +38,9 @@ build: ## Build .deb package for the current arch
 
 install: ## Copy files to the device filesystem at /usr/local/src, /usr/local/bin, /etc/init.d/ and /etc/nm-exp-active-netrics
 	./scripts/make_install.sh
+
+user: ## Make system user group netrics:netrics
+	./script/make_netrics_user_group.sh
 
 clearlogs: ## Remove nm-exp-active-netrics.log
 	rm -f /tmp/nm/nm-exp-active-netrics/log/nm-exp-active-netrics.log
