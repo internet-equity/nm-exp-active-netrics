@@ -93,6 +93,14 @@ def build_parser():
     )
 
     parser.add_argument(
+            '--tshark',
+            #default=[False, False],    #conf moved to toml
+            #nargs = 2,                 #conf moved to toml
+            action='store_true',
+            help='Measure on-going consumption using tshark'
+    )
+
+    parser.add_argument(
             '-f', '--sites',
             default=None,
             action='store',
@@ -213,6 +221,10 @@ output['hops_to_target'] = test.hops_to_target(args.target)
 
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp(args.ndev)
+
+""" Measure consumption using tshark. """
+output['tshark_eth_consumption'] = test.tshark_eth_consumption(args.tshark)
+
 
 """ Run iperf3 bandwidth test """
 if args.iperf:
