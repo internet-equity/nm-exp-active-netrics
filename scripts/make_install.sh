@@ -39,6 +39,10 @@ fi
 mkdir -p /etc/nm-exp-active-netrics
 cp nm-exp-active-netrics/conf/nm-exp-active-netrics.toml /etc/nm-exp-active-netrics/
 
+# logrotate.d
+mkdir -p /etc/logrotate.d/
+cp nm-exp-active-netrics/etc/logrotate.d/netrics /etc/logrotate.d/
+
 # /etc/init.d/nm-exp-active-netrics
 cp nm-exp-active-netrics/etc/init.d/nm-exp-active-netrics /etc/init.d/
 chmod +x /etc/init.d/nm-exp-active-netrics
@@ -55,3 +59,6 @@ if [ -f env/.env ];then
 else
   echo "INFO: NO env detected."
 fi
+
+chown netrics:netrics /etc/nm-exp-active-netrics/.env
+chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
