@@ -40,13 +40,20 @@ install: ## Copy files to the device filesystem at /usr/local/src, /usr/local/bi
 	./scripts/make_install.sh
 
 user: ## Make system user group netrics:netrics
-	./script/make_netrics_user_group.sh
+	./scripts/make_netrics_user_group.sh
 
 clearlogs: ## Remove nm-exp-active-netrics.log
 	rm -f /tmp/nm/nm-exp-active-netrics/log/nm-exp-active-netrics.log
 
-clearpending: ## remove /tmp/nm/nm-exp-active-netrics/upload/pending
+clearpending: ## Remove /tmp/nm/nm-exp-active-netrics/upload/pending
 	rm -Rf /tmp/nm/nm-exp-active-netrics/upload/pending
 
-cleararchive: ## remove /tmp/nm/nm-exp-active-netrics/upload/archive
+cleararchive: ## Remove /tmp/nm/nm-exp-active-netrics/upload/archive
 	rm -Rf /tmp/nm/nm-exp-active-netrics/upload/archive
+
+cleantmp: ## Remove /tmp/nm/
+	rm -Rf /tmp/nm/nm-exp-active-netrics/
+
+clean: ## Clean all /tmp/nm/nm-exp-active-netrics/*
+	rm -Rf /tmp/nm/nm-exp-active-netrics/
+	rm -Rf /usr/local/src/nm-exp-active-netrics/

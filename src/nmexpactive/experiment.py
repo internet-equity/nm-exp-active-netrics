@@ -62,11 +62,12 @@ class NetMicroscopeControl:
                                        backupCount=30)
         log.addHandler(handler)
 
-        env_path = Path('.').absolute() / 'env' / '.env'
-        if os.path.exists(env_path):
-            load_dotenv(env_path)
-            log.info("ENV using {0}".format(env_path))
-        elif os.path.exists(ETC_ENV):
+        ## try to use your local .env
+        #env_path = Path('.').absolute() / 'env' / '.env'
+        #if os.path.exists(env_path):
+        #    load_dotenv(env_path)
+        #    log.info("ENV using {0}".format(env_path))
+        if os.path.exists(ETC_ENV):
             load_dotenv(ETC_ENV)
             log.info("ENV using {0}".format(ETC_ENV))
         else:
@@ -173,7 +174,8 @@ class NetMicroscopeControl:
             'ip': which("ip"),
             'arp': which("arp"),
             'nmap': which("nmap"),
-            'iperf3': which("iperf3"),
+            'iperf3': "/usr/local/src/nm-exp-active-netrics/iperf3.sh" 
+                if os.path.exists("/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh") else None,
             'ping': which("ping"),
             'dig': which("dig"),
             'traceroute': which("traceroute"),
