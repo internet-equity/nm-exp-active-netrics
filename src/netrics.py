@@ -46,6 +46,14 @@ def build_parser():
     )
 
     parser.add_argument(
+            '-l', '--latency_under_load',
+            default=False,
+            action='store_true',
+            help='Measure ping latency under load'
+    )
+
+
+    parser.add_argument(
             '-d', '--dns',
             default=False,
             action='store_true',
@@ -90,6 +98,14 @@ def build_parser():
             #nargs = 2,                 #conf moved to toml
             action='store_true',
             help='Measure connection with remote server. Needs [client] [port]',
+    )
+
+    parser.add_argument(
+            '--tshark',
+            #default=[False, False],    #conf moved to toml
+            #nargs = 2,                 #conf moved to toml
+            action='store_true',
+            help='Measure on-going consumption using tshark'
     )
 
     parser.add_argument(
@@ -210,6 +226,21 @@ output['ookla'] = test.speed(args.ookla)
 """ Measure ping latency to list of websites """
 output['ping_latency'] = test.ping_latency(args.ping)
 
+""" Measure latency under load """
+if args.latency_under_load:
+
+  if nma.conf['iperf']['targets'][0] == "":
+    log.error("[iperf][targets] not properly set")
+    print("[iperf][targets] not properly set -- needed for latency under load")
+    sys.exit(1)
+    
+  target = nma.conf['iperf']['targets'][0]
+  server = target.split(':')[0]
+  port   = target.split(':')[1]
+
+  output['latency_under_load'] = test.latency_under_load(True, client = server, port = port)
+
+
 """ Measure DNS latency """
 output['dns_latency'] = test.dns_latency(args.dns)
 
@@ -221,6 +252,10 @@ output['hops_to_target'] = test.hops_to_target(args.target)
 
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp(args.ndev)
+
+""" Measure consumption using tshark. """
+output['tshark_eth_consumption'] = test.tshark_eth_consumption(args.tshark)
+
 
 """ Run iperf3 bandwidth test """
 if args.iperf:
