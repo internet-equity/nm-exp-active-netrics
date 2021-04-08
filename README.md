@@ -5,6 +5,8 @@ NetMicroscope Experiment - Active Measurements (AKA Netrics)
 
 TBD
 
+![Netrics Dashboard](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/docs/images/dashboard.png?raw=true)
+
 ### 1.1 Source Code, Configuration and Data locations
 
 The python source code, after installed resides on:<br>

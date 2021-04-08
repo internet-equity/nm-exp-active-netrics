@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys
+import os, sys, pwd
 sys.path.append("venv/lib/python3.8/site-packages/")
 sys.path.append("venv/lib64/python3.8/site-packages/")
 import argparse
@@ -193,6 +193,14 @@ parser = build_parser()
 args = parser.parse_args()
 
 output = {} #raw output
+
+try:
+  userid=pwd.getpwuid(os.getuid())[0]
+  if userid != 'netrics':
+      raise Exception('User: {0}'.format(userid))
+except (KeyError, PermissionError, Exception) as error:
+  print("ERROR: run this command as using unprivileged user 'netrics' or root, message:({0})".format(error))
+  sys.exit(1)
 
 nma = NetMicroscopeControl(args)
 
