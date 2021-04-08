@@ -25,8 +25,10 @@ class Measurements:
             os.exit(1)
         self.results = {}
         self.quiet = args.quiet
+
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
+
         if self.nma.conf['databases']['tinydb_enable']:
             try:
                 Path(Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'])).mkdir(parents=True, exist_ok=True)
@@ -162,6 +164,68 @@ class Measurements:
         
         return ping_res
 
+    def latency_under_load(self, run_test, client, port):
+        """
+        Method records ping latency under load to self.sites_load
+        """
+
+        if not run_test: return
+        if not client:   return
+
+        if 'targets' in self.nma.conf['latency_under_load']:
+            targets = self.nma.conf['latency_under_load']['targets']
+        else:
+            return
+
+        ping_res = None
+
+        for upload in [True, False]:
+
+            ul_dl = "ul" if upload else "dl"
+
+            load = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -i 0 -t 10 {}"\
+                       .format(client, port, "" if upload else "-R" )
+
+            load += " > /dev/null & sleep 2 && echo starting ping && "
+
+            for site in targets:
+
+                ping_cmd = "ping -i 0.25 -c 10 -w 5 {:s}".format(site)
+                
+                start = time.time()
+                ping_res = Popen(load + ping_cmd, shell=True,
+                                 stdout=PIPE).stdout.read().decode('utf-8')
+
+                ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
+                                                 ping_res, re.MULTILINE)[0])
+
+                ping_rtt_ms = re.findall(
+                    'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
+                    , ping_res)[0]
+
+                ping_rtt_ms = [float(v) for v in ping_rtt_ms]
+
+                label = self.labels[site]
+
+                self.results[f"{label}_packet_loss_pct_under_{ul_dl}"] = ping_pkt_loss
+                self.results[f"{label}_rtt_min_ms_under_{ul_dl}"] = ping_rtt_ms[0]
+                self.results[f"{label}_rtt_max_ms_under_{ul_dl}"] = ping_rtt_ms[2]
+                self.results[f"{label}_rtt_avg_ms_under_{ul_dl}"] = ping_rtt_ms[1]
+                self.results[f"{label}_rtt_mdev_ms_under_{ul_dl}"] = ping_rtt_ms[3]
+
+                if not self.quiet:
+                    print(f'\n --- {label} ping latency under load ---')
+                    print(f'Packet Loss Under Load: {ping_pkt_loss}%')
+                    print(f'Average RTT Under Load: {ping_rtt_ms[1]} (ms)')
+                    print(f'Minimum RTT Under Load: {ping_rtt_ms[0]} (ms)')
+                    print(f'Maximum RTT Under Load: {ping_rtt_ms[2]} (ms)')
+                    print(f'RTT Std Dev Under Load: {ping_rtt_ms[3]} (ms)')
+
+                if (time.time() - start) < 11:
+                    time.sleep(11 - (time.time() - start))
+        
+        return ping_res
+
     def dns_latency(self, run_test):
         """
         Method records dig latency for each site in self.sites
@@ -286,7 +350,7 @@ class Measurements:
         subnet = Popen(route_cmd, shell=True,
                        stdout=PIPE).stdout.read().decode('utf-8')
 
-        nmap_cmd = f'nmap -sn {subnet}'
+        nmap_cmd = f'nmap --unprivileged -sn {subnet}'
         Popen(nmap_cmd, shell=True, stdout=PIPE)
 
         arp_cmd = ("/usr/sbin/arp -i eth0 -n | grep : |"
@@ -393,12 +457,17 @@ class Measurements:
         if not run_test:
             return
 
-        cap_filter = "not broadcast and not multicast and not (ip src 192.168.1.4 or ip dst 192.168.1.4 or ip src 192.168.1.1 or ip dst 192.168.1.1)"
+        local_ip_cmd   = "ifconfig eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'"
+        gateway_ip_cmd = "ip r | grep default | cut -f3 -d' '"
+
+        loc_ip = Popen(local_ip_cmd,   shell = True, stdout = PIPE).stdout.read().decode('utf-8').strip()
+        gw_ip  = Popen(gateway_ip_cmd, shell = True, stdout = PIPE).stdout.read().decode('utf-8').strip()
+
+        cap_filter = f"not broadcast and not multicast and not (ip src {loc_ip} or ip dst {loc_ip} or ip src {gw_ip} or ip dst {gw_ip})"
 
         tshark_cmd = f'tshark -f "{cap_filter}" -i eth0 -a duration:{dur} -Q -z conv,ip -z io,stat,{dur*2}'
         tshark_res = Popen(tshark_cmd, shell = True, stdout = PIPE).stdout.read().decode('utf-8')
 
-        print(tshark_res)
         duration = float(re.findall("Duration: ([0-9.]*) secs", tshark_res, re.MULTILINE)[0])
 
         columns = ["A", "B", "BA_fr", "BA_bytes", "AB_fr", "AB_bytes", "tot_fr", "to_bytes", "start", "duration"]
