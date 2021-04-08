@@ -12,6 +12,7 @@ cp -R /usr/local/src/nm-exp-active-netrics/src/ nm-exp-active-netrics/usr/local/
 cp -R /usr/local/src/nm-exp-active-netrics/venv/ nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/
 
 mkdir -p nm-exp-active-netrics/etc/nm-exp-active-netrics/
+mkdir -p nm-exp-active-netrics/etc/logrotate.d/
 mkdir -p nm-exp-active-netrics/etc/init.d/
 mkdir -p nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/databases
 mkdir -p nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/bin/
@@ -22,6 +23,7 @@ mkdir -p nm-exp-active-netrics/usr/bin
 #netrics
 cp ../../conf/nm-exp-active-netrics.toml nm-exp-active-netrics/etc/nm-exp-active-netrics/
 cp /etc/init.d/nm-exp-active-netrics nm-exp-active-netrics/etc/init.d/
+cp /etc/logrotate.d/netrics nm-exp-active-netrics/etc/logrotate.d/
 cp /usr/local/src/nm-exp-active-netrics/bin/netrics nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/bin/
 cp /usr/local/src/nm-exp-active-netrics/bin/netrics nm-exp-active-netrics/usr/local/bin/
 cp /usr/bin/nm-exp-active-netrics nm-exp-active-netrics/usr/bin/

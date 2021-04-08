@@ -5,15 +5,16 @@
 from subprocess import Popen, PIPE
 import time
 import re
+import json
 
 import os, sys, logging, traceback
-from speedtest import Speedtest
 from pathlib import Path
 from tinydb import TinyDB, where
 from tinydb.operations import increment
 from tinydb.operations import set as tdb_set
 
 log = logging.getLogger(__name__)
+
 
 class Measurements:
     """ Take network measurements """
@@ -101,14 +102,12 @@ class Measurements:
         if not run_test:
             return
 
-        s = Speedtest()
-        s.get_best_server()
-        s.download()
-        s.upload()
-        test_results = s.results.dict()
+        output = Popen('speedtest --json', shell=True, stdout=PIPE)
+        res, _ = output.communicate()
+        res_json = json.loads(res)
 
-        download_speed = test_results["download"] / 1e6
-        upload_speed = test_results["upload"] / 1e6
+        download_speed = res_json["download"] / 1e6
+        upload_speed = res_json["upload"] / 1e6
 
         self.update_max_speed(float(download_speed), float(upload_speed))
 
