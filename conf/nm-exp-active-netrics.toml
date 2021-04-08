@@ -25,6 +25,9 @@ deployment = "1940e236a6a6717f23bd700738c4dec9"
     "chicago.suntimes.com" = "suntimes"
     "cs.uchicago.edu" = "uchicago"
 
+[latency_under_load]
+    targets = ["www.google.com"]
+
 [iperf]
     targets = [""]
 
