@@ -15,10 +15,10 @@ mkdir -p /usr/local/src/nm-exp-active-netrics
 
 cd /usr/local/src/nm-exp-active-netrics
 
-if [ ! -d "venv" ]; then
-  python3 -m venv venv
-  . ./venv/bin/activate
-  python3 -m pip install -r $requirements
-else
-  echo "WARN: existing venv, already built?"
+if [ -d "venv" ]; then
+  rm -Rf ./venv
 fi
+
+python3 -m venv venv
+. ./venv/bin/activate
+python3 -m pip install -r $requirements
