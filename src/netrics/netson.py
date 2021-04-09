@@ -118,7 +118,7 @@ class Measurements:
             print('\n --- Ookla speed tests ---')
             print(f'Download: {download_speed} Mb/s')
             print(f'Upload:   {upload_speed} Mb/s')
-        return test_results
+        return res_json
 
     def ping_latency(self, run_test):
         """
