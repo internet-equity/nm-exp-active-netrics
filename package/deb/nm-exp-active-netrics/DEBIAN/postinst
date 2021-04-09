@@ -3,6 +3,10 @@
 echo "INFO: creating"
 addgroup --system netrics
 adduser --system --disabled-password --disabled-login --ingroup netrics netrics
+usermod -a -G wireshark netrics
+
+echo "INFO: Please enable non-root users to run tshark wireshark. Eg.:"
+echo "INFO: \"$ yes | DEBIAN_FRONTEND=teletype dpkg-reconfigure wireshark-common\""
 
 if [ -f /etc/nm-exp-active-netrics/.env ];then
   chown netrics:netrics /etc/nm-exp-active-netrics/.env
