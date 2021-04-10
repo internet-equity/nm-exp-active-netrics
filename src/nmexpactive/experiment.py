@@ -176,6 +176,8 @@ class NetMicroscopeControl:
             'nmap': which("nmap"),
             'iperf3': "/usr/local/src/nm-exp-active-netrics/iperf3.sh" 
                 if os.path.exists("/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh") else None,
+            'ndt7-client': "/usr/local/src/nm-exp-active-netrics/bin/ndt7-client"
+                if os.path.exists("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client") else None,
             'ping': which("ping"),
             'dig': which("dig"),
             'tshark': which("tshark"),
@@ -187,6 +189,7 @@ class NetMicroscopeControl:
         print("arp: {0}".format((r['arp'], "OK") if r['arp'] is not None else None))
         print("nmap: {0}".format((r['nmap'], "OK") if r['nmap'] is not None else None))
         print("iperf3: {0}".format((r['iperf3'], "OK") if r['iperf3'] is not None else None))
+        print("ndt7-client: {0}".format((r['ndt7-client'], "OK") if r['ndt7-client'] is not None else None))
         print("ping: {0}".format((r['ping'], "OK") if r['ping'] is not None else None))
         print("dig: {0}".format((r['dig'], "OK") if r['dig'] is not None else None))
         print("tshark: {0}".format((r['dig'], "OK") if r['tshark'] is not None else None))
