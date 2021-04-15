@@ -96,7 +96,7 @@ class Measurements:
 
         self.speed_db.update({'test': True})
 
-    def speed(self, run_test):
+    def speed_ookla(self, run_test):
         """ Test runs Ookla Speed test """
 
         if not run_test:
@@ -111,14 +111,44 @@ class Measurements:
 
         self.update_max_speed(float(download_speed), float(upload_speed))
 
-        self.results["speedtest_download"] = download_speed
-        self.results["speedtest_upload"] = upload_speed
+        self.results["speedtest_ookla_download"] = download_speed
+        self.results["speedtest_ookla_upload"] = upload_speed
 
         if not self.quiet:
             print('\n --- Ookla speed tests ---')
             print(f'Download: {download_speed} Mb/s')
             print(f'Upload:   {upload_speed} Mb/s')
         return res_json
+
+    def speed_ndt7(self, run_test):
+        """ Test runs NDT7 Speed test """
+
+        if not run_test:
+            return
+
+        output = Popen("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -quiet -format 'json'",
+                shell=True, stdout=PIPE).stdout.read().decode('utf-8')
+        res_json = json.loads(output)
+
+        download_speed = res_json["Upload"]["Value"]
+        upload_speed = res_json["Download"]["Value"]
+        download_retrans = res_json["DownloadRetrans"]["Value"]
+
+        self.results["speedtest_ndt7_download"] = download_speed
+        self.results["speedtest_ndt7_upload"] = upload_speed
+        self.results["speedtest_ndt7_downloadretrans"] = download_retrans
+
+        if not self.quiet:
+            print('\n --- NDT7 speed tests ---')
+            print(f'Download: {download_speed} Mb/s')
+            print(f'Upload:   {upload_speed} Mb/s')
+            print(f'DownloadRetrans:   {download_retrans} %')
+ 
+        return None
+
+    def speed(self, run_test):
+        #TBD
+        return None, None
 
     def ping_latency(self, run_test):
         """
@@ -466,8 +496,9 @@ class Measurements:
 
         tshark_cmd = f'tshark -f "{cap_filter}" -i eth0 -a duration:{dur} -Q -z conv,ip -z io,stat,{dur*2}'
         tshark_res = Popen(tshark_cmd, shell = True, stdout = PIPE).stdout.read().decode('utf-8')
-
+        print(tshark_res)
         duration = float(re.findall("Duration: ([0-9.]*) secs", tshark_res, re.MULTILINE)[0])
+        print("duration:{}".format(duration))
 
         columns = ["A", "B", "BA_fr", "BA_bytes", "AB_fr", "AB_bytes", "tot_fr", "to_bytes", "start", "duration"]
 
