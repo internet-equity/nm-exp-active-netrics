@@ -486,7 +486,7 @@ class Measurements:
         if not run_test:
             return
 
-        local_ip_cmd   = "ifconfig eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'"
+        local_ip_cmd   = "ip a show dev eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'"
         gateway_ip_cmd = "ip r | grep default | cut -f3 -d' '"
 
         loc_ip = Popen(local_ip_cmd,   shell = True, stdout = PIPE).stdout.read().decode('utf-8').strip()
