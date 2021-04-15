@@ -102,22 +102,33 @@ class Measurements:
         if not run_test:
             return
 
-        output = Popen('speedtest --json', shell=True, stdout=PIPE)
-        res, _ = output.communicate()
-        res_json = json.loads(res)
+        # TODO: to account for errors/faults in the execution
+        output = Popen('speedtest --accept-license -p no -f json -u kbps',
+                shell=True, stdout=PIPE).stdout.read().decode('utf-8')
+        res_json = json.loads(output)
+        download_ookla = res_json["download"]['bandwidth'] / 1e5 #TODO: why this is in 1e5 and not in 1e6?
+        upload_ookla = res_json["upload"]['bandwidth'] / 1e5
+        jitter_ookla = res_json['ping']['jitter']
+        latency_ookla = res_json['ping']['latency']
+        pktloss_ookla = None
+        if 'packetLoss' in res_json.keys():
+            pktloss_ookla = res_json['packetLoss']
+        self.update_max_speed(float(download_ookla), float(upload_ookla))
 
-        download_speed = res_json["download"] / 1e6
-        upload_speed = res_json["upload"] / 1e6
-
-        self.update_max_speed(float(download_speed), float(upload_speed))
-
-        self.results["speedtest_ookla_download"] = download_speed
-        self.results["speedtest_ookla_upload"] = upload_speed
+        self.results["speedtest_ookla_download"] = download_ookla
+        self.results["speedtest_ookla_upload"] = upload_ookla
+        self.results["speedtest_ookla_jitter"] = jitter_ookla
+        self.results["speedtest_ookla_latency"] = latency_ookla
+        if pktloss_ookla is not None:
+            self.results["speedtest_ookla_pktloss"] = pktloss_ookla
 
         if not self.quiet:
             print('\n --- Ookla speed tests ---')
-            print(f'Download: {download_speed} Mb/s')
-            print(f'Upload:   {upload_speed} Mb/s')
+            print(f'Download:\t{download_ookla} Mb/s')
+            print(f'Upload:\t\t{upload_ookla} Mb/s')
+            print(f'Latency:\t{latency_ookla} ms')
+            print(f'Jitter:\t\t{jitter_ookla} ms')
+            print(f'PktLoss:\t{pktloss_ookla} Total Count')
         return res_json
 
     def speed_ndt7(self, run_test):
@@ -126,29 +137,32 @@ class Measurements:
         if not run_test:
             return
 
+        # TODO: to account for errors/faults in the execution
         output = Popen("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -quiet -format 'json'",
                 shell=True, stdout=PIPE).stdout.read().decode('utf-8')
         res_json = json.loads(output)
 
-        download_speed = res_json["Upload"]["Value"]
-        upload_speed = res_json["Download"]["Value"]
+        download_speed = res_json["Download"]["Value"]
+        upload_speed = res_json["Upload"]["Value"]
         download_retrans = res_json["DownloadRetrans"]["Value"]
+        minrtt = res_json['MinRTT']['Value']
 
         self.results["speedtest_ndt7_download"] = download_speed
         self.results["speedtest_ndt7_upload"] = upload_speed
         self.results["speedtest_ndt7_downloadretrans"] = download_retrans
+        self.results["speedtest_ndt7_minrtt"] = minrtt
 
         if not self.quiet:
             print('\n --- NDT7 speed tests ---')
-            print(f'Download: {download_speed} Mb/s')
-            print(f'Upload:   {upload_speed} Mb/s')
-            print(f'DownloadRetrans:   {download_retrans} %')
+            print(f'Download:\t{download_speed} Mb/s')
+            print(f'Upload:\t\t{upload_speed} Mb/s')
+            print(f'DownloadRetrans:{download_retrans} %')
+            print(f'MinRTT:\t\t{minrtt} ms')
  
-        return None
+        return res_json
 
-    def speed(self, run_test):
-        #TBD
-        return None, None
+    def speed(self):
+        return self.speed_ookla(True), self.speed_ndt7(True)
 
     def ping_latency(self, run_test):
         """

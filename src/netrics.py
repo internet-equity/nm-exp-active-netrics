@@ -89,21 +89,21 @@ def build_parser():
             '-k', '--ookla',
             default=False,
             action='store_true',
-            help='Measure up/down throughout using Ookla'
+            help='Measure up/down network throughout using Ookla'
     )
 
     parser.add_argument(
             '-a', '--ndt7',
             default=False,
             action='store_true',
-            help='Measure up/down throughout using NDT7'
+            help='Measure up/down network throughout using NDT7'
     )
 
     parser.add_argument(
             '-s', '--speed',
             default=False,
             action='store_true',
-            help='Measure up/down throughput alternating between NDT7 and Ookla (hourly)'
+            help='Measure up/down network throughput using all supported tools NDT7 and Ookla (in sequence)'
     )
 
     parser.add_argument(
@@ -240,12 +240,9 @@ output['ookla'] = test.speed_ookla(args.ookla)
 """ Run ndt7 speed test """
 output['ndt7'] = test.speed_ndt7(args.ndt7)
 
-""" Run speed test alternating ookla/ndt7, use hour number to determine which one; even = ookla / odd = ndt7"""
-result, result_type = test.speed(args.speed)
-if result_type == 'ndt7':
-    output['ndt7'] = result
-elif result_type == 'ookla':
-    output['ookla'] = result
+""" Run speed tests in sequence ookla/ndt7 """
+if args.speed:
+  output['ookla'], output['ndt7'] = test.speed()
 
 """ Measure ping latency to list of websites """
 output['ping_latency'] = test.ping_latency(args.ping)
