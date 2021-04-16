@@ -3,7 +3,9 @@ NetMicroscope Experiment - Active Measurements (AKA Netrics)
 
 ## 1. [About Netrics](https://chicago-cdac.github.io/nm-exp-active-netrics)
 
-TBD
+<b>What</b>: a software framework to concentrate and run dedicated computer network measurements.<br>
+<b>For Whom</b>: internet users, network engineers and the general internet research community.<br>
+<b>Why</b>: to troubleshoot impaired computer networks, to understand how the internet is evolving, and to support decisions on internet infrastructure capacity planning.
 
 ![Netrics Dashboard](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/docs/images/dashboard.png?raw=true)
 
@@ -21,7 +23,7 @@ Configuration can be found at:<br>
 
 ## 2. Install
 
-TBD
+Please use the _unmanaged_ installation with direct influxdb data ingestion if you're a developer or researcher planning to contribute with code, testing and building of NetMicroscope/Netrics Open Source software. For all other cases, please use the _managed_ installation method.
 
 ### 2.1 Install (umanaged, direct influxfb data ingestion)
 
