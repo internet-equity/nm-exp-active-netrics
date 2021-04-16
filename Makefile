@@ -23,7 +23,7 @@ iperf: ## Install iperf3 command from source, use host arch (no cross compile)
 ndt: ## Install ndt command for host arch
 	./scripts/make_ndt.sh
 
-speedtest: ## Install ndt command for host arch
+speedtest: ## Install speedtest command for host arch
 	./scripts/make_speedtest.sh
 
 deps: ## Install dependencies via apt-get install
