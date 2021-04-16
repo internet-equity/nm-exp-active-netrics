@@ -12,15 +12,19 @@ help:
 	@echo "1. sudo make user"
 	@echo "2. sudo make iperf"
 	@echo "3. make ndt"
-	@echo "4. sudo make deps"
-	@echo "5. sudo make venv"
-	@echo "6. sudo make install"
+	@echo "4. make speedtest"
+	@echo "5. sudo make deps"
+	@echo "6. sudo make venv"
+	@echo "7. sudo make install"
 
 iperf: ## Install iperf3 command from source, use host arch (no cross compile) 
 	./scripts/make_iperf.sh
 
 ndt: ## Install ndt command for host arch
 	./scripts/make_ndt.sh
+
+speedtest: ## Install ndt command for host arch
+	./scripts/make_speedtest.sh
 
 deps: ## Install dependencies via apt-get install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
