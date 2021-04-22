@@ -37,7 +37,7 @@ start_nma() {
     IPERF_TIME=$(( ${GETTIME} + 1 ))
     SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 )) 
 
-    echo "*/5 * * * * netrics /usr/local/bin/netrics -p -n -d -t -b ${upload} >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
+    echo "*/5 * * * * netrics /usr/local/bin/netrics -p -n -d -t -b -l ${upload} >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
     echo "${SPEEDTEST_TIME} * * * * netrics /usr/local/bin/netrics -s ${upload} >>${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
     echo "${IPERF_TIME} * * * * netrics /usr/local/bin/netrics -i ${upload} >${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
 }
