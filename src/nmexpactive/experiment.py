@@ -156,7 +156,7 @@ class NetMicroscopeControl:
         loglines = Popen(cat_log_cmd, shell=True,
                              stdout=PIPE).stdout.readlines()
         l = len(loglines)
-        if l < 10: l = 0
+        if l < 10: l = 10
         for i in range(l - 10, l):
             print(loglines[i].decode('utf-8'), end = '')
         
