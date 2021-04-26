@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
-__version__ = "0.1.10"
+__version__ = "0.1.11"
 __author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins"
 
 def build_parser():
