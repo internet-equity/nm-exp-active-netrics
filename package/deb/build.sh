@@ -8,6 +8,11 @@ version_deb=$(cat nm-exp-active-netrics/DEBIAN/control| grep "Version:" | grep -
 echo "python version:" ${version_pyc}
 echo "debian version:" ${version_deb}
 
+if [ "${version_pyc}" != "${version_deb}" ];then
+	echo "ERROR: python and debian version do not match."
+	exit 1
+fi
+
 cp -R /usr/local/src/nm-exp-active-netrics/src/ nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/
 cp -R /usr/local/src/nm-exp-active-netrics/venv/ nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/
 

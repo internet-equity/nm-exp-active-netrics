@@ -18,7 +18,9 @@ if [ -d /tmp/nm/ ];then
 fi
 
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
-
+if [ -d /tmp/nm ]; then
+	mv /tmp/nm /tmp/nm.backup.$(date +"%Y%m%d")
+fi
 chmod +x /etc/init.d/nm-exp-active-netrics
 update-rc.d nm-exp-active-netrics defaults
 /etc/init.d/nm-exp-active-netrics start

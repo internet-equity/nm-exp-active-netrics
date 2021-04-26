@@ -11,6 +11,7 @@
 NMPATH=/usr/local/src/nm-exp-active-netrics/
 
 mkdir -p /tmp/nm/nm-exp-active-netrics/log/
+chown netrics:netrics /tmp/nm/ -R
 
 log=/tmp/nm/nm-exp-active-netrics/log/log.txt
 
@@ -53,8 +54,8 @@ status_nma() {
     else
 	    echo "Status: Stopped"
     fi
-    /usr/local/bin/netrics -L
     /usr/local/bin/netrics -C
+    /usr/local/bin/netrics -L
 }
 
 case "$1" in

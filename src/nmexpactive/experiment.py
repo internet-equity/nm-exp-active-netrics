@@ -12,6 +12,7 @@ import urllib.request
 from datetime import datetime
 import pickle
 from subprocess import Popen, PIPE
+import getpass
 
 project = "netrics"
 
@@ -21,13 +22,14 @@ projectname = "nm-exp-active-{0}".format(project)
 EXP = Path(projectname)
 ETC = Path("/etc") / EXP
 ETC_ENV = ETC / ".env"
+TMP_NM =  Path("/tmp/nm/")
 TMP = Path("/tmp/nm/") / EXP
 TMP_LOG = TMP / "log"
 TMP_LOG_FILE = TMP_LOG / (projectname + ".log")
 TMP_CACHE = TMP / "cache"
-
-UPLOAD_PENDING = TMP / "upload" / "pending"
-UPLOAD_ARCHIVE = TMP / "upload" / "archive"
+TMP_UPLOAD = TMP / "upload"
+UPLOAD_PENDING = TMP_UPLOAD / "pending"
+UPLOAD_ARCHIVE = TMP_UPLOAD / "archive"
 
 CFG = projectname + ".toml"
 ETC_CFG = ETC / CFG
@@ -42,13 +44,23 @@ def which(pgm):
 class NetMicroscopeControl:
     global log
     def __init__(self, args):
-
+        myuser = getpass.getuser()
         self.conf = {}
-
-        Path(TMP_LOG).mkdir(parents=True, exist_ok=True)
-        Path(UPLOAD_PENDING).mkdir(parents=True, exist_ok=True)
-        Path(UPLOAD_ARCHIVE).mkdir(parents=True, exist_ok=True)
-
+        if myuser != "netrics":
+            print("WARN: running as {0}. Recommended: \"netrics\".".format(myuser))
+        try:
+          Path(TMP_NM).mkdir(parents=True, exist_ok=True)
+          Path(TMP).mkdir(parents=True, exist_ok=True)
+          Path(TMP_LOG).mkdir(parents=True, exist_ok=True)
+          Path(TMP_UPLOAD).mkdir(parents=True, exist_ok=True)
+          Path(UPLOAD_PENDING).mkdir(parents=True, exist_ok=True)
+          Path(UPLOAD_ARCHIVE).mkdir(parents=True, exist_ok=True)
+        except FileNotFoundError as fnfe:
+          print("ERROR: NetMicroscopeControl.init FileNotFoundError {0}".format(fnfe))
+          sys.exit(1)
+        except PermissionError as pe:
+          print("ERROR: NetMicroscopeControl.init {0} {1}".format(myuser, pe))
+          sys.exit(1)
 
         logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', 
           datefmt='%Y-%m-%dT%H:%M:%S',
@@ -62,16 +74,11 @@ class NetMicroscopeControl:
                                        backupCount=30)
         log.addHandler(handler)
 
-        ## try to use your local .env
-        #env_path = Path('.').absolute() / 'env' / '.env'
-        #if os.path.exists(env_path):
-        #    load_dotenv(env_path)
-        #    log.info("ENV using {0}".format(env_path))
         if os.path.exists(ETC_ENV):
             load_dotenv(ETC_ENV)
             log.info("ENV using {0}".format(ETC_ENV))
         else:
-            log.warn("ENV not set: ({0},{1}).".format(env_path, ETC_ENV))
+            log.warn("ENV not set: ({0}).".format(ETC_ENV))
         
         cfg_path = Path('.').absolute() / 'conf' / CFG
         try: 

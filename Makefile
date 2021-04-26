@@ -16,6 +16,7 @@ help:
 	@echo "5. sudo make deps"
 	@echo "6. sudo make venv"
 	@echo "7. sudo make install"
+	@echo "8. make build"
 
 iperf: ## Install iperf3 command from source, use host arch (no cross compile) 
 	./scripts/make_iperf.sh
@@ -42,7 +43,7 @@ venv: ## Make virtual enviroment and activate it
 	ln -s /usr/local/src/nm-exp-active-netrics/venv ./venv
 
 build: ## Build .deb package for the current arch
-	cd package/deb/; ./build.sh; cp nm-exp-active-netrics-v0.1.10-arm64.deb ~/
+	cd package/deb/; ./build.sh; cp nm-exp-active-netrics*.deb ~/
 
 install: ## Copy files to the device filesystem at /usr/local/src, /usr/local/bin, /etc/init.d/ and /etc/nm-exp-active-netrics
 	./scripts/make_install.sh
