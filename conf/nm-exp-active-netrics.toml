@@ -39,3 +39,6 @@ deployment = "1940e236a6a6717f23bd700738c4dec9"
 
 [hops_to_target]
     target = "www.google.com"
+
+[nmap_dev_scan]
+    iface = "eth0"

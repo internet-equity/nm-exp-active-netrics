@@ -1,6 +1,6 @@
 #!/bin/bash
 params=$@
-if [ $USER != 'netrics' ]; then
+if [ "$USER" != "netrics" ]; then
    sudo -u netrics -s -- sh -c ". ./venv/bin/activate; ./src/netrics.py $params"
 else
    . ./venv/bin/activate; ./src/netrics.py $params
