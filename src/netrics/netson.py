@@ -106,8 +106,8 @@ class Measurements:
         output = Popen('/usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps',
                 shell=True, stdout=PIPE).stdout.read().decode('utf-8')
         res_json = json.loads(output)
-        download_ookla = res_json["download"]['bandwidth'] / 1e5 #TODO: why this is in 1e5 and not in 1e6?
-        upload_ookla = res_json["upload"]['bandwidth'] / 1e5
+        download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
+        upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
         jitter_ookla = res_json['ping']['jitter']
         latency_ookla = res_json['ping']['latency']
         pktloss_ookla = None
