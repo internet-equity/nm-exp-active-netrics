@@ -189,7 +189,7 @@ class NetMicroscopeControl:
             'dig': which("dig"),
             'tshark': which("tshark"),
             'traceroute': which("traceroute"),
-            'speedtest': which("speedtest"),
+            'speedtest': which("/usr/local/src/nm-exp-active-netrics/bin/speedtest"),
         }
 
         print("ip: {0}".format((r['ip'], "OK") if r['ip'] is not None else None))

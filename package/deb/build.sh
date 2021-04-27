@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+if [[ $EUID -eq 0 ]]; then
+   echo "ERROR: This script must be run as NON-root" 
+   exit 1
+fi
+
 PROC_U=$(uname -p)
 PROC=arm64
 mv *.deb backup/
@@ -11,6 +17,11 @@ echo "debian version:" ${version_deb}
 if [ "${version_pyc}" != "${version_deb}" ];then
 	echo "ERROR: python and debian version do not match."
 	exit 1
+fi
+
+#clean venv
+if [ -d nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/venv ];then
+	rm -Rf nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/venv
 fi
 
 cp -R /usr/local/src/nm-exp-active-netrics/src/ nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/

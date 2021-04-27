@@ -103,7 +103,7 @@ class Measurements:
             return
 
         # TODO: to account for errors/faults in the execution
-        output = Popen('speedtest --accept-license -p no -f json -u kbps',
+        output = Popen('/usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps',
                 shell=True, stdout=PIPE).stdout.read().decode('utf-8')
         res_json = json.loads(output)
         download_ookla = res_json["download"]['bandwidth'] / 1e5 #TODO: why this is in 1e5 and not in 1e6?
@@ -144,7 +144,7 @@ class Measurements:
 
         download_speed = res_json["Download"]["Value"]
         upload_speed = res_json["Upload"]["Value"]
-        download_retrans = res_json["DownloadRetrans"]["Value"]
+        download_retrans = float(res_json["DownloadRetrans"]["Value"])
         minrtt = res_json['MinRTT']['Value']
 
         self.results["speedtest_ndt7_download"] = download_speed
