@@ -388,15 +388,19 @@ class Measurements:
         res = {}
 
         ts = int(time.time())
+        iface = 'eth0'
 
-        route_cmd = "ip r | grep /24 | awk '{print $1;}'"
+        if 'nmap_dev_scan' in self.nma.conf.keys():
+            if 'iface' in self.nma.conf['nmap_dev_scan']:
+                iface = self.nma.conf['nmap_dev_scan']['iface']
+
+        route_cmd = f"ip r | grep src | grep {iface} | head -n 1 | awk '{{print $1;}}'"
         subnet = Popen(route_cmd, shell=True,
-                       stdout=PIPE).stdout.read().decode('utf-8')
+                       stdout=PIPE).stdout.read().decode('utf-8').strip(" \n")
+        nmap_cmd = f'nmap -sn {subnet}'
+        Popen(nmap_cmd, shell=True, stdout=PIPE).stdout.read()
 
-        nmap_cmd = f'nmap --unprivileged -sn {subnet}'
-        Popen(nmap_cmd, shell=True, stdout=PIPE)
-
-        arp_cmd = ("/usr/sbin/arp -i eth0 -n | grep : |"
+        arp_cmd = (f"/usr/sbin/arp -i {iface} -n | grep : |"
                    "grep -v '_gateway' | tr -s ' ' | "
                    "cut -f3 -d' ' | sort | uniq")
 
