@@ -33,14 +33,19 @@ start_nma() {
 	    echo "INFO: /etc/nm-exp-active-netrics/.env present, using -u (upload flag)"
     fi
     echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
-    /usr/local/bin/netrics -G > /tmp/netrics.initd.out
-    GETTIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print $2}')
-    IPERF_TIME=$(( ${GETTIME} + 1 ))
-    SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 )) 
 
-    echo "*/5 * * * * netrics /usr/local/bin/netrics -p -n -d -t -b ${upload} >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
-    echo "${SPEEDTEST_TIME} * * * * netrics /usr/local/bin/netrics -s -l ${upload} >>${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
-    echo "${IPERF_TIME} * * * * netrics /usr/local/bin/netrics -i ${upload} >${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
+    if [ -f /etc/cron.d/cron-nm-exp-active-netrics ]; then
+	    echo "INFO nm-exp-active-netrics already running (cron.d)."
+    else
+            /usr/local/bin/netrics -G > /tmp/netrics.initd.out
+            GETTIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print $2}')
+            IPERF_TIME=$(( ${GETTIME} + 1 ))
+            SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 )) 
+
+            echo "*/5 * * * * netrics /usr/local/bin/netrics -p -n -d -t -b ${upload} >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
+            echo "${SPEEDTEST_TIME} * * * * netrics /usr/local/bin/netrics -s -l ${upload} >>${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
+            echo "${IPERF_TIME} * * * * netrics /usr/local/bin/netrics -i ${upload} >${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
+    fi 
 }
 
 stop_nma() {
@@ -58,6 +63,19 @@ status_nma() {
     /usr/local/bin/netrics -L
 }
 
+restart_nma() {
+	#backup edited cron
+	cachedir=/tmp/
+	if [ -f /etc/cron.d/cron-nm-exp-active-netrics ]; then
+		if [ -d /tmp/nm/nm-exp-active-netrics/cache/ ]; then
+			cachedir=/tmp/nm/nm-exp-active-netrics/cache/
+		fi
+		mv /etc/cron.d/cron-nm-exp-active-netrics $cachedir
+		chown netrics:netrics $cachedir/cron-nm-exp-active-netrics
+	fi
+	stop_nma;start_nma
+}
+
 case "$1" in
   start)
 	    start_nma
@@ -66,7 +84,7 @@ case "$1" in
 	    stop_nma
     ;;
   restart)
-	    stop_nma;start_nma
+	    restart_nma
     ;;
   status)
 	    status_nma
