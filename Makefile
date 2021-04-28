@@ -35,7 +35,9 @@ deps: ## Install dependencies via apt-get install
 	apt-get -q -y install traceroute
 	apt-get -q -y install dnsutils
 	apt-get -q -y install nmap
-	apt-get -q -y install speedtest-cli
+	apt-get -q -y install build-essentials
+	apt-get -q -y install python3-env
+	apt-get -q -y install tshark
 	#apt-get -q -y install chromium-chromedriver #(disabled)
 
 venv: ## Make virtual enviroment and activate it
