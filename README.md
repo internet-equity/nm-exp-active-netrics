@@ -50,7 +50,7 @@ INFLUXDB_DATABASE=
 INSTALL_ID=<b>myid</b> <---- use your lastname here so you can filter out grafana/influxdb queries.
 </pre>
 6. Restart netrics: <b>`sudo /etc/init.d/nm-exp-active-netrics restart`</b>
-7. Check health with `sudo netrics -C` and logs with `sudo netrics -L`
+7. Check health with `netrics -C` and logs with `netrics -L`
 
 ### 1.2 Install (managed, via nm-mgmt-cms-*.deb)
 
