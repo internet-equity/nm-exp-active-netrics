@@ -23,5 +23,5 @@ if [ -d /tmp/nm ]; then
 fi
 chmod +x /etc/init.d/nm-exp-active-netrics
 update-rc.d nm-exp-active-netrics defaults
-/etc/init.d/nm-exp-active-netrics start
+/etc/init.d/nm-exp-active-netrics restart
 /usr/local/bin/netrics -C
