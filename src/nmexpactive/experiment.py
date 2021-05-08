@@ -163,9 +163,9 @@ class NetMicroscopeControl:
         loglines = Popen(cat_log_cmd, shell=True,
                              stdout=PIPE).stdout.readlines()
         l = len(loglines)
-        if l < 10: l = 10
-        for i in range(l - 10, l):
-            print(loglines[i].decode('utf-8'), end = '')
+        if l > 10:
+            for i in range(l - 10, l):
+                print(loglines[i].decode('utf-8'), end = '')
         
         log_from_cron = TMP_LOG / "log.txt"
         if Path(log_from_cron).exists():
