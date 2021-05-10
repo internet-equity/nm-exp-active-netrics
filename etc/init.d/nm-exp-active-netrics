@@ -34,20 +34,13 @@ start_nma() {
     fi
     echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
 
-    if [ -f /etc/cron.d/cron-nm-exp-active-netrics ]; then
-	    echo "INFO nm-exp-active-netrics already running (cron.d)."
-    else
-            /usr/local/bin/netrics -G > /tmp/netrics.initd.out
-            GETTIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print $2}')
-            IPERF_TIME=$(( ${GETTIME} + 1 ))
-            SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 )) 
-            /usr/local/src/nm-exp-active-netrics/venv/bin/python3 \
-		    /usr/local/src/nm-exp-active-netrics/bin/makecron.py \
-		    -c SPEEDTEST_TIME=${SPEEDTEST_TIME} IPERF_TIME=${IPERF_TIME} upload=${upload} log=${log}
-            #echo "*/5 * * * * netrics env USER=\$LOGNAME /usr/local/bin/netrics -p -n -d -t -b ${upload} >>${log} 2>&1" > /etc/cron.d/cron-nm-exp-active-netrics
-            #echo "${SPEEDTEST_TIME} * * * * netrics env USER=\$LOGNAME /usr/local/bin/netrics -s -l ${upload} >>${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
-            #echo "${IPERF_TIME} * * * * netrics env USER=\$LOGNAME /usr/local/bin/netrics -i ${upload} >${log} 2>&1" >> /etc/cron.d/cron-nm-exp-active-netrics
-    fi 
+    /usr/local/bin/netrics -G > /tmp/netrics.initd.out
+    GETTIME=$(cat /tmp/netrics.initd.out | grep iperf | awk '{print $2}')
+    IPERF_TIME=$(( ${GETTIME} + 1 ))
+    SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 )) 
+    /usr/local/src/nm-exp-active-netrics/venv/bin/python3 \
+	    /usr/local/src/nm-exp-active-netrics/bin/makecron.py \
+	    -c SPEEDTEST_TIME=${SPEEDTEST_TIME} IPERF_TIME=${IPERF_TIME} upload=${upload} log=${log}
 }
 
 stop_nma() {
