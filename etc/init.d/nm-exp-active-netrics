@@ -11,7 +11,11 @@
 NMPATH=/usr/local/src/nm-exp-active-netrics/
 
 mkdir -p /tmp/nm/nm-exp-active-netrics/log/
-chown netrics:netrics /tmp/nm/ -R
+
+owner=$(stat --format '%U' /tmp/nm)
+if [ "$owner" != "netrics" ];then
+  chown netrics:netrics /tmp/nm/ -R
+fi
 
 log=/tmp/nm/nm-exp-active-netrics/log/log.txt
 
