@@ -16,7 +16,9 @@ fi
 if [ -d /tmp/nm/ ];then
   chown netrics:netrics /tmp/nm/ -R
 fi
-
+if [ -f /etc/nm-exp-active-netrics/.env ];then
+	chown netrics:netrics /etc/nm-exp-active-netrics/.env
+fi
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
 if [ -d /tmp/nm ]; then
 	mv /tmp/nm /tmp/nm.backup.$(date +"%Y%m%d")
