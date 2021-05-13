@@ -394,7 +394,7 @@ class Measurements:
             if 'iface' in self.nma.conf['nmap_dev_scan']:
                 iface = self.nma.conf['nmap_dev_scan']['iface']
 
-        route_cmd = f"ip r | grep src | grep {iface} | head -n 1 | awk '{{print $1;}}'"
+        route_cmd = f"ip r | grep -v default | grep src | grep {iface} | head -n 1 | awk '{{print $1;}}'"
         subnet = Popen(route_cmd, shell=True,
                        stdout=PIPE).stdout.read().decode('utf-8').strip(" \n")
         nmap_cmd = f'nmap -sn {subnet}'
