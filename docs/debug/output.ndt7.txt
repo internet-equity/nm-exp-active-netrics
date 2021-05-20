@@ -1,0 +1,196 @@
+nano@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab1-ord05.mlab-oti.measurement-lab.org
+Avg. speed  :   456.2 Mbit/s
+download: complete
+upload in progress with ndt-mlab1-ord05.mlab-oti.measurement-lab.org
+Avg. speed  :    23.9 Mbit/s
+upload: complete
+         Server: ndt-mlab1-ord05.mlab-oti.measurement-lab.org
+         Client: 2601:240:c400:50a9:[REDACTED]
+        Latency:    26.7 ms
+       Download:   456.2 Mbit/s
+         Upload:    23.9 Mbit/s
+ Retransmission:    0.00 %
+nano@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab3-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :   464.4 Mbit/s
+download: complete
+upload in progress with ndt-mlab3-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :    23.6 Mbit/s
+upload: complete
+         Server: ndt-mlab3-ord06.mlab-oti.measurement-lab.org
+         Client: 2601:240:c400:50a9:[REDACTED]
+        Latency:     7.8 ms
+       Download:   464.4 Mbit/s
+         Upload:    23.6 Mbit/s
+ Retransmission:    0.00 %
+nano@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab3-ord02.mlab-oti.measurement-lab.org
+Avg. speed  :   461.1 Mbit/s
+download: complete
+upload in progress with ndt-mlab3-ord02.mlab-oti.measurement-lab.org
+Avg. speed  :    23.6 Mbit/s
+upload: complete
+         Server: ndt-mlab3-ord02.mlab-oti.measurement-lab.org
+         Client: 2601:240:c400:50a9:[REDACTED]
+        Latency:     7.1 ms
+       Download:   461.1 Mbit/s
+         Upload:    23.6 Mbit/s
+ Retransmission:    0.00 %
+nano@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ssh gmartins@192.168.144.22
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 4.9.140-tegra aarch64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+
+22 updates can be applied immediately.
+15 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Tue May 18 14:10:56 2021 from 192.168.144.1
+gmartins@appflow:~$ cd /usr/local/src/nm-exp-active-netrics/bin
+gmartins@appflow:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :   470.4 Mbit/s
+download: complete
+upload in progress with ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :    24.3 Mbit/s
+upload: complete
+         Server: ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     7.0 ms
+       Download:   470.4 Mbit/s
+         Upload:    24.3 Mbit/s
+ Retransmission:    0.01 %
+gmartins@appflow:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :   467.4 Mbit/s
+download: complete
+upload in progress with ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :    24.6 Mbit/s
+upload: complete
+         Server: ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     6.2 ms
+       Download:   467.4 Mbit/s
+         Upload:    24.6 Mbit/s
+ Retransmission:    0.01 %
+gmartins@appflow:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab1-ord04.mlab-oti.measurement-lab.org
+Avg. speed  :   469.9 Mbit/s
+download: complete
+upload in progress with ndt-mlab1-ord04.mlab-oti.measurement-lab.org
+Avg. speed  :    24.6 Mbit/s
+upload: complete
+         Server: ndt-mlab1-ord04.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     6.2 ms
+       Download:   469.9 Mbit/s
+         Upload:    24.6 Mbit/s
+ Retransmission:    0.07 %
+gmartins@appflow:/usr/local/src/nm-exp-active-netrics/bin$ logout
+Connection to 192.168.144.22 closed.
+nano@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ssh ubuntu@192.168.144.28
+ubuntu@192.168.144.28's password: 
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-1035-raspi aarch64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+ _   _      _        _
+| \ | | ___| |_ _ __(_) ___ ___
+|  \| |/ _ \ __| '__| |/ __/ __|
+| |\  |  __/ |_| |  | | (__\__ \ 
+|_| \_|\___|\__|_|  |_|\___|___/
+NetMicroscope / Ubuntu Netrics
+INFO: **** ID: nm-mngd-20210518-075ab2f0 ****
+INFO: Direct Data Ingestion (InfluxDB) enable: true
+INFO: Anonymous Data Ingestion (https) enable: false
+INFO: Managed Data Ingestion (Message Queue) enable: false
+
+
+  System information as of Thu May 20 16:27:14 UTC 2021
+
+  System load:  0.03              Temperature:           44.8 C
+  Usage of /:   46.7% of 6.98GB   Processes:             136
+  Memory usage: 5%                Users logged in:       0
+  Swap usage:   0%                IPv4 address for eth0: 192.168.144.28
+
+
+
+
+
+Last login: Thu May 20 16:11:27 2021 from 192.168.144.1
+ubuntu@netrics:~$ cd /usr/local/src/nm-exp-active-netrics/bin
+ubuntu@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab3-ord04.mlab-oti.measurement-lab.org
+Avg. speed  :   154.7 Mbit/s
+download: complete
+upload in progress with ndt-mlab3-ord04.mlab-oti.measurement-lab.org
+Avg. speed  :    24.9 Mbit/s
+upload: complete
+         Server: ndt-mlab3-ord04.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     5.8 ms
+       Download:   154.7 Mbit/s
+         Upload:    24.9 Mbit/s
+ Retransmission:    0.00 %
+ubuntu@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :   152.3 Mbit/s
+download: complete
+upload in progress with ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :    24.6 Mbit/s
+upload: complete
+         Server: ndt-mlab2-ord06.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     6.5 ms
+       Download:   152.3 Mbit/s
+         Upload:    24.6 Mbit/s
+ Retransmission:    0.00 %
+ubuntu@netrics:/usr/local/src/nm-exp-active-netrics/bin$ ./ndt7-client 
+download in progress with ndt-mlab3-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :   154.8 Mbit/s
+download: complete
+upload in progress with ndt-mlab3-ord06.mlab-oti.measurement-lab.org
+Avg. speed  :    24.7 Mbit/s
+upload: complete
+         Server: ndt-mlab3-ord06.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     6.5 ms
+       Download:   154.8 Mbit/s
+         Upload:    24.7 Mbit/s
+ Retransmission:    0.00 %
+ubuntu@netrics:/usr/local/src/nm-exp-active-netrics/bin$ cd ~/go/bin/
+ubuntu@netrics:~/go/bin$ ./ndt7-client 
+download in progress with ndt-mlab3-ord05.mlab-oti.measurement-lab.org
+Avg. speed  :   158.6 Mbit/s
+download: complete
+upload in progress with ndt-mlab3-ord05.mlab-oti.measurement-lab.org
+Avg. speed  :    24.7 Mbit/s
+upload: complete
+         Server: ndt-mlab3-ord05.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     6.2 ms
+       Download:   158.6 Mbit/s
+         Upload:    24.7 Mbit/s
+ Retransmission:    0.00 %
+ubuntu@netrics:~/go/bin$ ./ndt7-client 
+download in progress with ndt-mlab3-ord04.mlab-oti.measurement-lab.org
+Avg. speed  :   156.8 Mbit/s
+download: complete
+upload in progress with ndt-mlab3-ord04.mlab-oti.measurement-lab.org
+Avg. speed  :    24.5 Mbit/s
+upload: complete
+         Server: ndt-mlab3-ord04.mlab-oti.measurement-lab.org
+         Client: 73.36[REDACTED]..
+        Latency:     6.0 ms
+       Download:   156.8 Mbit/s
+         Upload:    24.5 Mbit/s
+ Retransmission:    0.00 %
+ubuntu@netrics:~/go/bin$ 
