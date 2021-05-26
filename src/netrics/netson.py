@@ -115,12 +115,12 @@ class Measurements:
             pktloss_ookla = res_json['packetLoss']
         self.update_max_speed(float(download_ookla), float(upload_ookla))
 
-        self.results["speedtest_ookla_download"] = download_ookla
-        self.results["speedtest_ookla_upload"] = upload_ookla
-        self.results["speedtest_ookla_jitter"] = jitter_ookla
-        self.results["speedtest_ookla_latency"] = latency_ookla
+        self.results["speedtest_ookla_download"] = float(download_ookla)
+        self.results["speedtest_ookla_upload"] = float(upload_ookla)
+        self.results["speedtest_ookla_jitter"] = float(jitter_ookla)
+        self.results["speedtest_ookla_latency"] = float(latency_ookla)
         if pktloss_ookla is not None:
-            self.results["speedtest_ookla_pktloss"] = pktloss_ookla
+            self.results["speedtest_ookla_pktloss2"] = float(pktloss_ookla)
 
         if not self.quiet:
             print('\n --- Ookla speed tests ---')
@@ -128,7 +128,7 @@ class Measurements:
             print(f'Upload:\t\t{upload_ookla} Mb/s')
             print(f'Latency:\t{latency_ookla} ms')
             print(f'Jitter:\t\t{jitter_ookla} ms')
-            print(f'PktLoss:\t{pktloss_ookla} Total Count')
+            print(f'PktLoss:\t{pktloss_ookla} rate')
         return res_json
 
     def speed_ndt7(self, run_test):
