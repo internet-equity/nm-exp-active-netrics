@@ -138,7 +138,7 @@ class Measurements:
             return
 
         # TODO: to account for errors/faults in the execution
-        output = Popen("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -quiet -format 'json'",
+        output = Popen("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -quiet -format 'json'",
                 shell=True, stdout=PIPE).stdout.read().decode('utf-8')
         res_json = json.loads(output)
 
