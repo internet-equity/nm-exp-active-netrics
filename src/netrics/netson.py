@@ -473,9 +473,8 @@ class Measurements:
                     bandwidth += 40
                     reverse = True
 
-            iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -u -i 0 -b {}M {} | grep {}"\
-                .format(client, port, bandwidth,
-                        '-R' if reverse else "", "receiver" if reverse else "sender")
+            iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -u -i 0 -b {}M {} | grep receiver"\
+                .format(client, port, bandwidth, '-R' if reverse else "")
             iperf_res = Popen(iperf_cmd, shell=True,
                               stdout=PIPE).stdout.read().decode('utf-8')
 
