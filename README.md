@@ -9,7 +9,17 @@ NetMicroscope Experiment - Active Measurements (AKA Netrics)
 
 ![Netrics Dashboard](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/docs/images/dashboard.png?raw=true)
 
-### 1.1 Source Code, Configuration and Data locations
+### 1.1 Hardware
+
+Netrics runs on dedicated SBC's (Single Board Computers) like the Raspberry Pi, NVIDIA Jetson Nano or any other Ubuntu [amd64](https://github.com/chicago-cdac/nm-exp-active-netrics/releases) compatible device. The active Netrics package (this repo) is mainly responsible for measurements that actively generate network traffic in order to assess network's performance metrics. As a complement to the active measurements, the [passive](https://github.com/chicago-cdac/nm-exp-passive-netrics) Netrics can produce network perfomance metrics from passively listening to the network. The latter does require complementary hardware in order to produce performance data.  
+
+|![Attached](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/docs/images/attached3.png?raw=true)|![Mirror](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/docs/images/mirror1.png?raw=true)|
+|:---:|:---:|
+<p align="center">
+    Figure 1. On the left, a Raspberry Pi simply connected to a modem's Ethernet port. On the right, a complementary wifi and switch are required to enable passive Netrics.
+</p>
+
+### 1.2 Source Code, Configuration and Data locations
 
 The python source code, after installed resides on:<br>
 `/usr/local/src/nm-exp-active-netrics/*`<br>
