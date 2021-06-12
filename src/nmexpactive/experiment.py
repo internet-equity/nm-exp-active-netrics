@@ -1,6 +1,6 @@
 from genericpath import exists
 import os, sys
-import logging, logging.handlers
+import logging, logging.handlers, re
 import traceback
 import toml
 import random
@@ -216,15 +216,18 @@ class NetMicroscopeControl:
             if loglines[i].find(b'WARN') != -1:
                 r['log_lines_warns'] += 1
         print("log_lines: {0}".format(r['log_lines']))
-        print("log_lines_error: {0}".format(r['log_lines_error']))
-        print("log_lines_warns: {0}".format(r['log_lines_warns']))
         log_from_cron = TMP_LOG / "log.txt"
         if Path(log_from_cron).exists():
-            cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+            cat_log_cmd = "cat {0}".format(log_from_cron)
             loglines = Popen(cat_log_cmd, shell=True,
                                 stdout=PIPE).stdout.readlines()
             r['log_lines_cron'] = len(loglines)
+            for i in range (0, len(loglines)):
+              if re.search(b'error', loglines[i],  re.IGNORECASE):
+                r['log_lines_error'] += 1
         print("log_lines_cron: {0}".format(r['log_lines_cron']))
+        print("log_lines_warns: {0}".format(r['log_lines_warns']))
+        print("log_lines_error: {0}".format(r['log_lines_error']))
         return r
 
 
