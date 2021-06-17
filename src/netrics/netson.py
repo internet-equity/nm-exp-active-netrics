@@ -328,7 +328,10 @@ class Measurements:
         tr_res_s = tr_res.strip().split(" ")
 
         if len(tr_res_s):
-            hops = int(tr_res_s[0])
+            try:
+                hops = int(tr_res_s[0])
+            except ValueError:
+                hops = -1
         else:
             hops = -1
 
@@ -337,7 +340,7 @@ class Measurements:
         if not self.quiet:
             print('\n --- Hops to Backbone ---')
             print(f'Hops: {self.results["hops_to_backbone"]}')
-        
+
         return tr_res
 
     def hops_to_target(self, site):
