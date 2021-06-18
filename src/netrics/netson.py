@@ -330,7 +330,8 @@ class Measurements:
         if len(tr_res_s):
             try:
                 hops = int(tr_res_s[0])
-            except ValueError:
+            except ValueError as ve:
+                log.warn("hops_to_backbone {}".format(ve))
                 hops = -1
         else:
             hops = -1
