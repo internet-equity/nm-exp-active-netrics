@@ -232,8 +232,10 @@ class NetMicroscopeControl:
 
 
     def save_str(self, data, cmd, topic = "default"):
-        p = UPLOAD_PENDING / topic / "out"
+        p = UPLOAD_PENDING / topic / "out" #active netrics won't touch ..../archive
+        a = UPLOAD_ARCHIVE / topic / "out" #but creating here regardless
         Path(p).mkdir(parents=True, exist_ok=True)
+        Path(a).mkdir(parents=True, exist_ok=True)
         d = datetime.now().strftime("nm_data_%Y%m%d_%H%M%S")
         d = "{0}_{1}.out".format(d, cmd)
         output = p / d
@@ -245,7 +247,9 @@ class NetMicroscopeControl:
 
     def save_pkl(self, data, cmd, topic = "default"):
         p = UPLOAD_PENDING / topic / "pkl"
+        a = UPLOAD_ARCHIVE / topic / "pkl"
         Path(p).mkdir(parents=True, exist_ok=True)
+        Path(a).mkdir(parents=True, exist_ok=True)
         d = datetime.now().strftime("nm_data_%Y%m%d_%H%M%S")
         d = "{0}_{1}.pkl".format(d, cmd)
         output = p / d
