@@ -485,8 +485,13 @@ class Measurements:
             measured_bw[direction] = iperf_res.split()[6]
             measured_jitter[direction] = iperf_res.split()[8]
 
+            """
+            Converting from MB to Mb. Iperf3 claims to report Mb but does not.
+            If iperf3 is updated, remove conversion from our code
+            """
+
             self.results[f'iperf_udp_{direction}'] = float(
-                measured_bw[direction])
+                measured_bw[direction]*8)
             self.results[f'iperf_udp_{direction}_jitter_ms'] = float(
                 measured_jitter[direction])
 
