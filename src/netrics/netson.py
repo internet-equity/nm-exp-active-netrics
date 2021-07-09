@@ -491,7 +491,7 @@ class Measurements:
             """
 
             self.results[f'iperf_udp_{direction}'] = float(
-                measured_bw[direction]*8)
+                measured_bw[direction])*8
             self.results[f'iperf_udp_{direction}_jitter_ms'] = float(
                 measured_jitter[direction])
 
