@@ -89,7 +89,7 @@ case "$1" in
 	    status_nma
     ;;
   *)
-    echo "Usage: /etc/init.d/cron-nm-exp-active-netrics {start|stop|restart|status}"
+    echo "Usage: /etc/init.d/nm-exp-active-netrics {start|stop|restart|status}"
     exit 0
     ;;
 esac
