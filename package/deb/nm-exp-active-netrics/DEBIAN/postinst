@@ -1,8 +1,15 @@
 #!/bin/bash
 
-echo "INFO: creating"
-addgroup --system netrics
-adduser --system --home /home/netrics --disabled-password --disabled-login --ingroup netrics netrics
+echo "INFO: creating user netrics"
+
+if id "netrics" &>/dev/null; then
+    echo 'INFO: user [netrics] found.'
+else
+    echo 'INFO: user [netrics] not found. Creating...'
+    addgroup --system netrics
+    adduser --system --home /home/netrics --disabled-password --disabled-login --ingroup netrics netrics
+fi
+
 usermod -a -G wireshark netrics
 
 echo "INFO: Please enable non-root users to run tshark wireshark. Eg.:"
