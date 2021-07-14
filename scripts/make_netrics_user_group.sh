@@ -5,5 +5,11 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-addgroup --system netrics
-adduser --system --no-create-home  --disabled-password --disabled-login --ingroup netrics netrics
+
+if id "netrics" &>/dev/null; then
+    echo 'INFO: user [netrics] found.'
+else
+    echo 'INFO: user [netrics] not found. Creating...'
+    addgroup --system netrics
+    adduser --system --home /home/netrics --disabled-password --disabled-login --ingroup netrics netrics
+fi
