@@ -9,7 +9,6 @@ from pathlib import Path
 import urllib, json
 import urllib.parse
 import urllib.request
-from datetime import datetime
 import pickle
 from subprocess import Popen, PIPE
 import getpass
@@ -231,12 +230,11 @@ class NetMicroscopeControl:
         return r
 
 
-    def save_json(self, data, cmd, topic = "default"):
+    def save_json(self, data, cmd, timenow, topic = "default"):
         p = UPLOAD_PENDING / topic / "json" #active netrics won't touch ..../archive
         a = UPLOAD_ARCHIVE / topic / "json" #but creating here regardless
         Path(p).mkdir(parents=True, exist_ok=True)
         Path(a).mkdir(parents=True, exist_ok=True)
-        timenow = datetime.now()
         epoch = timenow.timestamp()
         d = timenow.strftime("nm_data_%Y%m%d_%H%M%S")
         d = "{0}_{1}.json".format(d, cmd)
@@ -254,12 +252,12 @@ class NetMicroscopeControl:
             os.sync()
         log.info("pending {0}".format(output))
 
-    def save_pkl(self, data, cmd, topic = "default"):
+    def save_pkl(self, data, cmd, timenow, topic = "default"):
         p = UPLOAD_PENDING / topic / "pkl"
         a = UPLOAD_ARCHIVE / topic / "pkl"
         Path(p).mkdir(parents=True, exist_ok=True)
         Path(a).mkdir(parents=True, exist_ok=True)
-        d = datetime.now().strftime("nm_data_%Y%m%d_%H%M%S")
+        d = timenow.strftime("nm_data_%Y%m%d_%H%M%S")
         d = "{0}_{1}.pkl".format(d, cmd)
         output = p / d
         with open(output, 'wb') as f:
@@ -267,8 +265,3 @@ class NetMicroscopeControl:
             f.close()
             os.sync()
         log.info("pending {0}".format(output))
-                  
-
-
-
-        
