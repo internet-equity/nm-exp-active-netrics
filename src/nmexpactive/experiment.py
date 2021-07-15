@@ -231,16 +231,25 @@ class NetMicroscopeControl:
         return r
 
 
-    def save_str(self, data, cmd, topic = "default"):
-        p = UPLOAD_PENDING / topic / "out" #active netrics won't touch ..../archive
-        a = UPLOAD_ARCHIVE / topic / "out" #but creating here regardless
+    def save_json(self, data, cmd, topic = "default"):
+        p = UPLOAD_PENDING / topic / "json" #active netrics won't touch ..../archive
+        a = UPLOAD_ARCHIVE / topic / "json" #but creating here regardless
         Path(p).mkdir(parents=True, exist_ok=True)
         Path(a).mkdir(parents=True, exist_ok=True)
-        d = datetime.now().strftime("nm_data_%Y%m%d_%H%M%S")
-        d = "{0}_{1}.out".format(d, cmd)
+        timenow = datetime.now()
+        epoch = timenow.timestamp()
+        d = timenow.strftime("nm_data_%Y%m%d_%H%M%S")
+        d = "{0}_{1}.json".format(d, cmd)
+        final = {
+                    'Meta' : {
+                        'Id' : None,
+                        'Time' : epoch,
+                        },
+                    'Measurements' : data
+                }
         output = p / d
         with open(p / d, 'w') as f:
-            f.write("{}".format(data))
+            f.write("{}".format(json.dumps(final)))
             f.close()
             os.sync()
         log.info("pending {0}".format(output))

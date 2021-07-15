@@ -234,18 +234,22 @@ if args.check:
 log.info("Initializing.")
 test = Measurements(args, nma)
 
+
+""" Run IPv4v6 query"""
+output['ipquery']= test.ipquery()
+
 """ Run ookla speed test """
-output['ookla'] = test.speed_ookla(args.ookla)
+output['ookla'] = test.speed_ookla('ookla', args.ookla)
 
 """ Run ndt7 speed test """
-output['ndt7'] = test.speed_ndt7(args.ndt7)
+output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
 
 """ Run speed tests in sequence ookla/ndt7 """
 if args.speed:
-  output['ookla'], output['ndt7'] = test.speed()
+  output['ookla'], output['ndt7'] = test.speed('ookla', 'ndt7')
 
 """ Measure ping latency to list of websites """
-output['ping_latency'] = test.ping_latency(args.ping)
+output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
 
 """ Measure latency under load """
 if args.latency_under_load:
@@ -259,23 +263,23 @@ if args.latency_under_load:
   server = target.split(':')[0]
   port   = target.split(':')[1]
 
-  output['latency_under_load'] = test.latency_under_load(True, client = server, port = port)
+  output['latency_under_load'] = test.latency_under_load('latency_under_load', True, client = server, port = port)
 
 
 """ Measure DNS latency """
-output['dns_latency'] = test.dns_latency(args.dns)
+output['dns_latency'] = test.dns_latency('dns_latency', args.dns)
 
 """ Count hops to local backbone """
-output['hops_to_backbone'] = test.hops_to_backbone(args.backbone)
+output['hops_to_backbone'] = test.hops_to_backbone('hops_to_backbone', args.backbone)
 
 """ Count hops to target website """
-output['hops_to_target'] = test.hops_to_target(args.target)
+output['hops_to_target'] = test.hops_to_target('hops_to_target', args.target)
 
 """ Count number of devices on network """
-output['connected_devices_arp'] = test.connected_devices_arp(args.ndev)
+output['connected_devices_arp'] = test.connected_devices_arp('connected_devices_arp', args.ndev)
 
 """ Measure consumption using tshark. """
-output['tshark_eth_consumption'] = test.tshark_eth_consumption(args.tshark)
+output['tshark_eth_consumption'] = test.tshark_eth_consumption('tshark_eth_consumption', args.tshark)
 
 
 """ Run iperf3 bandwidth test """
@@ -288,13 +292,13 @@ if args.iperf:
   for target in nma.conf['iperf']['targets']:
     server=target.split(':')[0]
     port=target.split(':')[1]
-    output['iperf'] = test.iperf3_bandwidth(client=server, port=port)
+    output['iperf'] = test.iperf3_bandwidth('iperf', client=server, port=port)
 
 if not args.quiet:
   print(test.results)
   #print(output)
 
-nma.save_str(test.results, 'netrics_results')
+nma.save_json(test.results, 'netrics_results')
 nma.save_pkl(output, 'netrics_output')
 
 if args.upload:

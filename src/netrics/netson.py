@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 import time
 import re
 import json
-
+import urllib.request
 import os, sys, logging, traceback
 from pathlib import Path
 from tinydb import TinyDB, where
@@ -96,8 +96,30 @@ class Measurements:
 
         self.speed_db.update({'test': True})
 
-    def speed_ookla(self, run_test):
+    def ipquery(self, key="ipquery", run_test=True):
+        j4 = None
+        j6 = None
+        req = urllib.request.Request("https://api.ipify.org?format=json")
+        with urllib.request.urlopen(req) as response:
+            if response.getcode()!=200:
+                log.warn('Ip Query Unexpected:'+str(response.getcode()))
+            else:
+                j4 = json.loads(response.read().decode())
+        req = urllib.request.Request("https://api64.ipify.org?format=json")
+        with urllib.request.urlopen(req) as response:
+            if response.getcode()!=200:
+                log.warn('Ip Query Unexpected:'+str(response.getcode()))
+            else:
+                j6 = json.loads(response.read().decode())
+
+        if 'ip' in j4.keys(): j4 = j4['ip']
+        if 'ip' in j6.keys(): j6 = j6['ip']
+        self.results[key] = { 'ipv4': j4, 'ipv6': j6 }
+        return 
+
+    def speed_ookla(self, key, run_test):
         """ Test runs Ookla Speed test """
+        """ key: test name """
 
         if not run_test:
             return
@@ -115,12 +137,13 @@ class Measurements:
             pktloss_ookla = res_json['packetLoss']
         self.update_max_speed(float(download_ookla), float(upload_ookla))
 
-        self.results["speedtest_ookla_download"] = float(download_ookla)
-        self.results["speedtest_ookla_upload"] = float(upload_ookla)
-        self.results["speedtest_ookla_jitter"] = float(jitter_ookla)
-        self.results["speedtest_ookla_latency"] = float(latency_ookla)
+        self.results[key] = {}
+        self.results[key]["speedtest_ookla_download"] = float(download_ookla)
+        self.results[key]["speedtest_ookla_upload"] = float(upload_ookla)
+        self.results[key]["speedtest_ookla_jitter"] = float(jitter_ookla)
+        self.results[key]["speedtest_ookla_latency"] = float(latency_ookla)
         if pktloss_ookla is not None:
-            self.results["speedtest_ookla_pktloss2"] = float(pktloss_ookla)
+            self.results[key]["speedtest_ookla_pktloss2"] = float(pktloss_ookla)
 
         if not self.quiet:
             print('\n --- Ookla speed tests ---')
@@ -131,8 +154,9 @@ class Measurements:
             print(f'PktLoss:\t{pktloss_ookla} rate')
         return res_json
 
-    def speed_ndt7(self, run_test):
+    def speed_ndt7(self, key, run_test):
         """ Test runs NDT7 Speed test """
+        """ key: test name """
 
         if not run_test:
             return
@@ -147,10 +171,11 @@ class Measurements:
         download_retrans = float(res_json["DownloadRetrans"]["Value"])
         minrtt = res_json['MinRTT']['Value']
 
-        self.results["speedtest_ndt7_download"] = download_speed
-        self.results["speedtest_ndt7_upload"] = upload_speed
-        self.results["speedtest_ndt7_downloadretrans"] = download_retrans
-        self.results["speedtest_ndt7_minrtt"] = minrtt
+        self.results[key] = {}
+        self.results[key]["speedtest_ndt7_download"] = download_speed
+        self.results[key]["speedtest_ndt7_upload"] = upload_speed
+        self.results[key]["speedtest_ndt7_downloadretrans"] = download_retrans
+        self.results[key]["speedtest_ndt7_minrtt"] = minrtt
 
         if not self.quiet:
             print('\n --- NDT7 speed tests ---')
@@ -161,13 +186,16 @@ class Measurements:
  
         return res_json
 
-    def speed(self):
-        return self.speed_ookla(True), self.speed_ndt7(True)
+    def speed(self, key_ookla, key_ndt7):
+        """ Test runs Ookla and NDT7 Speed tests in sequence """
 
-    def ping_latency(self, run_test):
+        return self.speed_ookla(True, key_ookla), self.speed_ndt7(True, key_ndt7)
+
+    def ping_latency(self, key, run_test):
         """
         Method records ping latency to self.sites
         """
+        """ key: test name """
 
         if not run_test:
             return
@@ -191,11 +219,12 @@ class Measurements:
 
             label = self.labels[site]
 
-            self.results[label + "_packet_loss_pct"] = ping_pkt_loss
-            self.results[label + "_rtt_min_ms"] = ping_rtt_ms[0]
-            self.results[label + "_rtt_max_ms"] = ping_rtt_ms[2]
-            self.results[label + "_rtt_avg_ms"] = ping_rtt_ms[1]
-            self.results[label + "_rtt_mdev_ms"] = ping_rtt_ms[3]
+            self.results[key] = {}
+            self.results[key][label + "_packet_loss_pct"] = ping_pkt_loss
+            self.results[key][label + "_rtt_min_ms"] = ping_rtt_ms[0]
+            self.results[key][label + "_rtt_max_ms"] = ping_rtt_ms[2]
+            self.results[key][label + "_rtt_avg_ms"] = ping_rtt_ms[1]
+            self.results[key][label + "_rtt_mdev_ms"] = ping_rtt_ms[3]
 
             if not self.quiet:
                 print(f'\n --- {label} ping latency ---')
@@ -207,10 +236,11 @@ class Measurements:
         
         return ping_res
 
-    def latency_under_load(self, run_test, client, port):
+    def latency_under_load(self, key, run_test, client, port):
         """
         Method records ping latency under load to self.sites_load
         """
+        """ key: test name """
 
         if not run_test: return
         if not client:   return
@@ -250,11 +280,12 @@ class Measurements:
 
                 label = self.labels[site]
 
-                self.results[f"{label}_packet_loss_pct_under_{ul_dl}"] = ping_pkt_loss
-                self.results[f"{label}_rtt_min_ms_under_{ul_dl}"] = ping_rtt_ms[0]
-                self.results[f"{label}_rtt_max_ms_under_{ul_dl}"] = ping_rtt_ms[2]
-                self.results[f"{label}_rtt_avg_ms_under_{ul_dl}"] = ping_rtt_ms[1]
-                self.results[f"{label}_rtt_mdev_ms_under_{ul_dl}"] = ping_rtt_ms[3]
+                self.results[key] = {}
+                self.results[key][f"{label}_packet_loss_pct_under_{ul_dl}"] = ping_pkt_loss
+                self.results[key][f"{label}_rtt_min_ms_under_{ul_dl}"] = ping_rtt_ms[0]
+                self.results[key][f"{label}_rtt_max_ms_under_{ul_dl}"] = ping_rtt_ms[2]
+                self.results[key][f"{label}_rtt_avg_ms_under_{ul_dl}"] = ping_rtt_ms[1]
+                self.results[key][f"{label}_rtt_mdev_ms_under_{ul_dl}"] = ping_rtt_ms[3]
 
                 if not self.quiet:
                     print(f'\n --- {label} ping latency under load ---')
@@ -269,10 +300,11 @@ class Measurements:
         
         return ping_res
 
-    def dns_latency(self, run_test):
+    def dns_latency(self, key, run_test):
         """
         Method records dig latency for each site in self.sites
         """
+        """ key: test name """
 
         if not run_test:
             return
@@ -295,21 +327,23 @@ class Measurements:
                                  dig_res, re.MULTILINE)[0]
             dig_delays.append(int(dig_res_qt))
 
-        self.results["dns_query_avg_ms"] = sum(dig_delays) / len(dig_delays)
-        self.results["dns_query_max_ms"] = max(dig_delays)
+        self.results[key] = {}
+        self.results[key]["dns_query_avg_ms"] = sum(dig_delays) / len(dig_delays)
+        self.results[key]["dns_query_max_ms"] = max(dig_delays)
 
         if not self.quiet:
             print(f'\n --- DNS Delays (n = {len(dig_delays)}) ---')
-            print(f'Avg DNS Query Time: {self.results["dns_query_avg_ms"]} ms')
-            print(f'Max DNS Query Time: {self.results["dns_query_max_ms"]} ms')
+            print(f'Avg DNS Query Time: {self.results[key]["dns_query_avg_ms"]} ms')
+            print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
 
         return dig_res
 
-    def hops_to_backbone(self, run_test):
+    def hops_to_backbone(self, key, run_test):
         """
         Method counts hops to 'ibone', center that all data leaving Chicago
         travels through
         """
+        """ key: test name """
 
         if not run_test:
             return
@@ -336,7 +370,8 @@ class Measurements:
         else:
             hops = -1
 
-        self.results["hops_to_backbone"] = hops
+        self.results[key] = {}
+        self.results[key]["hops_to_backbone"] = hops
 
         if not self.quiet:
             print('\n --- Hops to Backbone ---')
@@ -344,10 +379,11 @@ class Measurements:
 
         return tr_res
 
-    def hops_to_target(self, site):
+    def hops_to_target(self, key, site):
         """
         Method counts the number of hops to the target site
         """
+        """ key: test name """
 
         if not site:
             return
@@ -372,18 +408,20 @@ class Measurements:
 
         label = self.labels[target]
 
-        self.results[f'hops_to_{label}'] = hops
+        self.results[key] = {}
+        self.results[key][f'hops_to_{label}'] = hops
 
         if not self.quiet:
             print('\n --- Hops to Target ---')
             print("Hops to {}: {}".format(target,
-                                          self.results[f'hops_to_{label}']))
+                                          self.results[key][f'hops_to_{label}']))
         return tr_res
 
-    def connected_devices_arp(self, run_test):
+    def connected_devices_arp(self, key, run_test):
         """
         Method counts the number of active devices on the network.
         """
+        """ key: test name """
 
 
         if not run_test:
@@ -433,27 +471,30 @@ class Measurements:
             where('last_seen') > (ts - 86400*7)))
 
         print(ndev_past_day)
-        self.results["devices_active"] = len(active_devices)
-        self.results["devices_total"] = self.dev_db.count(where('n') >= 1)
-        self.results["devices_1day"] = ndev_past_day
-        self.results["devices_1week"] = ndev_past_week
+
+        self.results[key] = {}
+        self.results[key]["devices_active"] = len(active_devices)
+        self.results[key]["devices_total"] = self.dev_db.count(where('n') >= 1)
+        self.results[key]["devices_1day"] = ndev_past_day
+        self.results[key]["devices_1week"] = ndev_past_week
 
         if not self.quiet:
             print('\n --- Number of Devices ---')
             print(f'Number of active devices: '
-                  f'{self.results["devices_active"]}')
+                  f'{self.results[key]["devices_active"]}')
             print(f'Number of total devices: '
-                  f'{self.results["devices_total"]}')
+                  f'{self.results[key]["devices_total"]}')
             print(f'Number of devices in last 1 day:'
-                  f' {self.results["devices_1day"]}')
+                  f' {self.results[key]["devices_1day"]}')
             print(f'Number of devices in last week:'
-                  f' {self.results["devices_1week"]}')
+                  f' {self.results[key]["devices_1week"]}')
         return res
 
-    def iperf3_bandwidth(self, client, port):
+    def iperf3_bandwidth(self, key, client, port):
         """
         Method for recorded results of iperf3 bandwidth tests
         """
+        """ key: test name """
 
         if not client:
             return
@@ -490,9 +531,10 @@ class Measurements:
             If iperf3 is updated, remove conversion from our code
             """
 
-            self.results[f'iperf_udp_{direction}'] = float(
+            self.results[key] = {}
+            self.results[key][f'iperf_udp_{direction}'] = float(
                 measured_bw[direction])*8
-            self.results[f'iperf_udp_{direction}_jitter_ms'] = float(
+            self.results[key][f'iperf_udp_{direction}_jitter_ms'] = float(
                 measured_jitter[direction])
 
             if not self.quiet:
@@ -507,7 +549,8 @@ class Measurements:
         return iperf_res
 
 
-    def tshark_eth_consumption(self, run_test, dur = 60):
+    def tshark_eth_consumption(self, key, run_test, dur = 60):
+        """ key: test name """
 
         if not run_test:
             return
@@ -546,8 +589,9 @@ class Measurements:
 
 
         # Converts bytes to Mbps
-        self.results["consumption_download"] = dl * 8 / 1e6 / duration
-        self.results["consumption_upload"]   = ul * 8 / 1e6 / duration
+        self.results[key] = {}
+        self.results[key]["consumption_download"] = dl * 8 / 1e6 / duration
+        self.results[key]["consumption_upload"]   = ul * 8 / 1e6 / duration
 
         return tshark_res
 
