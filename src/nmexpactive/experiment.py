@@ -12,6 +12,8 @@ import urllib.request
 import pickle
 from subprocess import Popen, PIPE
 import getpass
+from zipfile import ZipFile
+from io import BytesIO
 
 project = "netrics"
 
@@ -39,6 +41,8 @@ def which(pgm):
         p=os.path.join(p,pgm)
         if os.path.exists(p) and os.access(p,os.X_OK):
             return p
+
+
 
 class NetMicroscopeControl:
     global log
@@ -265,3 +269,26 @@ class NetMicroscopeControl:
             f.close()
             os.sync()
         log.info("pending {0}".format(output))
+
+    def save_zip(self, data, cmd, timenow, topic = "default"):
+        p = UPLOAD_PENDING / topic / "zip"
+        a = UPLOAD_ARCHIVE / topic / "zip"
+        Path(p).mkdir(parents=True, exist_ok=True)
+        Path(a).mkdir(parents=True, exist_ok=True)
+        s = timenow.strftime("nm_data_%Y%m%d_%H%M%S")
+        d = "{0}_{1}.zip".format(s, cmd)
+        output = p / d
+
+        in_memory = BytesIO()
+        zf = ZipFile(in_memory, mode="w")
+
+        for k in data.keys():
+           if data[k] is not None:
+               zf.writestr("{0}_{1}-{2}.out".format(s, cmd, k), data[k] 
+                   if isinstance(data[k], bytes) else "{}".format(data[k]).encode())
+        zf.close()
+        in_memory.seek(0)
+        data = in_memory.read()
+        with open(output,'wb') as out:
+           out.write(data)
+

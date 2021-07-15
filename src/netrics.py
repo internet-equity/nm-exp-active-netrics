@@ -300,7 +300,7 @@ if not args.quiet:
 
 timenow = datetime.now()
 nma.save_json(test.results, 'netrics_results', timenow)
-nma.save_pkl(output, 'netrics_output', timenow)
+nma.save_zip(output, 'netrics_output', timenow)
 
 if args.upload:
   upload(test.results, test.results)
