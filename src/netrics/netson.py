@@ -115,7 +115,7 @@ class Measurements:
         if 'ip' in j4.keys(): j4 = j4['ip']
         if 'ip' in j6.keys(): j6 = j6['ip']
         self.results[key] = { 'ipv4': j4, 'ipv6': j6 }
-        return 
+        return { 'ipv4': j4, 'ipv6': j6 } 
 
     def speed_ookla(self, key, run_test):
         """ Test runs Ookla Speed test """
