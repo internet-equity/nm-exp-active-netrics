@@ -24,9 +24,9 @@ Netrics runs on dedicated SBC's (Single Board Computers) like the Raspberry Pi, 
 The python source code, after installed resides on:<br>
 `/usr/local/src/nm-exp-active-netrics/*`<br>
 
-The data is located at:<br>
-`/tmp/nm/nm-exp-active-netrics/upload/pending/*` (pending upload),<br>
-`/tmp/nm/nm-exp-active-netrics/upload/archive/*` (uploaded, safe for deletion)<br>
+The local data (SBC storage) is located at:<br>
+`/var/nm/nm-exp-active-netrics/upload/pending/*` (pending upload),<br>
+`/var/nm/nm-exp-active-netrics/upload/archive/*` (uploaded, safe for deletion)<br>
 
 Configuration can be found at:<br>
 `/etc/nm-exp-active-netrics/*`
