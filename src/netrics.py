@@ -190,9 +190,16 @@ def upload(upload_results, measurements):
     creds = InfluxDBClient(host=server, port=port, username=username,
                 password=password, database=db, ssl=True, verify_ssl=True)
 
+    insert = {}
+    for m in measurements.keys():
+        if m != 'ipquery':
+            for k in measurements[m].keys():
+                insert[k] = measurements[m][k]
+    #print("{}".format(insert))
+
     ret = creds.write_points([{"measurement": "networks",
                          "tags"        : {"install": installid},
-                         "fields"      : measurements,
+                         "fields"      : insert,
                          "time"        : datetime.utcnow()}])
     if not ret:
         log.error("influxdb write_points return: false")
