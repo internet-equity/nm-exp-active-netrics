@@ -189,7 +189,7 @@ class Measurements:
     def speed(self, key_ookla, key_ndt7):
         """ Test runs Ookla and NDT7 Speed tests in sequence """
 
-        return self.speed_ookla(True, key_ookla), self.speed_ndt7(True, key_ndt7)
+        return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
 
     def ping_latency(self, key, run_test):
         """

@@ -60,8 +60,10 @@ else
   echo "INFO: NO env detected."
 fi
 
-mkdir /var/nm
-chown netrics:netrics /var/nm -R
+if [ ! -d "/var/nm" ]; then
+  mkdir /var/nm
+  chown netrics:netrics /var/nm -R
+fi
 
 chown netrics:netrics /etc/nm-exp-active-netrics/.env
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
