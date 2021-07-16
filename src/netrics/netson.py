@@ -202,6 +202,7 @@ class Measurements:
 
         ping_res = None
 
+        self.results[key] = {}
         for site in self.sites:
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
@@ -219,7 +220,6 @@ class Measurements:
 
             label = self.labels[site]
 
-            self.results[key] = {}
             self.results[key][label + "_packet_loss_pct"] = ping_pkt_loss
             self.results[key][label + "_rtt_min_ms"] = ping_rtt_ms[0]
             self.results[key][label + "_rtt_max_ms"] = ping_rtt_ms[2]
@@ -252,6 +252,7 @@ class Measurements:
 
         ping_res = None
 
+        self.results[key] = {}
         for upload in [True, False]:
 
             ul_dl = "ul" if upload else "dl"
@@ -280,7 +281,6 @@ class Measurements:
 
                 label = self.labels[site]
 
-                self.results[key] = {}
                 self.results[key][f"{label}_packet_loss_pct_under_{ul_dl}"] = ping_pkt_loss
                 self.results[key][f"{label}_rtt_min_ms_under_{ul_dl}"] = ping_rtt_ms[0]
                 self.results[key][f"{label}_rtt_max_ms_under_{ul_dl}"] = ping_rtt_ms[2]
@@ -507,6 +507,7 @@ class Measurements:
         measured_bw = {'upload': 0, 'download': 0}
         measured_jitter = {'upload': 0, 'download': 0}
 
+        self.results[key] = {}
         for direction, value in measured_bw.items():
             reverse = False
 
@@ -531,7 +532,6 @@ class Measurements:
             If iperf3 is updated, remove conversion from our code
             """
 
-            self.results[key] = {}
             self.results[key][f'iperf_udp_{direction}'] = float(
                 measured_bw[direction])*8
             self.results[key][f'iperf_udp_{direction}_jitter_ms'] = float(
