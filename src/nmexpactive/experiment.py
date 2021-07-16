@@ -23,14 +23,14 @@ projectname = "nm-exp-active-{0}".format(project)
 EXP = Path(projectname)
 ETC = Path("/etc") / EXP
 ETC_ENV = ETC / ".env"
-TMP_NM =  Path("/tmp/nm/")
-TMP = Path("/tmp/nm/") / EXP
-TMP_LOG = TMP / "log"
-TMP_LOG_FILE = TMP_LOG / (projectname + ".log")
-TMP_CACHE = TMP / "cache"
-TMP_UPLOAD = TMP / "upload"
-UPLOAD_PENDING = TMP_UPLOAD / "pending"
-UPLOAD_ARCHIVE = TMP_UPLOAD / "archive"
+VAR_NM =  Path("/var/nm/")
+VAR = Path("/var/nm/") / EXP
+VAR_LOG = VAR / "log"
+VAR_LOG_FILE = VAR_LOG / (projectname + ".log")
+VAR_CACHE = VAR / "cache"
+VAR_UPLOAD = VAR / "upload"
+UPLOAD_PENDING = VAR_UPLOAD / "pending"
+UPLOAD_ARCHIVE = VAR_UPLOAD / "archive"
 
 CFG = projectname + ".toml"
 ETC_CFG = ETC / CFG
@@ -52,10 +52,10 @@ class NetMicroscopeControl:
         if myuser != "netrics":
             print("WARN: running as {0}. Recommended: \"netrics\".".format(myuser))
         try:
-          Path(TMP_NM).mkdir(parents=True, exist_ok=True)
-          Path(TMP).mkdir(parents=True, exist_ok=True)
-          Path(TMP_LOG).mkdir(parents=True, exist_ok=True)
-          Path(TMP_UPLOAD).mkdir(parents=True, exist_ok=True)
+          Path(VAR_NM).mkdir(parents=True, exist_ok=True)
+          Path(VAR).mkdir(parents=True, exist_ok=True)
+          Path(VAR_LOG).mkdir(parents=True, exist_ok=True)
+          Path(VAR_UPLOAD).mkdir(parents=True, exist_ok=True)
           Path(UPLOAD_PENDING).mkdir(parents=True, exist_ok=True)
           Path(UPLOAD_ARCHIVE).mkdir(parents=True, exist_ok=True)
         except FileNotFoundError as fnfe:
@@ -67,11 +67,11 @@ class NetMicroscopeControl:
 
         logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', 
           datefmt='%Y-%m-%dT%H:%M:%S',
-          filename=TMP_LOG_FILE,
+          filename=VAR_LOG_FILE,
           #filemode='w', 
           level=logging.INFO)
 
-        handler = logging.handlers.TimedRotatingFileHandler(TMP_LOG_FILE,
+        handler = logging.handlers.TimedRotatingFileHandler(VAR_LOG_FILE,
                                        when="d",
                                        interval=1,
                                        backupCount=30)
@@ -104,9 +104,9 @@ class NetMicroscopeControl:
     def get_times(self):
         deployment = None
         deployment_etc = Path(ETC) / "deployment"
-        deployment_tmp = Path(TMP_CACHE) / "deployment"
+        deployment_var = Path(VAR_CACHE) / "deployment"
 
-        Path(TMP_CACHE).mkdir(parents=True, exist_ok=True)
+        Path(VAR_CACHE).mkdir(parents=True, exist_ok=True)
 
         if 'deployment' in self.conf.keys():
             deployment = self.conf['deployment']
@@ -114,8 +114,8 @@ class NetMicroscopeControl:
             with open(deployment_etc, 'r') as dfile:
                 deployment = dfile.read()
                 dfile.close()
-        elif deployment_tmp.exists():
-            with open(deployment_tmp, 'r') as dfile:
+        elif deployment_var.exists():
+            with open(deployment_var, 'r') as dfile:
                 deployment = dfile.read()
                 dfile.close()
 
@@ -131,8 +131,8 @@ class NetMicroscopeControl:
                 if deployment_etc.exists():
                     p = deployment_etc
                 else:
-                    p = deployment_tmp
-                netrics_json_path = Path(TMP_CACHE) / "netrics.json"
+                    p = deployment_var
+                netrics_json_path = Path(VAR_CACHE) / "netrics.json"
                 with open(netrics_json_path, 'w') as nj:
                     j = response.read().decode()
                     nj.write(j)
@@ -161,8 +161,8 @@ class NetMicroscopeControl:
                             else:
                                print("{0} {1}".format(k, i['times'][k]))
     def get_logs(self):
-        print("{0}\n...".format(TMP_LOG_FILE))
-        cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+        print("{0}\n...".format(VAR_LOG_FILE))
+        cat_log_cmd = "cat {0}".format(VAR_LOG_FILE)
         loglines = Popen(cat_log_cmd, shell=True,
                              stdout=PIPE).stdout.readlines()
         l = len(loglines)
@@ -170,9 +170,9 @@ class NetMicroscopeControl:
             for i in range(l - 10, l):
                 print(loglines[i].decode('utf-8'), end = '')
         
-        log_from_cron = TMP_LOG / "log.txt"
+        log_from_cron = VAR_LOG / "log.txt"
         if Path(log_from_cron).exists():
-            cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+            cat_log_cmd = "cat {0}".format(VAR_LOG_FILE)
             loglines = Popen(cat_log_cmd, shell=True,
                                 stdout=PIPE).stdout.readlines()
             l = len(loglines)
@@ -205,7 +205,7 @@ class NetMicroscopeControl:
         print("tshark: {0}".format((r['dig'], "OK") if r['tshark'] is not None else None))
         print("traceroute: {0}".format((r['traceroute'], "OK") if r['traceroute'] is not None else None))
         print("speedtest: {0}".format((r['speedtest'], "OK") if r['speedtest'] is not None else None))
-        cat_log_cmd = "cat {0}".format(TMP_LOG_FILE)
+        cat_log_cmd = "cat {0}".format(VAR_LOG_FILE)
         loglines = Popen(cat_log_cmd, shell=True,
                              stdout=PIPE).stdout.readlines()
         l = len(loglines)
@@ -219,7 +219,7 @@ class NetMicroscopeControl:
             if loglines[i].find(b'WARN') != -1:
                 r['log_lines_warns'] += 1
         print("log_lines: {0}".format(r['log_lines']))
-        log_from_cron = TMP_LOG / "log.txt"
+        log_from_cron = VAR_LOG / "log.txt"
         if Path(log_from_cron).exists():
             cat_log_cmd = "cat {0}".format(log_from_cron)
             loglines = Popen(cat_log_cmd, shell=True,
@@ -244,9 +244,9 @@ class NetMicroscopeControl:
         d = "{0}_{1}.json".format(d, cmd)
         final = {
                     'Meta' : {
-                        'Id' : None,
-                        'Time' : epoch,
-                        },
+                        'Id' : None,     ## active-netrics doesn't know its own id,
+                        'Time' : epoch,  ## out json should be updated by the collect pkg
+                        },               ## before it's sent to the server / backend
                     'Measurements' : data
                 }
         output = p / d
