@@ -20,17 +20,18 @@ if [ -f /etc/nm-exp-active-netrics/.env ];then
 fi
 
 
-if [ -d /tmp/nm/ ];then
-  chown netrics:netrics /tmp/nm/ -R
+if [ -d /var/nm/ ];then
+	mv /var/nm /var/nm.backup.$(date +"%Y%m%d")
 fi
+
+mkdir /var/nm/
+
 if [ -f /etc/nm-exp-active-netrics/.env ];then
 	chown netrics:netrics /etc/nm-exp-active-netrics/.env
 fi
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
-if [ -d /tmp/nm ]; then
-	mv /tmp/nm /tmp/nm.backup.$(date +"%Y%m%d")
-fi
 chmod +x /etc/init.d/nm-exp-active-netrics
 update-rc.d nm-exp-active-netrics defaults
 /etc/init.d/nm-exp-active-netrics restart
+chown netrics:netrics /var/nm/ -R
 /usr/local/bin/netrics -C
