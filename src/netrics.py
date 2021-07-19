@@ -308,7 +308,6 @@ if not args.quiet:
 timenow = datetime.now()
 nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'])
 nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
-
 if args.upload:
   upload(test.results, test.results)
 
