@@ -256,6 +256,7 @@ class NetMicroscopeControl:
             os.sync()
         log.info("pending {0}".format(output))
 
+    #@deprecated
     def save_pkl(self, data, cmd, timenow, topic = "default"):
         p = UPLOAD_PENDING / topic / "pkl"
         a = UPLOAD_ARCHIVE / topic / "pkl"
@@ -270,6 +271,15 @@ class NetMicroscopeControl:
             os.sync()
         log.info("pending {0}".format(output))
 
+    def save_zip_dict(self, s, cmd, k, zf, outdict, key):
+        for i in outdict.keys():
+            if isinstance(outdict[i], dict):
+                self.save_zip_dict(s, cmd, k, zf, outdict[i],  ("" if key == "" else key + "-") + i)
+            else:
+                data = outdict[i]
+                zf.writestr("{0}-{1}-{2}-{3}.out".format(s, cmd, k, ("" if key == "" else key + "-") + i), data
+                   if isinstance(data, bytes) else "{}".format(data).encode())
+
     def save_zip(self, data, cmd, timenow, topic = "default"):
         p = UPLOAD_PENDING / topic / "zip"
         a = UPLOAD_ARCHIVE / topic / "zip"
@@ -282,10 +292,15 @@ class NetMicroscopeControl:
         in_memory = BytesIO()
         zf = ZipFile(in_memory, mode="w")
 
+        token = ""
         for k in data.keys():
            if data[k] is not None:
-               zf.writestr("{0}_{1}-{2}.out".format(s, cmd, k), data[k] 
-                   if isinstance(data[k], bytes) else "{}".format(data[k]).encode())
+               if isinstance(data[k], dict):
+                   self.save_zip_dict(s, cmd, k, zf, data[k], "")
+               else:
+                   zf.writestr("{0}-{1}-{2}.out".format(s, cmd, k), data[k] 
+                        if isinstance(data[k], bytes) else "{}".format(data[k]).encode())
+
         zf.close()
         in_memory.seek(0)
         data = in_memory.read()

@@ -152,7 +152,7 @@ class Measurements:
             print(f'Latency:\t{latency_ookla} ms')
             print(f'Jitter:\t\t{jitter_ookla} ms')
             print(f'PktLoss:\t{pktloss_ookla} rate')
-        return res_json
+        return output #res_json
 
     def speed_ndt7(self, key, run_test):
         """ Test runs NDT7 Speed test """
@@ -184,7 +184,7 @@ class Measurements:
             print(f'DownloadRetrans:{download_retrans} %')
             print(f'MinRTT:\t\t{minrtt} ms')
  
-        return res_json
+        return output #res_json
 
     def speed(self, key_ookla, key_ndt7):
         """ Test runs Ookla and NDT7 Speed tests in sequence """
@@ -200,21 +200,21 @@ class Measurements:
         if not run_test:
             return
 
-        ping_res = None
+        ping_res = {}
 
         self.results[key] = {}
         for site in self.sites:
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
-            ping_res = Popen(ping_cmd, shell=True,
+            ping_res[site] = Popen(ping_cmd, shell=True,
                              stdout=PIPE).stdout.read().decode('utf-8')
 
             ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                             ping_res, re.MULTILINE)[0])
+                                             ping_res[site], re.MULTILINE)[0])
 
             ping_rtt_ms = re.findall(
                 'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                , ping_res)[0]
+                , ping_res[site])[0]
 
             ping_rtt_ms = [float(v) for v in ping_rtt_ms]
 
@@ -250,8 +250,7 @@ class Measurements:
         else:
             return
 
-        ping_res = None
-
+        ping_res = {}
         self.results[key] = {}
         for upload in [True, False]:
 
@@ -262,20 +261,23 @@ class Measurements:
 
             load += " > /dev/null & sleep 2 && echo starting ping && "
 
+            direction = "up" if upload else "dw"
+            ping_res[direction] = {} 
             for site in targets:
 
                 ping_cmd = "ping -i 0.25 -c 10 -w 5 {:s}".format(site)
                 
                 start = time.time()
-                ping_res = Popen(load + ping_cmd, shell=True,
+                direction = "up" if upload else "dw"
+                ping_res[direction][site] = Popen(load + ping_cmd, shell=True,
                                  stdout=PIPE).stdout.read().decode('utf-8')
 
                 ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                                 ping_res, re.MULTILINE)[0])
-
+                                                 ping_res[direction][site], re.MULTILINE)[0])
+                
                 ping_rtt_ms = re.findall(
                     'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                    , ping_res)[0]
+                    , ping_res[direction][site])[0]
 
                 ping_rtt_ms = [float(v) for v in ping_rtt_ms]
 
@@ -317,14 +319,14 @@ class Measurements:
             target = self.nma.conf['dns_latency']['target']
 
         dig_delays = []
-
+        dig_res = {}
         for site in self.sites:
             dig_cmd = f'dig @{target} {site}'
-            dig_res = Popen(dig_cmd, shell=True,
+            dig_res[site] = Popen(dig_cmd, shell=True,
                             stdout=PIPE).stdout.read().decode('utf-8')
 
             dig_res_qt = re.findall('Query time: ([0-9]*) msec',
-                                 dig_res, re.MULTILINE)[0]
+                                 dig_res[site], re.MULTILINE)[0]
             dig_delays.append(int(dig_res_qt))
 
         self.results[key] = {}
@@ -499,7 +501,7 @@ class Measurements:
         if not client:
             return
 
-        iperf_res = None
+        iperf_res = {}
 
         if self.nma.conf['databases']['tinydb_enable']:
             speed = self.speed_db.all()
@@ -521,11 +523,11 @@ class Measurements:
 
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -u -i 0 -b {}M {} -f Mbits | grep receiver"\
                 .format(client, port, bandwidth, '-R' if reverse else "")
-            iperf_res = Popen(iperf_cmd, shell=True,
+            iperf_res[direction] = Popen(iperf_cmd, shell=True,
                               stdout=PIPE).stdout.read().decode('utf-8')
 
-            measured_bw[direction] = iperf_res.split()[6]
-            measured_jitter[direction] = iperf_res.split()[8]
+            measured_bw[direction] = iperf_res[direction].split()[6]
+            measured_jitter[direction] = iperf_res[direction].split()[8]
 
             """
             Converting from MB to Mb. Iperf3 claims to report Mb but does not.
