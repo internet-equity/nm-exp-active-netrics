@@ -61,6 +61,12 @@ class Measurements:
         if not self.quiet:
             print("\n --- NETWORK MEASUREMENTS ---")
 
+    def popen_exec(self, cmd):
+        pipe = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        out = pipe.stdout.read().decode('utf-8')
+        err = pipe.stderr.read().decode('utf-8')
+        return out, err
+
     def update_sites(self, sites):
         """
         Method updates sites to visit during latency sites. Takes text file
@@ -124,9 +130,12 @@ class Measurements:
         if not run_test:
             return
 
-        # TODO: to account for errors/faults in the execution
-        output = Popen('/usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps',
-                shell=True, stdout=PIPE).stdout.read().decode('utf-8')
+        output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
+        if len(err) > 0:
+             print(f"ERROR: {err}")
+             log.error(err)
+             return None
+
         res_json = json.loads(output)
         download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
         upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
@@ -161,9 +170,12 @@ class Measurements:
         if not run_test:
             return
 
-        # TODO: to account for errors/faults in the execution
-        output = Popen("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -quiet -format 'json'",
-                shell=True, stdout=PIPE).stdout.read().decode('utf-8')
+        output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -quiet -format 'json'")
+        if len(err) > 0:
+             print(f"ERROR: {err}")
+             log.error(err)
+             return None
+
         res_json = json.loads(output)
 
         download_speed = res_json["Download"]["Value"]
@@ -206,8 +218,12 @@ class Measurements:
         for site in self.sites:
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
-            ping_res[site] = Popen(ping_cmd, shell=True,
-                             stdout=PIPE).stdout.read().decode('utf-8')
+
+            ping_res[site], err = self.popen_exec(ping_cmd)
+            if len(err) > 0:
+                print(f"ERROR: {err}")
+                log.error(err)
+                return None
 
             ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
                                              ping_res[site], re.MULTILINE)[0])
@@ -269,8 +285,11 @@ class Measurements:
                 
                 start = time.time()
                 direction = "up" if upload else "dw"
-                ping_res[direction][site] = Popen(load + ping_cmd, shell=True,
-                                 stdout=PIPE).stdout.read().decode('utf-8')
+                ping_res[direction][site], err = self.popen_exec(load + ping_cmd)
+                if len(err) > 0:
+                    print(f"ERROR: {err}")
+                    log.error(err)
+                    return None
 
                 ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
                                                  ping_res[direction][site], re.MULTILINE)[0])
@@ -322,8 +341,12 @@ class Measurements:
         dig_res = {}
         for site in self.sites:
             dig_cmd = f'dig @{target} {site}'
-            dig_res[site] = Popen(dig_cmd, shell=True,
-                            stdout=PIPE).stdout.read().decode('utf-8')
+            dig_res[site], err = self.popen_exec(dig_cmd)
+            if len(err) > 0:
+               print(f"ERROR: {err}")
+               log.error(err)
+               return None
+
 
             dig_res_qt = re.findall('Query time: ([0-9]*) msec',
                                  dig_res[site], re.MULTILINE)[0]
@@ -358,8 +381,11 @@ class Measurements:
             target = self.nma.conf['hops_to_backbone']['target']
 
         tr_cmd = 'traceroute -m 15 -N 32 -w3 {0} | grep -m 1 ibone'.format(target)
-        tr_res = Popen(tr_cmd, shell=True,
-                       stdout=PIPE).stdout.read().decode('utf-8')
+        tr_res, err = self.popen_exec(tr_cmd)
+        if len(err) > 0:
+            print(f"ERROR: {err}")
+            log.error(err)
+            return None
 
         tr_res_s = tr_res.strip().split(" ")
 
@@ -398,8 +424,11 @@ class Measurements:
             target = self.nma.conf['hops_to_target']['target']
 
         tr_cmd = f'traceroute -m 20 -q 5 -w 2 {target} | tail -1 | awk "{{print $1}}"'
-        tr_res = Popen(tr_cmd, shell=True,
-                       stdout=PIPE).stdout.read().decode('utf-8')
+        tr_res, err = self.popen_exec(tr_cmd)
+        if len(err) > 0:
+            print(f"ERROR: {err}")
+            log.error(err)
+            return None
 
         tr_res_s = tr_res.strip().split(" ")
 
@@ -448,8 +477,12 @@ class Measurements:
                    "grep -v '_gateway' | tr -s ' ' | "
                    "cut -f3 -d' ' | sort | uniq")
 
-        arp_res = Popen(arp_cmd, shell=True,
-                        stdout=PIPE).stdout.read().decode('utf-8')
+        arp_res, err = self.popen_exec(arp_cmd)
+        if len(err) > 0:
+            print(f"ERROR: {err}")
+            log.error(err)
+            return None
+
         res['arp'] = arp_res
 
         devices = set(arp_res.strip().split("\n"))
@@ -523,8 +556,12 @@ class Measurements:
 
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -u -i 0 -b {}M {} -f Mbits | grep receiver"\
                 .format(client, port, bandwidth, '-R' if reverse else "")
-            iperf_res[direction] = Popen(iperf_cmd, shell=True,
-                              stdout=PIPE).stdout.read().decode('utf-8')
+
+            iperf_res[direction], err = self.popen_exec(iperf_cmd)
+            if len(err) > 0:
+                print(f"ERROR: {err}")
+                log.error(err)
+                return None
 
             measured_bw[direction] = iperf_res[direction].split()[6]
             measured_jitter[direction] = iperf_res[direction].split()[8]
