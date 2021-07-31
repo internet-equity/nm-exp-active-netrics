@@ -105,23 +105,29 @@ class Measurements:
     def ipquery(self, key="ipquery", run_test=True):
         j4 = None
         j6 = None
-        req = urllib.request.Request("https://api.ipify.org?format=json")
-        with urllib.request.urlopen(req) as response:
-            if response.getcode()!=200:
+        try:
+           req = urllib.request.Request("https://api.ipify.org?format=json")
+           with urllib.request.urlopen(req) as response:
+             if response.getcode()!=200:
                 log.warn('Ip Query Unexpected:'+str(response.getcode()))
-            else:
+             else:
                 j4 = json.loads(response.read().decode())
-        req = urllib.request.Request("https://api64.ipify.org?format=json")
-        with urllib.request.urlopen(req) as response:
-            if response.getcode()!=200:
+           req = urllib.request.Request("https://api64.ipify.org?format=json")
+           with urllib.request.urlopen(req) as response:
+             if response.getcode()!=200:
                 log.warn('Ip Query Unexpected:'+str(response.getcode()))
-            else:
+             else:
                 j6 = json.loads(response.read().decode())
 
-        if 'ip' in j4.keys(): j4 = j4['ip']
-        if 'ip' in j6.keys(): j6 = j6['ip']
-        self.results[key] = { 'ipv4': j4, 'ipv6': j6 }
-        return { 'ipv4': j4, 'ipv6': j6 } 
+           if 'ip' in j4.keys(): j4 = j4['ip']
+           if 'ip' in j6.keys(): j6 = j6['ip']
+           self.results[key] = { 'ipv4': j4, 'ipv6': j6 }
+        except Exception as err:
+           self.results[key] = { 'error': f'{err}' }
+        res = { 'ipv4': j4, 'ipv6': j6 }
+        if 'error' in self.results[key].keys():
+           res = { 'error': self.results[key]['error'] }
+        return res
 
     def speed_ookla(self, key, run_test):
         """ Test runs Ookla Speed test """
@@ -132,9 +138,10 @@ class Measurements:
 
         output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
         if len(err) > 0:
+             self.results[key]["error"] = f'{err}'
              print(f"ERROR: {err}")
              log.error(err)
-             return None
+             return f'{err}'
 
         res_json = json.loads(output)
         download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
@@ -172,9 +179,10 @@ class Measurements:
 
         output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -quiet -format 'json'")
         if len(err) > 0:
+             self.results[key]["error"] = f'{err}'
              print(f"ERROR: {err}")
              log.error(err)
-             return None
+             return f'{err}'
 
         res_json = json.loads(output)
 
@@ -209,32 +217,44 @@ class Measurements:
         """
         """ key: test name """
 
-        if not run_test:
-            return
+        ###
+        # WARNING: this test is mandatory, for Chicago Deployment
+        ##
+
+        #if not run_test:
+        #    return
 
         ping_res = {}
+        error_found = False
 
         self.results[key] = {}
         for site in self.sites:
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
 
-            ping_res[site], err = self.popen_exec(ping_cmd)
+            try:
+                label = self.labels[site]
+            except KeyError:
+                label = site
+
+            ping_res[label] = {}
+
+            ping_res[label], err = self.popen_exec(ping_cmd)
             if len(err) > 0:
                 print(f"ERROR: {err}")
                 log.error(err)
-                return None
-
+                self.results[key][label + "_error"] = f'{err}'
+                ping_res[label] = { 'error' : f'{err}' }
+                error_found = True
+                continue
             ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                             ping_res[site], re.MULTILINE)[0])
+                                             ping_res[label], re.MULTILINE)[0])
 
             ping_rtt_ms = re.findall(
                 'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                , ping_res[site])[0]
+                , ping_res[label])[0]
 
             ping_rtt_ms = [float(v) for v in ping_rtt_ms]
-
-            label = self.labels[site]
 
             self.results[key][label + "_packet_loss_pct"] = ping_pkt_loss
             self.results[key][label + "_rtt_min_ms"] = ping_rtt_ms[0]
@@ -243,13 +263,14 @@ class Measurements:
             self.results[key][label + "_rtt_mdev_ms"] = ping_rtt_ms[3]
 
             if not self.quiet:
-                print(f'\n --- {label} ping latency ---')
+                print(f'\n --- {label} ping latency (MANDATORY) ---')
                 print(f'Packet Loss: {ping_pkt_loss}%')
                 print(f'Average RTT: {ping_rtt_ms[0]} (ms)')
                 print(f'Minimum RTT: {ping_rtt_ms[1]} (ms)')
                 print(f'Maximum RTT: {ping_rtt_ms[2]} (ms)')
                 print(f'RTT Std Dev: {ping_rtt_ms[3]} (ms)')
         
+        self.results[key]["error"] = error_found
         return ping_res
 
     def latency_under_load(self, key, run_test, client, port):
@@ -268,6 +289,9 @@ class Measurements:
 
         ping_res = {}
         self.results[key] = {}
+
+        error_found = False
+
         for upload in [True, False]:
 
             ul_dl = "ul" if upload else "dl"
@@ -277,30 +301,35 @@ class Measurements:
 
             load += " > /dev/null & sleep 2 && echo starting ping && "
 
-            direction = "up" if upload else "dw"
+            direction = ul_dl
             ping_res[direction] = {} 
             for site in targets:
+
+                try:
+                  label = self.labels[site]
+                except KeyError:
+                  label = site
 
                 ping_cmd = "ping -i 0.25 -c 10 -w 5 {:s}".format(site)
                 
                 start = time.time()
-                direction = "up" if upload else "dw"
-                ping_res[direction][site], err = self.popen_exec(load + ping_cmd)
+                ping_res[direction][label], err = self.popen_exec(load + ping_cmd)
                 if len(err) > 0:
                     print(f"ERROR: {err}")
                     log.error(err)
-                    return None
+                    self.results[key][f'{label}_{ul_dl}_error'] = f'{err}'
+                    ping_res[direction][label] = { 'error': f'{err}' }
+                    error_found = True
+                    continue
 
                 ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                                 ping_res[direction][site], re.MULTILINE)[0])
+                                                 ping_res[direction][label], re.MULTILINE)[0])
                 
                 ping_rtt_ms = re.findall(
                     'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                    , ping_res[direction][site])[0]
+                    , ping_res[direction][label])[0]
 
                 ping_rtt_ms = [float(v) for v in ping_rtt_ms]
-
-                label = self.labels[site]
 
                 self.results[key][f"{label}_packet_loss_pct_under_{ul_dl}"] = ping_pkt_loss
                 self.results[key][f"{label}_rtt_min_ms_under_{ul_dl}"] = ping_rtt_ms[0]
@@ -318,7 +347,8 @@ class Measurements:
 
                 if (time.time() - start) < 11:
                     time.sleep(11 - (time.time() - start))
-        
+
+        self.results[key]['error'] = error_found
         return ping_res
 
     def dns_latency(self, key, run_test):
@@ -331,7 +361,7 @@ class Measurements:
             return
 
         dig_res = None
-
+        error_found = False
         target = '8.8.8.8'
 
         if 'target' in self.nma.conf['dns_latency'].keys():
@@ -340,21 +370,30 @@ class Measurements:
         dig_delays = []
         dig_res = {}
         for site in self.sites:
+
+            try:
+               label = self.labels[site]
+            except KeyError:
+               label = site
+
             dig_cmd = f'dig @{target} {site}'
-            dig_res[site], err = self.popen_exec(dig_cmd)
+            dig_res[label], err = self.popen_exec(dig_cmd)
             if len(err) > 0:
                print(f"ERROR: {err}")
+               self.results[key][f'{label}_error'] = f'{err}'
+               dir_res[label] = { 'error': f'{err}' }
                log.error(err)
-               return None
-
+               error_found = True
+               continue
 
             dig_res_qt = re.findall('Query time: ([0-9]*) msec',
-                                 dig_res[site], re.MULTILINE)[0]
+                                 dig_res[label], re.MULTILINE)[0]
             dig_delays.append(int(dig_res_qt))
 
         self.results[key] = {}
         self.results[key]["dns_query_avg_ms"] = sum(dig_delays) / len(dig_delays)
         self.results[key]["dns_query_max_ms"] = max(dig_delays)
+        self.results[key]["error"] = error_found
 
         if not self.quiet:
             print(f'\n --- DNS Delays (n = {len(dig_delays)}) ---')
@@ -418,17 +457,25 @@ class Measurements:
 
         tr_res = None
 
+        self.results[key] = {}
         target = 'www.google.com'
 
         if 'target' in self.nma.conf['hops_to_target']:
             target = self.nma.conf['hops_to_target']['target']
+
+        try:
+            label = self.labels[target]
+        except KeyError:
+            label = target
 
         tr_cmd = f'traceroute -m 20 -q 5 -w 2 {target} | tail -1 | awk "{{print $1}}"'
         tr_res, err = self.popen_exec(tr_cmd)
         if len(err) > 0:
             print(f"ERROR: {err}")
             log.error(err)
-            return None
+            self.results[key]['error'] = f'{err}'
+            tr_res = { f'{label}': tr_res, 'error' : f'{err}' }
+            return tr_res
 
         tr_res_s = tr_res.strip().split(" ")
 
@@ -437,9 +484,6 @@ class Measurements:
         if len(tr_res_s):
             hops = int(tr_res_s[0])
 
-        label = self.labels[target]
-
-        self.results[key] = {}
         self.results[key][f'hops_to_{label}'] = hops
 
         if not self.quiet:
@@ -560,8 +604,10 @@ class Measurements:
             iperf_res[direction], err = self.popen_exec(iperf_cmd)
             if len(err) > 0:
                 print(f"ERROR: {err}")
+                self.results[key]['error'] = f'{err}'
+                iperf_res = { f'client' :  iperf_res, 'error' : err }
                 log.error(err)
-                return None
+                return iperf_res
 
             measured_bw[direction] = iperf_res[direction].split()[6]
             measured_jitter[direction] = iperf_res[direction].split()[8]

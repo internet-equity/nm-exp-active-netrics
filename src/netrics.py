@@ -63,8 +63,6 @@ def build_parser():
     parser.add_argument(
             '-b', '--backbone',
             default=False,
-            #const='www.google.com',
-            #nargs='?',
             action='store_true',
             help='Count hops to Chicago backbone (ibone)'
     )
@@ -72,8 +70,6 @@ def build_parser():
     parser.add_argument(
             '-t', '--target',
             default=False,
-            #const='www.google.com',
-            #nargs='?',
             action='store_true',
             help='Count hops to target website'
     )
@@ -103,15 +99,13 @@ def build_parser():
             '-s', '--speed',
             default=False,
             action='store_true',
-            help='Measure up/down network throughput using all supported tools NDT7 and Ookla (in sequence)'
+            help='Measure up/down network throughput using supported tools NDT7 and Ookla (in sequence)'
     )
 
     parser.add_argument(
             '-i', '--iperf',
-            #default=[False, False],    #conf moved to toml
-            #nargs = 2,                 #conf moved to toml
             action='store_true',
-            help='Measure connection with remote server. Needs [client] [port]',
+            help='Measure up/down UDP throughout using standard iperf3',
     )
 
     parser.add_argument(
@@ -119,7 +113,7 @@ def build_parser():
             #default=[False, False],    #conf moved to toml
             #nargs = 2,                 #conf moved to toml
             action='store_true',
-            help='Measure on-going consumption using tshark'
+            help='Measure on-going consumption using tshark (Passive HW setup required)'
     )
 
     parser.add_argument(
@@ -152,13 +146,12 @@ def build_parser():
             help='Tail logs and generate summary'
     )
 
-
     ## Non-test
     parser.add_argument(
             '-C', '--check',
             default=False,
             action='store_true',
-            help='Check dependencies and overall health parameters.'
+            help='Check dependencies and overall health parameters'
     )
 
     return parser
