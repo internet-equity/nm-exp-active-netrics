@@ -6,6 +6,7 @@ from subprocess import Popen, PIPE
 import time
 import re
 import json
+import random
 import urllib.request
 import os, sys, logging, traceback
 from pathlib import Path
@@ -206,9 +207,25 @@ class Measurements:
  
         return output #res_json
 
-    def speed(self, key_ookla, key_ndt7):
-        """ Test runs Ookla and NDT7 Speed tests in sequence """
+    def bandwidth_test_stochastic_limit(self, measured_down = 5, max_monthly_consumption_gb = 200,
+                                          max_monthly_tests = 200):
+       max_speed = self.speed_db.all()
+       speed = max(measured_down, max_speed[0]['download'])  ## should be MBs.
+       # This assumes 1GB per test, for a gig link.
+       # The factor of 4 is for ndt7, iperf3, speedtest, and latency under load
+       monthly_tests = (max_monthly_consumption_gb / 4) * (1000 / speed)
+       if monthly_tests > max_monthly_tests: 
+           monthly_tests = max_monthly_tests
+       run_test =  monthly_tests / (24 * 30) > random.random()
+       return run_test
 
+    def speed(self, key_ookla, key_ndt7, limit_consumption):
+        """ Test runs Ookla and NDT7 Speed tests in sequence """
+        if limit_consumption:
+            if not self.bandwidth_test_stochastic_limit():
+                log.info("limit_consumption applied, skipping test: speedtest")
+                print("limit_consumption applied, skipping test: speedtest")
+                return None, None
         return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
 
     def ping_latency(self, key, run_test):
@@ -569,7 +586,7 @@ class Measurements:
                   f' {self.results[key]["devices_1week"]}')
         return res
 
-    def iperf3_bandwidth(self, key, client, port):
+    def iperf3_bandwidth(self, key, client, port, limit):
         """
         Method for recorded results of iperf3 bandwidth tests
         """
@@ -577,6 +594,12 @@ class Measurements:
 
         if not client:
             return
+
+        if limit:
+            if not self.bandwidth_test_stochastic_limit():
+                log.info("limit_consumption applied, skipping test: iperf")
+                print("limit_consumption applied, skipping test: iperf")
+                return
 
         iperf_res = {}
 

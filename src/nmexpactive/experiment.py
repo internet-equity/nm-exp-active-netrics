@@ -298,7 +298,8 @@ class NetMicroscopeControl:
                if isinstance(data[k], dict):
                    self.save_zip_dict(s, cmd, k, zf, data[k], "")
                else:
-                   zf.writestr("{0}-{1}-{2}.out".format(s, cmd, k), data[k] 
+                   if len(data[k]) > 0:
+                     zf.writestr("{0}-{1}-{2}.out".format(s, cmd, k), data[k] 
                         if isinstance(data[k], bytes) else "{}".format(data[k]).encode())
 
         zf.close()

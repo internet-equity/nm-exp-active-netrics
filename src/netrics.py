@@ -117,10 +117,10 @@ def build_parser():
     )
 
     parser.add_argument(
-            '-f', '--sites',
-            default=None,
-            action='store',
-            help='Text file containing sites to visit during test'
+            '--limit-consumption',
+            default=False,
+            action='store_true',
+            help='Apply stochastic limit to bandwidth tests'
     )
 
     parser.add_argument(
@@ -238,6 +238,9 @@ test = Measurements(args, nma)
 """ Run IPv4v6 query"""
 output['ipquery']= test.ipquery()
 
+""" Measure ping latency to list of websites """
+output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
+
 """ Run ookla speed test """
 output['ookla'] = test.speed_ookla('ookla', args.ookla)
 
@@ -246,10 +249,7 @@ output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
 
 """ Run speed tests in sequence ookla/ndt7 """
 if args.speed:
-  output['ookla'], output['ndt7'] = test.speed('ookla', 'ndt7')
-
-""" Measure ping latency to list of websites """
-output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
+  output['ookla'], output['ndt7'] = test.speed('ookla', 'ndt7', args.limit_consumption)
 
 """ Measure latency under load """
 if args.latency_under_load:
@@ -263,7 +263,9 @@ if args.latency_under_load:
   server = target.split(':')[0]
   port   = target.split(':')[1]
 
-  output['latency_under_load'] = test.latency_under_load('latency_under_load', True, client = server, port = port)
+  output['latency_under_load'] = test.latency_under_load('latency_under_load', True,
+          client = server,
+          port = port)
 
 
 """ Measure DNS latency """
@@ -292,11 +294,11 @@ if args.iperf:
   for target in nma.conf['iperf']['targets']:
     server=target.split(':')[0]
     port=target.split(':')[1]
-    output['iperf'] = test.iperf3_bandwidth('iperf', client=server, port=port)
+    output['iperf'] = test.iperf3_bandwidth('iperf', client=server, port=port,
+            limit=args.limit_consumption)
 
 if not args.quiet:
   print(test.results)
-  #print(output)
 
 timenow = datetime.now()
 nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'])
