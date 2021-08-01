@@ -215,8 +215,10 @@ class NetMicroscopeControl:
         r['log_lines_warns'] = 0
         for i in range(0, l):
             if loglines[i].find(b'ERROR') != -1:
+                print(f"ERROR in {VAR_LOG_FILE}: {loglines[i]})")
                 r['log_lines_error'] += 1
             if loglines[i].find(b'WARN') != -1:
+                print(f"WARNING in {VAR_LOG_FILE}: {loglines[i]})")
                 r['log_lines_warns'] += 1
         print("log_lines: {0}".format(r['log_lines']))
         log_from_cron = VAR_LOG / "log.txt"
@@ -227,7 +229,11 @@ class NetMicroscopeControl:
             r['log_lines_cron'] = len(loglines)
             for i in range (0, len(loglines)):
               if re.search(b'error', loglines[i],  re.IGNORECASE):
-                r['log_lines_error'] += 1
+                if re.search(b'error\': False', loglines[i],  re.IGNORECASE):
+                    continue
+                else:
+                    print(f"ERROR in log.txt: {loglines[i]})")
+                    r['log_lines_error'] += 1
         print("log_lines_cron: {0}".format(r['log_lines_cron']))
         print("log_lines_warns: {0}".format(r['log_lines_warns']))
         print("log_lines_error: {0}".format(r['log_lines_error']))
