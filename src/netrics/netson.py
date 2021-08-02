@@ -217,6 +217,7 @@ class Measurements:
        if monthly_tests > max_monthly_tests: 
            monthly_tests = max_monthly_tests
        run_test =  monthly_tests / (24 * 30) > random.random()
+       print ("bandwidth_test_stochastic_limit: {0} > {1} (speed: {2})".format(monthly_tests / (24 * 30), random.random(), speed))
        return run_test
 
     def speed(self, key_ookla, key_ndt7, limit_consumption):
