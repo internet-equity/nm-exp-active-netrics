@@ -31,6 +31,21 @@ class Measurements:
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
 
+        self.measured_down = 5
+        self.max_monthly_consumption_gb = 200
+        self.max_monthly_tests = 200
+
+        if 'limit_consumption' in self.nma.conf.keys():
+            if 'measured_down' in self.nma.conf['limit_consumption']:
+                if self.nma.conf['limit_consumption']['measured_down'] > 0:
+                    self.measured_down = self.nma.conf['limit_consumption']['measured_down']
+            if 'max_monthly_consumption_gb' in self.nma.conf['limit_consumption']:
+                if self.nma.conf['limit_consumption']['max_monthly_consumption_gb'] > 0:
+                    self.max_monthly_consumption_gb = self.nma.conf['limit_consumption']['max_monthly_consumption_gb']
+            if 'max_monthly_tests' in self.nma.conf['limit_consumption']:
+                if self.nma.conf['limit_consumption']['max_monthly_tests'] > 0:
+                    self.max_monthly_tests = self.nma.conf['limit_consumption']['max_monthly_tests']
+
         if self.nma.conf['databases']['tinydb_enable']:
             try:
                 Path(Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'])).mkdir(parents=True, exist_ok=True)
@@ -217,13 +232,18 @@ class Measurements:
        if monthly_tests > max_monthly_tests: 
            monthly_tests = max_monthly_tests
        run_test =  monthly_tests / (24 * 30) > random.random()
-       print ("bandwidth_test_stochastic_limit: {0} > {1} (speed: {2})".format(monthly_tests / (24 * 30), random.random(), speed))
+       print ("bandwidth_test_stochastic_limit: measured_down={0}, max_monthly_consumption_gb={1}, "\
+               "max_monthly_tests={2}".format(measured_down, max_monthly_consumption_gb, max_monthly_tests))
+       print ("bandwidth_test_stochastic_limit: {0} > {1} (speed: {2})"\
+               .format(monthly_tests / (24 * 30), random.random(), speed))
        return run_test
 
     def speed(self, key_ookla, key_ndt7, limit_consumption):
         """ Test runs Ookla and NDT7 Speed tests in sequence """
         if limit_consumption:
-            if not self.bandwidth_test_stochastic_limit():
+            if not self.bandwidth_test_stochastic_limit(measured_down = self.measured_down,
+                    max_monthly_consumption_gb = self.max_monthly_consumption_gb,
+                    max_monthly_tests = self.max_monthly_tests):
                 log.info("limit_consumption applied, skipping test: speedtest")
                 print("limit_consumption applied, skipping test: speedtest")
                 return None, None
@@ -597,7 +617,9 @@ class Measurements:
             return
 
         if limit:
-            if not self.bandwidth_test_stochastic_limit():
+            if not self.bandwidth_test_stochastic_limit(measured_down = self.measured_down,
+                    max_monthly_consumption_gb = self.max_monthly_consumption_gb,
+                    max_monthly_tests = self.max_monthly_tests):
                 log.info("limit_consumption applied, skipping test: iperf")
                 print("limit_consumption applied, skipping test: iperf")
                 return

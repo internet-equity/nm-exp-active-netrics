@@ -35,6 +35,11 @@ netrics="""
     "chicago.suntimes.com" = "suntimes"
     "cs.uchicago.edu" = "uchicago"
 
+[limit_consumption]
+    measured_down = 5
+    max_monthly_consumption_gb = 200
+    max_monthly_tests = 200
+
 [latency_under_load]
     targets = ["www.google.com"]
 
