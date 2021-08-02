@@ -231,11 +231,12 @@ class Measurements:
        monthly_tests = (max_monthly_consumption_gb / 4) * (1000 / speed)
        if monthly_tests > max_monthly_tests: 
            monthly_tests = max_monthly_tests
-       run_test =  monthly_tests / (24 * 30) > random.random()
+       rand = random.random()
+       run_test = (monthly_tests / (24 * 30)) > rand
        print ("bandwidth_test_stochastic_limit: measured_down={0}, max_monthly_consumption_gb={1}, "\
                "max_monthly_tests={2}".format(measured_down, max_monthly_consumption_gb, max_monthly_tests))
        print ("bandwidth_test_stochastic_limit: {0} > {1} (speed: {2})"\
-               .format(monthly_tests / (24 * 30), random.random(), speed))
+               .format(monthly_tests / (24 * 30), rand, speed))
        return run_test
 
     def speed(self, key_ookla, key_ndt7, limit_consumption):
