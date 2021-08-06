@@ -120,7 +120,7 @@ class Measurements:
 
     def ipquery(self, key="ipquery", run_test=True):
         j4 = None
-        j6 = None
+        #j6 = None
         try:
            req = urllib.request.Request("https://api.ipify.org?format=json")
            with urllib.request.urlopen(req) as response:
@@ -128,19 +128,21 @@ class Measurements:
                 log.warn('Ip Query Unexpected:'+str(response.getcode()))
              else:
                 j4 = json.loads(response.read().decode())
-           req = urllib.request.Request("https://api64.ipify.org?format=json")
-           with urllib.request.urlopen(req) as response:
-             if response.getcode()!=200:
-                log.warn('Ip Query Unexpected:'+str(response.getcode()))
-             else:
-                j6 = json.loads(response.read().decode())
+           #req = urllib.request.Request("https://api64.ipify.org?format=json")
+           #with urllib.request.urlopen(req) as response:
+           #  if response.getcode()!=200:
+           #     log.warn('Ip Query Unexpected:'+str(response.getcode()))
+           #  else:
+           #     j6 = json.loads(response.read().decode())
 
            if 'ip' in j4.keys(): j4 = j4['ip']
-           if 'ip' in j6.keys(): j6 = j6['ip']
-           self.results[key] = { 'ipv4': j4, 'ipv6': j6 }
+           #if 'ip' in j6.keys(): j6 = j6['ip'] #TODO: make ipv6 to work?
+           #self.results[key] = { 'ipv4': j4, 'ipv6': j6 }
+           self.results[key] = { 'ipv4': j4 }
         except Exception as err:
            self.results[key] = { 'error': f'{err}' }
-        res = { 'ipv4': j4, 'ipv6': j6 }
+        #res = { 'ipv4': j4, 'ipv6': j6 }
+        res = { 'ipv4': j4 }
         if 'error' in self.results[key].keys():
            res = { 'error': self.results[key]['error'] }
         return res
@@ -441,50 +443,6 @@ class Measurements:
 
         return dig_res
 
-    def hops_to_backbone(self, key, run_test):
-        """
-        Method counts hops to 'ibone', center that all data leaving Chicago
-        travels through
-        """
-        """ key: test name """
-
-        if not run_test:
-            return
-
-        tr_res = None
-
-        target = 'www.google.com'
-
-        if 'target' in self.nma.conf['hops_to_backbone']:
-            target = self.nma.conf['hops_to_backbone']['target']
-
-        tr_cmd = 'traceroute -m 15 -N 32 -w3 {0} | grep -m 1 ibone'.format(target)
-        tr_res, err = self.popen_exec(tr_cmd)
-        if len(err) > 0:
-            print(f"ERROR: {err}")
-            log.error(err)
-            return None
-
-        tr_res_s = tr_res.strip().split(" ")
-
-        if len(tr_res_s):
-            try:
-                hops = int(tr_res_s[0])
-            except ValueError as ve:
-                log.warn("hops_to_backbone {}".format(ve))
-                hops = -1
-        else:
-            hops = -1
-
-        self.results[key] = {}
-        self.results[key]["hops_to_backbone"] = hops
-
-        if not self.quiet:
-            print('\n --- Hops to Backbone ---')
-            print(f'Hops: {self.results["hops_to_backbone"]}')
-
-        return tr_res
-
     def hops_to_target(self, key, site):
         """
         Method counts the number of hops to the target site
@@ -495,40 +453,59 @@ class Measurements:
             return
 
         tr_res = None
+        error_found = False
 
         self.results[key] = {}
-        target = 'www.google.com'
+        targets = ['www.google.com']
 
-        if 'target' in self.nma.conf['hops_to_target']:
-            target = self.nma.conf['hops_to_target']['target']
+        if 'targets' in self.nma.conf['hops_to_target']:
+            targets = self.nma.conf['hops_to_target']['targets']
 
-        try:
-            label = self.labels[target]
-        except KeyError:
-            label = target
+        tr_res = {}
+        for target in targets:
+            try:
+                label = self.labels[target]
+            except KeyError:
+                label = target
 
-        tr_cmd = f'traceroute -m 20 -q 5 -w 2 {target} | tail -1 | awk "{{print $1}}"'
-        tr_res, err = self.popen_exec(tr_cmd)
-        if len(err) > 0:
-            print(f"ERROR: {err}")
-            log.error(err)
-            self.results[key]['error'] = f'{err}'
-            tr_res = { f'{label}': tr_res, 'error' : f'{err}' }
-            return tr_res
+            tr_cmd = f'traceroute -m 20 -q 5 -w 2 {target} | tail -1 | awk "{{print $1}}"'
+            tr_res[label], err = self.popen_exec(tr_cmd)
+            if len(err) > 0:
+                print(f"ERROR: {err}")
+                log.error(err)
+                self.results[key][f'{label}_error'] = f'{err}'
+                #TODO: save the output regardless?
+                #tr_res[label] = { f'{label}': tr_res[label], 'error' : f'{err}' }
+                tr_res[label] = { 'error' : f'{err}' }
+                error_found = True
+                continue
 
-        tr_res_s = tr_res.strip().split(" ")
+            tr_res_s = tr_res
+            tr_res_s = tr_res_s[label].strip().split(" ")
 
-        hops = -1
+            hops = -1
 
-        if len(tr_res_s):
-            hops = int(tr_res_s[0])
+            if len(tr_res_s):
+                hops = int(tr_res_s[0])
 
-        self.results[key][f'hops_to_{label}'] = hops
+            self.results[key][f'hops_to_{label}'] = hops
+
+        self.results[key]["error"] = error_found
 
         if not self.quiet:
             print('\n --- Hops to Target ---')
-            print("Hops to {}: {}".format(target,
+            for target in targets:
+              try:
+                label = self.labels[target]
+              except KeyError:
+                label = target
+              if f'{label}_error' in self.results[key]:
+                print("Hops to {}: {}".format(target,
+                                          self.results[key][f'{label}_error']))
+              else:
+                print("Hops to {}: {}".format(target,
                                           self.results[key][f'hops_to_{label}']))
+
         return tr_res
 
     def connected_devices_arp(self, key, run_test):
@@ -632,6 +609,10 @@ class Measurements:
 
         measured_bw = {'upload': 0, 'download': 0}
         measured_jitter = {'upload': 0, 'download': 0}
+        
+        length = 10000 ##default
+        if 'buffer_length' in self.nma.conf['iperf'].keys():
+            length = self.nma.conf['iperf']['buffer_length']
 
         self.results[key] = {}
         for direction, value in measured_bw.items():
@@ -644,9 +625,11 @@ class Measurements:
                 if direction == 'download':
                     bandwidth += 40
                     reverse = True
-
-            iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -u -i 0 -b {}M {} -f Mbits | grep receiver"\
-                .format(client, port, bandwidth, '-R' if reverse else "")
+            
+            log.info(f"iperf using buffer_length: {length}")
+            iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
+                    " -c {} -p {} -u -i 0 -b {}M -l {} {} -f Mbits | grep receiver"\
+                    .format(client, port, length, bandwidth, '-R' if reverse else "")
 
             iperf_res[direction], err = self.popen_exec(iperf_cmd)
             if len(err) > 0:
@@ -672,7 +655,7 @@ class Measurements:
             if not self.quiet:
                 if direction == 'upload':
                     print('\n --- iperf Bandwidth and Jitter ---')
-                print(f'{direction} bandwidth: {measured_bw[direction]} Mb/s')
+                print(f'{direction} bandwidth: {measured_bw[direction]} MB/s')
                 print(f'{direction} jitter: {measured_jitter[direction]} ms')
 
         if self.nma.conf['databases']['tinydb_enable']:

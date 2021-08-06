@@ -7,15 +7,11 @@ deployment_json_url = "https://chicago-cdac.github.io/nm-exp-active-netrics/conf
 # Uncomment to set a particular deployment, leave it unset and netrics will choose a 
 # deployment randomly 
 
-#deployment = "74e655581a038ce4b7b8a939b17f7cce"
-#deployment = "441371ab04ce22aa7b0b1c250442e30c"
-#deployment = "b809ecc98652bd8023ef651dc2572658"
 deployment = "1940e236a6a6717f23bd700738c4dec9"
-#deployment = "49640f8ac1ce0ea25c5582394d6c96e3"
 
 [cron]
 netrics="""
-*/5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -n -d -t -b {upload} >>{log} 2>&1 
+*/5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -n -d -t {upload} >>{log} 2>&1 
 {SPEEDTEST_TIME} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l --limit-consumption {upload} >>{log} 2>&1 
 {IPERF_TIME} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i --limit-consumption {upload} >{log} 2>&1 
 """
@@ -45,15 +41,13 @@ netrics="""
 
 [iperf]
     targets = ["127.0.0.1:33001"]
+    buffer_length = 10000
 
 [dns_latency]
     target = "8.8.8.8"
 
-[hops_to_backbone]
-    target = "www.google.com"
-
 [hops_to_target]
-    target = "www.google.com"
+    targets = ["www.google.com", "www.wikipedia.org", "cern.ch"]
 
 [nmap_dev_scan]
     iface = "eth0"

@@ -283,8 +283,9 @@ class NetMicroscopeControl:
                 self.save_zip_dict(s, cmd, k, zf, outdict[i],  ("" if key == "" else key + "-") + i)
             else:
                 data = outdict[i]
-                zf.writestr("{0}-{1}-{2}-{3}.out".format(s, cmd, k, ("" if key == "" else key + "-") + i), data
-                   if isinstance(data, bytes) else "{}".format(data).encode())
+                if len(data) > 0:
+                    zf.writestr("{0}-{1}-{2}-{3}.out".format(s, cmd, k, ("" if key == "" else key + "-") + i), data
+                        if isinstance(data, bytes) else "{}".format(data).encode())
 
     def save_zip(self, data, cmd, timenow, topic = "default"):
         p = UPLOAD_PENDING / topic / "zip"

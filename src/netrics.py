@@ -61,13 +61,6 @@ def build_parser():
     )
 
     parser.add_argument(
-            '-b', '--backbone',
-            default=False,
-            action='store_true',
-            help='Count hops to Chicago backbone (ibone)'
-    )
-
-    parser.add_argument(
             '-t', '--target',
             default=False,
             action='store_true',
@@ -270,9 +263,6 @@ if args.latency_under_load:
 
 """ Measure DNS latency """
 output['dns_latency'] = test.dns_latency('dns_latency', args.dns)
-
-""" Count hops to local backbone """
-output['hops_to_backbone'] = test.hops_to_backbone('hops_to_backbone', args.backbone)
 
 """ Count hops to target website """
 output['hops_to_target'] = test.hops_to_target('hops_to_target', args.target)
