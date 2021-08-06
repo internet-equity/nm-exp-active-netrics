@@ -1,4 +1,4 @@
-# [Netrics](https://github.com/chicago-cdac/nm-exp-active-netrics)
+# [Netrics](https://chicago-cdac.github.io/nm-exp-active-netrics)
 NetMicroscope Experiment - Active Measurements (AKA Netrics)
 
 ## 1. [About Netrics](https://chicago-cdac.github.io/nm-exp-active-netrics)
