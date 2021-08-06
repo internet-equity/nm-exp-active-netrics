@@ -180,7 +180,8 @@ def upload(upload_results, measurements):
     for m in measurements.keys():
         if m != 'ipquery':
             for k in measurements[m].keys():
-                insert[k] = measurements[m][k]
+                if k != 'error':
+                    insert[k] = measurements[m][k]
     #print("{}".format(insert))
 
     ret = creds.write_points([{"measurement": "networks",

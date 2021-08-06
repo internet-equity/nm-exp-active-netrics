@@ -154,6 +154,7 @@ class Measurements:
         if not run_test:
             return
 
+        self.results[key] = {}
         output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
         if len(err) > 0:
              self.results[key]["error"] = f'{err}'
@@ -195,6 +196,7 @@ class Measurements:
         if not run_test:
             return
 
+        self.results[key] = {}
         output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -quiet -format 'json'")
         if len(err) > 0:
              self.results[key]["error"] = f'{err}'
@@ -204,10 +206,10 @@ class Measurements:
 
         res_json = json.loads(output)
 
-        download_speed = res_json["Download"]["Value"]
-        upload_speed = res_json["Upload"]["Value"]
+        download_speed = float(res_json["Download"]["Value"])
+        upload_speed = float(res_json["Upload"]["Value"])
         download_retrans = float(res_json["DownloadRetrans"]["Value"])
-        minrtt = res_json['MinRTT']['Value']
+        minrtt = float(res_json['MinRTT']['Value'])
 
         self.results[key] = {}
         self.results[key]["speedtest_ndt7_download"] = download_speed
@@ -629,10 +631,10 @@ class Measurements:
             log.info(f"iperf using buffer_length: {length}")
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
                     " -c {} -p {} -u -i 0 -b {}M -l {} {} -f Mbits | grep receiver"\
-                    .format(client, port, length, bandwidth, '-R' if reverse else "")
+                    .format(client, port, bandwidth, length, '-R' if reverse else "")
 
             iperf_res[direction], err = self.popen_exec(iperf_cmd)
-            if len(err) > 0:
+            if len(err) > 0 and 'warning' not in err:
                 print(f"ERROR: {err}")
                 self.results[key]['error'] = f'{err}'
                 iperf_res = { f'client' :  iperf_res, 'error' : err }
