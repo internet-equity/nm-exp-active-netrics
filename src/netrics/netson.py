@@ -611,6 +611,7 @@ class Measurements:
 
         measured_bw = {'upload': 0, 'download': 0}
         measured_jitter = {'upload': 0, 'download': 0}
+        measured_lost = {'upload': 0, 'download': 0}
         
         length = 10000 ##default
         if 'buffer_length' in self.nma.conf['iperf'].keys():
@@ -641,24 +642,29 @@ class Measurements:
                 log.error(err)
                 return iperf_res
 
+            lost = re.match( r'.*\((.*)%\)', iperf_res[direction])
             measured_bw[direction] = iperf_res[direction].split()[6]
             measured_jitter[direction] = iperf_res[direction].split()[8]
+            measured_lost[direction] = lost.group(1) if lost else None
 
             """
             Converting from MB to Mb. Iperf3 claims to report Mb but does not.
             If iperf3 is updated, remove conversion from our code
             """
-
             self.results[key][f'iperf_udp_{direction}'] = float(
                 measured_bw[direction])*8
             self.results[key][f'iperf_udp_{direction}_jitter_ms'] = float(
                 measured_jitter[direction])
+            if measured_lost is not None:
+                self.results[key][f'iperf_udp_{direction}_lost'] = measured_lost[direction]
 
             if not self.quiet:
                 if direction == 'upload':
                     print('\n --- iperf Bandwidth and Jitter ---')
                 print(f'{direction} bandwidth: {measured_bw[direction]} MB/s')
                 print(f'{direction} jitter: {measured_jitter[direction]} ms')
+                if measured_lost[direction] is not None:
+                    print(f'{direction} lost: {measured_lost[direction]} %')
 
         if self.nma.conf['databases']['tinydb_enable']:
             self.update_max_speed(float(measured_bw['download']),
