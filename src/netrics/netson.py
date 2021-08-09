@@ -613,7 +613,7 @@ class Measurements:
         measured_jitter = {'upload': 0, 'download': 0}
         measured_lost = {'upload': 0, 'download': 0}
         
-        length = 10000 ##default
+        length = None ##default
         if 'buffer_length' in self.nma.conf['iperf'].keys():
             length = self.nma.conf['iperf']['buffer_length']
 
@@ -631,8 +631,9 @@ class Measurements:
             
             log.info(f"iperf using buffer_length: {length}")
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
-                    " -c {} -p {} -u -i 0 -b {}M -l {} {} -f Mbits | grep receiver"\
-                    .format(client, port, bandwidth, length, '-R' if reverse else "")
+                    " -c {} -p {} -u -i 0 -b {}M {} {} -f Mbits | grep receiver"\
+                    .format(client, port, bandwidth, f'-l {length}' if length is not None else '',
+                            '-R' if reverse else "")
 
             iperf_res[direction], err = self.popen_exec(iperf_cmd)
             if len(err) > 0 and 'warning' not in err:

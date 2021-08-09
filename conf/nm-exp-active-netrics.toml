@@ -40,8 +40,8 @@ netrics="""
     targets = ["www.google.com"]
 
 [iperf]
-    targets = ["127.0.0.1:33001"]
-    buffer_length = 10000
+    targets = ["localhost:33001"]
+#    buffer_length = 10000
 
 [dns_latency]
     target = "8.8.8.8"
