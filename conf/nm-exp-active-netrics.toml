@@ -10,7 +10,7 @@ deployment_json_url = "https://chicago-cdac.github.io/nm-exp-active-netrics/conf
 
 [cron]
 netrics="""
-*/5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -n -d -t {upload} >>{log} 2>&1 
+*/5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -n -d -t -b {upload} >>{log} 2>&1 
 {SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {upload} >>{log} 2>&1 
 {IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {upload} >{log} 2>&1
 """
@@ -70,3 +70,6 @@ netrics="""
 
 [nmap_dev_scan]
     iface = "eth0"
+
+[last_mile_latency]
+    targets = ["8.8.8.8", "1.1.1.1"]

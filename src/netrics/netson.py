@@ -7,6 +7,7 @@ import time
 import re
 import json
 import random
+import ipaddress
 import urllib.request
 import os, sys, logging, traceback
 from pathlib import Path
@@ -30,6 +31,7 @@ class Measurements:
 
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
+        self.lml = self.nma.conf['last_mile_latency']
 
         self.measured_down = 5
         self.max_monthly_consumption_gb = 200
@@ -316,13 +318,23 @@ class Measurements:
         self.results[key]["error"] = error_found
         return ping_res
 
+    def last_mile_latency(self, key, dst=0):
+        """
+        Method records RTT to earliest node with public IP Address along path
+        to 8.8.8.8 by default.
+        """
+        """ key : test name """
 
-    def last_mile_latency(self, key):
-        tr_cmd = 'traceroute 8.8.8.8'
+        tr_cmd = f'traceroute {self.lml[dst]}'
 
-        out, err = popen_exec(tr_cmd)
-
+        out, err = self.popen_exec(tr_cmd)
         self.results[key] = {}
+
+        if len(err) > 0:
+            self.results[key]["error"] = f'{err}'
+            print(f'ERROR: {err}')
+            log.error(err)
+            return f'{err}'
 
         out = out.split('\n')
         for line in out:

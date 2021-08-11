@@ -18,6 +18,7 @@ __name__ = "nm-exp-active-netrics"
 __version__ = "0.1.11"
 __author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins"
 
+
 def build_parser():
     """ Construct parser to interpret command-line args """
 
@@ -46,12 +47,18 @@ def build_parser():
     )
 
     parser.add_argument(
+            '-b', '--last_mile_rtt',
+            default=False,
+            action='store_true',
+            help='Measure last mile RTT'
+    )
+
+    parser.add_argument(
             '-l', '--latency_under_load',
             default=False,
             action='store_true',
             help='Measure ping latency under load'
     )
-
 
     parser.add_argument(
             '-d', '--dns',
