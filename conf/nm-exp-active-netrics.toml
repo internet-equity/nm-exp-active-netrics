@@ -1,19 +1,18 @@
 title = "nm-exp-active-netrics"
 description = "Configuration file for NetMicroscope - Netrics active measurements"
-
 topic = "default"
 
 deployment_json_url = "https://chicago-cdac.github.io/nm-exp-active-netrics/conf/netrics.json"
 # Uncomment to set a particular deployment, leave it unset and netrics will choose a 
 # deployment randomly 
 
-deployment = "1940e236a6a6717f23bd700738c4dec9"
+#deployment = "74e655581a038ce4b7b8a939b17f7cce"
 
 [cron]
 netrics="""
 */5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -n -d -t {upload} >>{log} 2>&1 
-{SPEEDTEST_TIME} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l --limit-consumption {upload} >>{log} 2>&1 
-{IPERF_TIME} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i --limit-consumption {upload} >{log} 2>&1 
+{SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {upload} >>{log} 2>&1 
+{IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {upload} >{log} 2>&1
 """
 #*    *  * * * netrics env USER=$LOGNAME /usr/local/bin/netrics --tshark {upload} >{log} 2>&1
 
@@ -40,14 +39,14 @@ netrics="""
     targets = ["www.google.com"]
 
 [iperf]
-    targets = ["localhost:33001"]
-#    buffer_length = 10000
+    #buffer_length = 10000
+    targets = ["localhost:{IPERF_PORT}"]
 
 [dns_latency]
     target = "8.8.8.8"
 
 [hops_to_target]
-    targets = ["www.google.com", "www.wikipedia.org", "cern.ch"]
+    targets = ["www.google.com"]
 
 [nmap_dev_scan]
     iface = "eth0"
