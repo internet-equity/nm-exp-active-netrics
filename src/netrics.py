@@ -235,6 +235,9 @@ output['ipquery']= test.ipquery()
 """ Measure ping latency to list of websites """
 output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
 
+""" Measure last mile latency """
+output['last_mile_rtt'] = test.last_mile_latency('last_mile_rtt')
+
 """ Run ookla speed test """
 output['ookla'] = test.speed_ookla('ookla', args.ookla)
 

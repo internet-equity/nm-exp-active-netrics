@@ -316,6 +316,33 @@ class Measurements:
         self.results[key]["error"] = error_found
         return ping_res
 
+
+    def last_mile_latency(self, key):
+        tr_cmd = 'traceroute 8.8.8.8'
+
+        out, err = popen_exec(tr_cmd)
+
+        self.results[key] = {}
+
+        out = out.split('\n')
+        for line in out:
+            hop_stats = line.split(' ')
+            if len(hop_stats) > 5:
+                ip_addr = hop_stats[4].strip('()')
+                try:
+                    if not ipaddress.ip_address(ip_addr).is_private:
+                        res = [hop_stats[6], hop_stats[9], hop_stats[12]]
+                        break
+                except ValueError:
+                    continue
+
+        res.sort()
+        self.results[key]["last_mile_rtt_min_ms"] = res[0]
+        self.results[key]["last_mile_rtt_median_ms"] = res[1]
+        self.results[key]["last_mile_rtt_max_ms"] = res[2]
+
+        return out
+
     def latency_under_load(self, key, run_test, client, port):
         """
         Method records ping latency under load to self.sites_load
