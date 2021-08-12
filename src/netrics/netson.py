@@ -228,22 +228,22 @@ class Measurements:
  
         return output #res_json
 
-    def bandwidth_test_stochastic_limit(self, measured_down = 5, max_monthly_consumption_gb = 200,
-                                          max_monthly_tests = 200):
-       max_speed = self.speed_db.all()
-       speed = max(measured_down, max_speed[0]['download'])  ## should be MBs.
-       # This assumes 1GB per test, for a gig link.
-       # The factor of 4 is for ndt7, iperf3, speedtest, and latency under load
-       monthly_tests = (max_monthly_consumption_gb / 4) * (1000 / speed)
-       if monthly_tests > max_monthly_tests: 
-           monthly_tests = max_monthly_tests
-       rand = random.random()
-       run_test = (monthly_tests / (24 * 30)) > rand
-       print ("bandwidth_test_stochastic_limit: measured_down={0}, max_monthly_consumption_gb={1}, "\
-               "max_monthly_tests={2}".format(measured_down, max_monthly_consumption_gb, max_monthly_tests))
-       print ("bandwidth_test_stochastic_limit: {0} > {1} (speed: {2})"\
-               .format(monthly_tests / (24 * 30), rand, speed))
-       return run_test
+    def bandwidth_test_stochastic_limit(self, measured_down=5,
+                                        max_monthly_consumption_gb=200,
+                                        max_monthly_tests=200):
+        max_speed = self.speed_db.all()
+        speed = max(measured_down, max_speed[0]['download'])  # should be MBs.
+        # This assumes 1GB per test, for a gig link.
+        # The factor of 4 is for ndt7, iperf3, speedtest, and latency under load
+        monthly_tests = (max_monthly_consumption_gb / 4) * (1000 / speed)
+        if monthly_tests > max_monthly_tests:
+            monthly_tests = max_monthly_tests
+            rand = random.random()
+            run_test = (monthly_tests / (24 * 30)) > rand
+            print("bandwidth_test_stochastic_limit: measured_down={0}, max_monthly_consumption_gb={1}, "\
+                    "max_monthly_tests={2}".format(measured_down, max_monthly_consumption_gb, max_monthly_tests))
+            print("bandwidth_test_stochastic_limit: {0} > {1} (speed: {2})".format(monthly_tests / (24 * 30), rand, speed))
+            return run_test
 
     def speed(self, key_ookla, key_ndt7, limit_consumption):
         """ Test runs Ookla and NDT7 Speed tests in sequence """
@@ -314,46 +314,54 @@ class Measurements:
                 print(f'Minimum RTT: {ping_rtt_ms[1]} (ms)')
                 print(f'Maximum RTT: {ping_rtt_ms[2]} (ms)')
                 print(f'RTT Std Dev: {ping_rtt_ms[3]} (ms)')
-        
+
         self.results[key]["error"] = error_found
         return ping_res
 
-    def last_mile_latency(self, key, dst=0):
+    def last_mile_latency(self, key):
         """
         Method records RTT to earliest node with public IP Address along path
         to 8.8.8.8 by default.
         """
         """ key : test name """
 
-        tr_cmd = f'traceroute {self.lml[dst]}'
+        if 'targets' in self.nma.conf['latency_under_load']:
+            targets = self.nma.conf['latency_under_load']['targets']
+        else:
+            return
 
-        out, err = self.popen_exec(tr_cmd)
-        self.results[key] = {}
+        output = {}
+        for site in targets:
+            tr_cmd = f'traceroute {site}'
 
-        if len(err) > 0:
-            self.results[key]["error"] = f'{err}'
-            print(f'ERROR: {err}')
-            log.error(err)
-            return f'{err}'
+            out, err = self.popen_exec(tr_cmd)
+            output[site] = out
+            self.results[key] = {}
 
-        out = out.split('\n')
-        for line in out:
-            hop_stats = line.split(' ')
-            if len(hop_stats) > 5:
-                ip_addr = hop_stats[4].strip('()')
-                try:
-                    if not ipaddress.ip_address(ip_addr).is_private:
-                        res = [hop_stats[6], hop_stats[9], hop_stats[12]]
-                        break
-                except ValueError:
-                    continue
+            if len(err) > 0:
+                self.results[key]["error"] = f'{err}'
+                print(f'ERROR: {err}')
+                log.error(err)
+                return f'{err}'
 
-        res.sort()
-        self.results[key]["last_mile_rtt_min_ms"] = res[0]
-        self.results[key]["last_mile_rtt_median_ms"] = res[1]
-        self.results[key]["last_mile_rtt_max_ms"] = res[2]
+            out = out.split('\n')
+            for line in out:
+                hop_stats = line.split(' ')
+                if len(hop_stats) > 5:
+                    ip_addr = hop_stats[4].strip('()')
+                    try:
+                        if not ipaddress.ip_address(ip_addr).is_private:
+                            res = [hop_stats[6], hop_stats[9], hop_stats[12]]
+                            break
+                    except ValueError:
+                        continue
 
-        return out
+            res.sort()
+            self.results[key][f'{site}_last_mile_rtt_min_ms'] = res[0]
+            self.results[key][f'{site}_last_mile_rtt_median_ms'] = res[1]
+            self.results[key][f'{site}_last_mile_rtt_max_ms'] = res[2]
+
+        return output
 
     def latency_under_load(self, key, run_test, client, port):
         """
