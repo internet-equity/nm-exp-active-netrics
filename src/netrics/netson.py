@@ -265,15 +265,15 @@ class Measurements:
         ###
         # WARNING: this test is mandatory, for Chicago Deployment
         ##
-
-        #if not run_test:
-        #    return
+        sites = self.sites
+        if not run_test:
+            sites = [self.sites[0]]
 
         ping_res = {}
         error_found = False
 
         self.results[key] = {}
-        for site in self.sites:
+        for site in sites:
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
 
@@ -675,11 +675,11 @@ class Measurements:
                 if direction == 'download':
                     bandwidth += 40
                     reverse = True
-            
-            log.info(f"iperf using buffer_length: {length}")
+             
+            #log.info(f"iperf using buffer_length: {length}")
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
-                    " -c {} -p {} -u -i 0 -b {}M {} {} -f Mbits | grep receiver"\
-                    .format(client, port, bandwidth, f'-l {length}' if length is not None else '',
+                    " -c {} -p {} -u -i 0 -P 4 -b {}M {} {} -f Mbits | grep SUM | grep receiver"\
+                    .format(client, port, bandwidth/4, f'-l {length}' if length is not None else '',
                             '-R' if reverse else "")
 
             iperf_res[direction], err = self.popen_exec(iperf_cmd)
@@ -691,8 +691,8 @@ class Measurements:
                 return iperf_res
 
             lost = re.match( r'.*\((.*)%\)', iperf_res[direction])
-            measured_bw[direction] = iperf_res[direction].split()[6]
-            measured_jitter[direction] = iperf_res[direction].split()[8]
+            measured_bw[direction] = iperf_res[direction].split()[5]
+            measured_jitter[direction] = iperf_res[direction].split()[7]
             measured_lost[direction] = lost.group(1) if lost else None
 
             """

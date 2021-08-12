@@ -35,8 +35,8 @@ deps: ## Install dependencies via apt-get install
 	apt-get -q -y install traceroute
 	apt-get -q -y install dnsutils
 	apt-get -q -y install nmap
-	apt-get -q -y install build-essentials
-	apt-get -q -y install python3-env
+	apt-get -q -y install build-essential
+	apt-get -q -y install python3-venv
 	apt-get -q -y install tshark
 	#apt-get -q -y install chromium-chromedriver #(disabled)
 
