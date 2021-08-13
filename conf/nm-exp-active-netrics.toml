@@ -8,13 +8,21 @@ deployment_json_url = "https://chicago-cdac.github.io/nm-exp-active-netrics/conf
 
 #deployment = "74e655581a038ce4b7b8a939b17f7cce"
 
+# Meta.Extended info. The infomartion provided here is injected directly into the output json "as is".
+# Check nm-mgmt-cms generate_pillar function for more info on how the content of these paramneters
+# are being generated.
+
+[extended]
+gitlog = "{GITLOG}"
+dataver = "{DATAVER}"
+debhash = "{DEBHASH}"
+
 [cron]
 netrics="""
 */5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -n -d -t -b {upload} >>{log} 2>&1 
 {SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {upload} >>{log} 2>&1 
 {IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {upload} >{log} 2>&1
 """
-#*    *  * * * netrics env USER=$LOGNAME /usr/local/bin/netrics --tshark {upload} >{log} 2>&1
 
 [databases]
     tinydb_enable = true
@@ -60,7 +68,7 @@ netrics="""
 
 [iperf]
     #buffer_length = 10000
-    targets = ["localhost:{IPERF_PORT}"]
+    targets = ["{iperf_host}:{IPERF_PORT}"]
 
 [dns_latency]
     target = "8.8.8.8"

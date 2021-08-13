@@ -42,8 +42,6 @@ def which(pgm):
         if os.path.exists(p) and os.access(p,os.X_OK):
             return p
 
-
-
 class NetMicroscopeControl:
     global log
     def __init__(self, args):
@@ -240,7 +238,8 @@ class NetMicroscopeControl:
         return r
 
 
-    def save_json(self, data, cmd, timenow, topic = "default"):
+    def save_json(self, data, cmd, timenow, topic = "default", extended = None,
+            annotation = None):
         p = UPLOAD_PENDING / topic / "json" #active netrics won't touch ..../archive
         a = UPLOAD_ARCHIVE / topic / "json" #but creating here regardless
         Path(p).mkdir(parents=True, exist_ok=True)
@@ -248,11 +247,16 @@ class NetMicroscopeControl:
         epoch = timenow.timestamp()
         d = timenow.strftime("nm_data_%Y%m%d_%H%M%S")
         d = "{0}_{1}.json".format(d, cmd)
+        if extended is not None:
+            extended['Annotation'] = annotation
+        else:
+            extended = { 'Annotation': annotation }
         final = {
-                    'Meta' : {
-                        'Id' : None,     ## active-netrics doesn't know its own id,
-                        'Time' : epoch,  ## out json should be updated by the collect pkg
-                        },               ## before it's sent to the server / backend
+                    'Meta' : {           ## active-netrics doesn't know its own id,
+                        'Id' : None,     ## out json should be updated by the collect pkg
+                        'Time' : epoch,  ## before it's sent to the server / backend
+                        'Extended' : extended,
+                        },
                     'Measurements' : data
                 }
         output = p / d

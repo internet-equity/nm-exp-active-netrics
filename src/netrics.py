@@ -16,8 +16,25 @@ log = logging.getLogger(__name__)
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
 __version__ = "0.1.11"
-__author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins"
+__author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins, Nick Feamster"
 
+#Used for Annotations
+class keyvalue(argparse.Action):
+    def __call__( self , parser, namespace,
+                 values, option_string = None):
+        setattr(namespace, self.dest, dict())
+        keyop = None 
+        for value in values:
+            try:
+              key, value = value.split('=')
+              keyop = key
+              getattr(namespace, self.dest)[key] = value
+            except:
+              if keyop is None:
+                  keyop = 'default'
+                  getattr(namespace, self.dest)[keyop] = ""
+              getattr(namespace, self.dest)[keyop] = \
+                (getattr(namespace, self.dest)[keyop] + " " + value).strip()
 
 def build_parser():
     """ Construct parser to interpret command-line args """
@@ -132,6 +149,16 @@ def build_parser():
 
     ## Non-test 
     parser.add_argument(
+            '-A', '--annotate',
+            metavar="key=value key=value",
+            default=None,
+            nargs='*', 
+            action = keyvalue,
+            help='Annotate the output JSON with a any key=value configuration (eg. -A isp=starlink desc="perf debugging")'
+    )
+
+    ## Non-test 
+    parser.add_argument(
             '-G', '--get-times',
             default=False,
             action='store_true',
@@ -200,7 +227,7 @@ def upload(upload_results, measurements):
         print("influxdb write_points return: false")
         return
     log.info("influxdb write_points return: OK")
-    
+ 
 
 ################################# MAIN #######################################
 
@@ -235,7 +262,6 @@ if args.check:
 log.info("Initializing.")
 test = Measurements(args, nma)
 
-
 """ Run IPv4v6 query"""
 output['ipquery']= test.ipquery()
 
@@ -243,7 +269,7 @@ output['ipquery']= test.ipquery()
 output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
 
 """ Measure last mile latency """
-output['last_mile_rtt'] = test.last_mile_latency('last_mile_rtt')
+output['last_mile_rtt'] = test.last_mile_latency('last_mile_rtt', args.last_mile_rtt)
 
 """ Run ookla speed test """
 output['ookla'] = test.speed_ookla('ookla', args.ookla)
@@ -302,7 +328,9 @@ if not args.quiet:
   print(test.results)
 
 timenow = datetime.now()
-nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'])
+nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'],
+        extended = nma.conf['extended'] if 'extended' in nma.conf.keys() else None,
+        annotation = args.annotate)
 nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 if args.upload:
   upload(test.results, test.results)

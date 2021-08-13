@@ -318,12 +318,15 @@ class Measurements:
         self.results[key]["error"] = error_found
         return ping_res
 
-    def last_mile_latency(self, key):
+    def last_mile_latency(self, key, run_test):
         """
         Method records RTT to earliest node with public IP Address along path
         to 8.8.8.8 by default.
         """
         """ key : test name """
+
+        if not run_test:
+            return
 
         if 'targets' in self.nma.conf['latency_under_load']:
             targets = self.nma.conf['latency_under_load']['targets']
