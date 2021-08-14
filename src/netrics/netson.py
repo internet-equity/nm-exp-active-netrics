@@ -232,10 +232,14 @@ class Measurements:
                                         max_monthly_consumption_gb=200,
                                         max_monthly_tests=200):
         max_speed = self.speed_db.all()
-        speed = max(measured_down, max_speed[0]['download'])  # should be MBs.
+        speed = max(measured_down, max_speed[0]['download'] / 8)  # should be MBs.
         # This assumes 1GB per test, for a gig link.
         # The factor of 4 is for ndt7, iperf3, speedtest, and latency under load
         monthly_tests = (max_monthly_consumption_gb / 4) * (1000 / speed)
+        log.info(f"bandwidth_test_stochastic_limit: monthly_tests={monthly_tests} max_monthly_tests={max_monthly_tests}"\
+                f" max_speed={max_speed[0]['download']} measured_down:{measured_down}")
+        print(f"bandwidth_test_stochastic_limit: monthly_tests={monthly_tests} max_monthly_tests={max_monthly_tests}"\
+                f" max_speed={max_speed[0]['download']} measured_down={measured_down}")
         if monthly_tests > max_monthly_tests:
             monthly_tests = max_monthly_tests
             rand = random.random()
