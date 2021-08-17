@@ -720,15 +720,15 @@ class Measurements:
             if not self.quiet:
                 if direction == 'upload':
                     print('\n --- iperf Bandwidth and Jitter ---')
-                print(f'{direction} bandwidth: {measured_bw[direction]} MB/s')
+                print(f'{direction} bandwidth: {measured_bw[direction]} Mbits/s')
                 print(f'{direction} jitter: {measured_jitter[direction]} ms')
                 if measured_lost[direction] is not None:
                     print(f'{direction} lost: {measured_lost[direction]} %')
 
         self.results[key]['error'] = error_found
         if self.nma.conf['databases']['tinydb_enable']:
-            self.update_max_speed(measured_bw['download'] / 8,
-                              measured_bw['upload'] / 8)
+            self.update_max_speed(measured_bw['download'],
+                              measured_bw['upload'])
         return iperf_res
 
 
