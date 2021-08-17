@@ -332,8 +332,8 @@ class Measurements:
         if not run_test:
             return
 
-        if 'targets' in self.nma.conf['latency_under_load']:
-            targets = self.nma.conf['latency_under_load']['targets']
+        if 'targets' in self.nma.conf['last_mile_latency']:
+            targets = self.nma.conf['last_mile_latency']['targets']
         else:
             return
 
