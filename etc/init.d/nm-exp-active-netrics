@@ -41,10 +41,18 @@ start_nma() {
     /usr/local/bin/netrics -G > /var/netrics.initd.out
     GETTIME=$(cat /var/netrics.initd.out | grep iperf | awk '{print $2}')
     IPERF_TIME=$(( ${GETTIME} + 1 ))
-    SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 )) 
+    SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 ))
+    ENABLE_NDEV=-n		#enabled
+    LIMIT_CONSUMPTION=""	#disabled
+    speedtest_hour=*/2
+    iperf_hour=*/4
+
     . /usr/local/src/nm-exp-active-netrics/venv/bin/activate;/usr/local/src/nm-exp-active-netrics/venv/bin/python3 \
 	    /usr/local/src/nm-exp-active-netrics/bin/makecron.py \
-	    -c SPEEDTEST_TIME=${SPEEDTEST_TIME} IPERF_TIME=${IPERF_TIME} upload=${upload} log=${log}
+	    -c SPEEDTEST_TIME=${SPEEDTEST_TIME} IPERF_TIME=${IPERF_TIME} \
+	        upload=${upload} log=${log} enable_ndev=${ENABLE_NDEV} \
+		speedtest_hour=${speedtest_hour} iperf_hour=${iperf_hour} \
+		limit-consumption=${LIMIT_CONSUMPTION}
 }
 
 stop_nma() {
