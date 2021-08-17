@@ -216,7 +216,7 @@ def upload(upload_results, measurements):
             for k in measurements[m].keys():
                 if k != 'error':
                     insert[k] = measurements[m][k]
-    #print("{}".format(insert))
+    #print("---> {}".format(insert))
 
     ret = creds.write_points([{"measurement": "networks",
                          "tags"        : {"install": installid},
