@@ -711,8 +711,8 @@ class Measurements:
 
             measured_lost[direction] = float(json_res['end']['sum']['lost_percent'])
             measured_jitter[direction] = float(json_res['end']['sum']['jitter_ms'])
-            measured_bw[direction] = float(json_res['end']['sum']['bits_per_second']) \
-                    / 1000 / 1000
+            measured_bw[direction] = (float(json_res['end']['sum']['bits_per_second']) \
+                    / 1000 / 1000) * (100 - measured_lost[direction]) / 100
  
             self.results[key][f'iperf_udp_{direction}'] = measured_bw[direction]
             self.results[key][f'iperf_udp_{direction}_jitter_ms'] = measured_jitter[direction]
