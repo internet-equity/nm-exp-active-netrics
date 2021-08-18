@@ -599,7 +599,8 @@ class Measurements:
             log.error(err)
             return None
 
-        res['arp'] = arp_res
+        ## use arp_res to collect device mac address, it's disabled for now
+        res['arp'] = "[REDACTED]"
 
         devices = set(arp_res.strip().split("\n"))
         active_devices = [[dev, ts, 1] for dev in devices]
@@ -711,7 +712,7 @@ class Measurements:
             measured_lost[direction] = float(json_res['end']['sum']['lost_percent'])
             measured_jitter[direction] = float(json_res['end']['sum']['jitter_ms'])
             measured_bw[direction] = float(json_res['end']['sum']['bits_per_second']) \
-                    / 1024 / 1024
+                    / 1000 / 1000
  
             self.results[key][f'iperf_udp_{direction}'] = measured_bw[direction]
             self.results[key][f'iperf_udp_{direction}_jitter_ms'] = measured_jitter[direction]
@@ -720,7 +721,7 @@ class Measurements:
             if not self.quiet:
                 if direction == 'upload':
                     print('\n --- iperf Bandwidth and Jitter ---')
-                print(f'{direction} bandwidth: {measured_bw[direction]} Mbits/s')
+                print(f'{direction} bandwidth: {measured_bw[direction]} Mb/s')
                 print(f'{direction} jitter: {measured_jitter[direction]} ms')
                 if measured_lost[direction] is not None:
                     print(f'{direction} lost: {measured_lost[direction]} %')
