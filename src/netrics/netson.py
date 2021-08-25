@@ -31,7 +31,6 @@ class Measurements:
 
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
-        self.lml = self.nma.conf['last_mile_latency']
 
         self.measured_down = 5
         self.max_monthly_consumption_gb = 200
@@ -332,13 +331,14 @@ class Measurements:
         if not run_test:
             return
 
-        if 'targets' in self.nma.conf['last_mile_latency']:
-            targets = self.nma.conf['last_mile_latency']['targets']
-        else:
+        sites = list(self.nma.conf['last_mile_latency'].keys())
+        labels = self.nma.conf['last_mile_latency']
+
+        if len(sites) == 0:
             return
 
         output = {}
-        for site in targets:
+        for site in sites:
             tr_cmd = f'traceroute {site}'
 
             out, err = self.popen_exec(tr_cmd)
@@ -364,9 +364,9 @@ class Measurements:
                         continue
 
             res.sort()
-            self.results[key][f'{site}_last_mile_rtt_min_ms'] = float(res[0])
-            self.results[key][f'{site}_last_mile_rtt_median_ms'] = float(res[1])
-            self.results[key][f'{site}_last_mile_rtt_max_ms'] = float(res[2])
+            self.results[key][f'{labels[site]}_last_mile_rtt_min_ms'] = float(res[0])
+            self.results[key][f'{labels[site]}_last_mile_rtt_median_ms'] = float(res[1])
+            self.results[key][f'{labels[site]}_last_mile_rtt_max_ms'] = float(res[2])
 
         return output
 
