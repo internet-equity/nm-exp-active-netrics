@@ -17,9 +17,15 @@ sudo mkdir -p commands/src/oplat/$PROC/
 sudo chown $USER:$USER commands/src/oplat/$PROC/
 cd commands/src/oplat/$PROC
 
+cd ~
 wget https://golang.org/dl/go1.17.linux-arm64.tar.gz
 tar -xzf go1.17.linux-arm64.tar.gz
 export PATH=$PATH:~/go/bin
+
+go env -w GO111MODULE=off
+export GOROOT=~/go
+export GOPATH=~/OpLat
+export PATH=$GOPATH/bin:$PATH
 
 if cmd=$(command -v go); then echo $cmd; else echo "ERROR: golang not in the path"; exit 1; fi
 
