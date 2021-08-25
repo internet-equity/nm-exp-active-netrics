@@ -293,7 +293,7 @@ if args.latency_under_load:
   server = target.split(':')[0]
   port   = target.split(':')[1]
 
-  output['latency_under_load'] = test.latency_under_load('latency_under_load', True,
+  output['latency_under_load'] = test.oplat('oplat', True,
           client = server,
           port = port)
 
