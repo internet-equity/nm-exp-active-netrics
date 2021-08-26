@@ -399,7 +399,7 @@ class Measurements:
 
             for dst in targets:
                 cmd = """./oplat -s /usr/local/src/nm-exp-active-netrics/bin/iperf3.sh
-                -c {} -p {} -d {} -i 0.25 -n 10 -J {}""".format(
+                -c {} -p {} -d {} -i 0.25 -n 10 -m "tcp icmp" -J {}""".format(
                     client, port, dst, "" if upload else "-R")
                 out, err = self.popen_exec(cmd)
                 if len(err) > 0:
