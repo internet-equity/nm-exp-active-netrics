@@ -370,10 +370,18 @@ class Measurements:
 
         return output
 
-    def oplat(self, key, run_test, client, port):
+    def oplat(self, key, run_test, client, port, limit):
 
         if not run_test: return
         if not client: return
+
+        if limit:
+            if not self.bandwidth_test_stochastic_limit(measured_down=self.measured_down,
+                                                        max_monthly_consumption_gb=self.max_monthly_consumption_gb,
+                                                        max_monthly_tests=self.max_monthly_tests):
+                log.info("limit_consumption applied, skipping test: OpLat")
+                print("limit_consumption applied, skipping test: OpLat")
+                return
 
         if 'targets' in self.nma.conf['oplat']:
             targets = self.nma.conf['oplat']['targets']

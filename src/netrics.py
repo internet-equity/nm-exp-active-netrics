@@ -284,19 +284,17 @@ if args.speed:
 """ Measure latency under load """
 if args.latency_under_load:
 
-  if nma.conf['iperf']['targets'][0] == "":
-    log.error("[iperf][targets] not properly set")
-    print("[iperf][targets] not properly set -- needed for latency under load")
-    sys.exit(1)
-    
-  target = nma.conf['iperf']['targets'][0]
-  server = target.split(':')[0]
-  port   = target.split(':')[1]
+    if nma.conf['iperf']['targets'][0] == "":
+        log.error("[iperf][targets] not properly set")
+        print("[iperf][targets] not properly set -- needed for latency under load")
+        sys.exit(1)
 
-  output['latency_under_load'] = test.oplat('oplat', True,
-          client = server,
-          port = port)
+    target = nma.conf['iperf']['targets'][0]
+    server = target.split(':')[0]
+    port   = target.split(':')[1]
 
+    output['latency_under_load'] = test.oplat('oplat', True, client=server,
+                                              port=port, limit=args.limit_consumption)
 
 """ Measure DNS latency """
 output['dns_latency'] = test.dns_latency('dns_latency', args.dns)
@@ -317,7 +315,7 @@ if args.iperf:
     log.error("[iperf][targets] not properly set")
     print("[iperf][targets] not properly set")
     sys.exit(1)
-    
+
   for target in nma.conf['iperf']['targets']:
     server=target.split(':')[0]
     port=target.split(':')[1]
