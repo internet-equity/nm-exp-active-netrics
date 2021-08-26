@@ -21,7 +21,7 @@ cd ~
 wget https://golang.org/dl/go1.17.linux-arm64.tar.gz
 tar -xzf go1.17.linux-arm64.tar.gz
 export PATH=$PATH:~/go/bin
-
+git clone https://github.com/kyle-macmillan/OpLat.git
 go env -w GO111MODULE=off
 export GOROOT=~/go
 export GOPATH=~/OpLat
@@ -30,7 +30,8 @@ export PATH=$GOPATH/bin:$PATH
 if cmd=$(command -v go); then echo $cmd; else echo "ERROR: golang not in the path"; exit 1; fi
 
 go get -u github.com/go-ping/ping
-git clone https://github.com/kyle-macmillan/OpLat.git
+
 cd OpLat
 go build oplat.go
 cp oplat $NMAPATH/commands/$PROC/bin
+export PATH=$PATH:~/OpLat
