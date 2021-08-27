@@ -149,6 +149,13 @@ def build_parser():
 
     ## Non-test 
     parser.add_argument(
+            '-R', '--reset-consumption',
+            action='store_true',
+            help='Reset consumption counter',
+    )
+
+    ## Non-test 
+    parser.add_argument(
             '-A', '--annotate',
             metavar="key=value key=value",
             default=None,
@@ -330,6 +337,16 @@ nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'],
         extended = nma.conf['extended'] if 'extended' in nma.conf.keys() else None,
         annotation = args.annotate)
 nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
+
 if args.upload:
   upload(test.results, test.results)
 
+if args.reset_consumption:
+  msg = "Consumption RESET: Now zeroed at {0} bytes.".format(test.consumption_reset())
+  print(msg)
+  log.info(msg)
+else:
+  msg = "Consumption UPDATE: {0} of {1} bytes.".format(test.results['total_bytes_consumed'], 
+         test.consumption_update(test.results['total_bytes_consumed']))
+  print(msg)
+  log.info(msg)

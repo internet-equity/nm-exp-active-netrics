@@ -26,7 +26,7 @@ class Measurements:
         if self.nma.conf is None:
             log.error("No toml configuration.")
             os.exit(1)
-        self.results = {}
+        self.results = { 'total_bytes_consumed' : 0 }
         self.quiet = args.quiet
 
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
@@ -52,17 +52,22 @@ class Measurements:
                 Path(Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'])).mkdir(parents=True, exist_ok=True)
                 speedtest_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'speedtest.json')
                 seen_devices_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'seen_devices.json')
+                consumption_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'consumption.json')
 
                 if not speedtest_json.exists():
                     speedtest_json.touch()
                 if not seen_devices_json.exists():
                     seen_devices_json.touch()
+                if not consumption_json.exists():
+                    consumption_json.touch()
 
                 self.speed_db = TinyDB(speedtest_json)
                 self.dev_db = TinyDB(seen_devices_json)
+                self.consumption_db = TinyDB(consumption_json)
 
-                log.info("using {0}".format(speedtest_json))
-                log.info("using {0}".format(seen_devices_json))
+                log.info("DB using {0}".format(speedtest_json))
+                log.info("DB using {0}".format(seen_devices_json))
+                log.info("DB using {0}".format(consumption_json))
 
             except Exception as e:
                 log.error("tinydb continuing without tinydb ({0} / {1})".
@@ -787,7 +792,8 @@ class Measurements:
             measured_jitter[direction] = float(json_res['end']['sum']['jitter_ms'])
             measured_bw[direction] = (float(json_res['end']['sum']['bits_per_second']) \
                     / 1000 / 1000) * (100 - measured_lost[direction]) / 100
- 
+
+            self.results['total_bytes_consumed'] = self.results['total_bytes_consumed'] + json_res['end']['sum']['bytes']
             self.results[key][f'iperf_udp_{direction}'] = measured_bw[direction]
             self.results[key][f'iperf_udp_{direction}_jitter_ms'] = measured_jitter[direction]
             self.results[key][f'iperf_udp_{direction}_lost_percent'] = measured_lost[direction]
@@ -854,3 +860,25 @@ class Measurements:
         return tshark_res
 
 
+    def consumption_reset(self):
+       if self.nma.conf['databases']['tinydb_enable']:
+            if (len(self.consumption_db.all()) == 0):
+                self.consumption_db.insert({'total_bytes_consumed' : 0})
+            consumption = self.consumption_db.all()
+            total_bytes_consumed = consumption[0]['total_bytes_consumed']
+            self.consumption_db.update({'total_bytes_consumed' : 0})
+            return total_bytes_consumed
+       return 0
+
+    def consumption_update(self, totalbytes):
+       if self.nma.conf['databases']['tinydb_enable']:
+            if (len(self.consumption_db.all()) == 0):
+                self.consumption_db.insert({'total_bytes_consumed' : totalbytes})
+            consumption = self.consumption_db.all()
+            total_bytes_consumed = consumption[0]['total_bytes_consumed'] + totalbytes
+            self.consumption_db.update({'total_bytes_consumed' : total_bytes_consumed})
+            return total_bytes_consumed
+       return 0
+
+
+       
