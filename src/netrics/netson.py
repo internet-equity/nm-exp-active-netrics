@@ -168,6 +168,10 @@ class Measurements:
         upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
         jitter_ookla = res_json['ping']['jitter']
         latency_ookla = res_json['ping']['latency']
+
+        # Calculating data transferred in MB
+        ul_bw_used = int(res_json['upload']['bytes']) / 1e6
+        dl_bw_used = int(res_json['download']['bytes']) / 1e6
         pktloss_ookla = None
         if 'packetLoss' in res_json.keys():
             pktloss_ookla = res_json['packetLoss']
@@ -409,6 +413,10 @@ class Measurements:
                     res[ul_dl] = {'error': f'{err}'}
                     error = True
                     continue
+            if ul_dl == "ul":
+                sum_sent = res["SumSent"]
+            else:
+                sum_recv = res["SumRecv"]
 
                 res = json.loads(out)
                 self.results[key][f'unloaded_icmp_{dst}_pkt_loss_{ul_dl}'] = res["ICMPinger"]["UnloadedStats"]["PacketLoss"]
