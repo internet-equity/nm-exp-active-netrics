@@ -396,21 +396,22 @@ class Measurements:
         self.results[key] = {}
 
         error = False
-
+        oplat_out = {}
         for upload in [True, False]:
 
             ul_dl = "ul" if upload else "dl"
 
             for dst in targets:
-                cmd = """./oplat -s /usr/local/src/nm-exp-active-netrics/bin/iperf3.sh
-                -c {} -p {} -d {} -i 0.25 -n 10 -m "tcp icmp" -J {}""".format(
+                cmd = "/usr/local/src/nm-exp-active-netrics/bin/oplat " \
+                        "-s /usr/local/src/nm-exp-active-netrics/bin/iperf3.sh " \
+                        "-c {} -p {} -d {} -i 0.25 -n 10 -m 'tcp icmp' -J {}".format(
                     client, port, dst, "" if upload else "-R")
-                out, err = self.popen_exec(cmd)
+                oplat_out[ul_dl], err = self.popen_exec(cmd)
                 if len(err) > 0:
                     print(f'ERROR: {err}')
                     log.error(err)
                     self.results[key][f'{dst}_{ul_dl}_error'] = f'{err}'
-                    res[ul_dl] = {'error': f'{err}'}
+                    oplat_out[ul_dl] = {'error': f'{err}'}
                     error = True
                     continue
             if ul_dl == "ul":
@@ -418,7 +419,7 @@ class Measurements:
             else:
                 sum_recv = res["SumRecv"]
 
-                res = json.loads(out)
+                res = json.loads(oplat_out[ul_dl])
                 self.results[key][f'unloaded_icmp_{dst}_pkt_loss_{ul_dl}'] = res["ICMPinger"]["UnloadedStats"]["PacketLoss"]
                 self.results[key][f'unloaded_icmp_{dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
                 self.results[key][f'unloaded_icmp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
@@ -437,10 +438,10 @@ class Measurements:
                 self.results[key][f'loaded_tcp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
                 self.results[key][f'loaded_tcp_{dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
 
-                res[ul_dl] = out
+                #res[ul_dl] = out
 
         self.results[key]['error'] = error
-        return res
+        return oplat_out
 
 
     def latency_under_load(self, key, run_test, client, port):
