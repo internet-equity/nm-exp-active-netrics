@@ -36,6 +36,14 @@ class keyvalue(argparse.Action):
               getattr(namespace, self.dest)[keyop] = \
                 (getattr(namespace, self.dest)[keyop] + " " + value).strip()
 
+#Used to report consumption (Human Readable)
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
+
 def build_parser():
     """ Construct parser to interpret command-line args """
 
@@ -332,6 +340,21 @@ if args.iperf:
 if not args.quiet:
   print(test.results)
 
+if args.reset_consumption:
+  total_bytes_consumed = test.consumption_reset()
+  msg = "Consumption RESET: Now 0 (zero) bytes, before: {0} bytes ({1}).".format(total_bytes_consumed,
+          sizeof_fmt(total_bytes_consumed))
+  print(msg)
+  log.info(msg)
+else:
+  test_bytes_consumed = test.results['total_bytes_consumed']
+  test.results['test_bytes_consumed'] = test_bytes_consumed
+  test.results['total_bytes_consumed'] = test.consumption_update(test.results['total_bytes_consumed']) 
+  msg = "Consumption UPDATE: {0} of {1} bytes ({2}).".format(test_bytes_consumed, 
+         test.results['total_bytes_consumed'], sizeof_fmt(test.results['total_bytes_consumed']))
+  print(msg)
+  log.info(msg)
+
 timenow = datetime.now()
 nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'],
         extended = nma.conf['extended'] if 'extended' in nma.conf.keys() else None,
@@ -341,12 +364,4 @@ nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 if args.upload:
   upload(test.results, test.results)
 
-if args.reset_consumption:
-  msg = "Consumption RESET: Now zeroed at {0} bytes.".format(test.consumption_reset())
-  print(msg)
-  log.info(msg)
-else:
-  msg = "Consumption UPDATE: {0} of {1} bytes.".format(test.results['total_bytes_consumed'], 
-         test.consumption_update(test.results['total_bytes_consumed']))
-  print(msg)
-  log.info(msg)
+
