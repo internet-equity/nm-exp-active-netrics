@@ -228,9 +228,15 @@ def upload(upload_results, measurements):
     insert = {}
     for m in measurements.keys():
         if m != 'ipquery':
+          if type(measurements[m]) is dict:
             for k in measurements[m].keys():
                 if k != 'error':
                     insert[k] = measurements[m][k]
+          ## the below code address for measurements without keys
+          ## like total_bytes_consumed,  
+          else:
+            insert[m] = measurements[m]
+
     #print("---> {}".format(insert))
 
     ret = creds.write_points([{"measurement": "networks",
