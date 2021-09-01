@@ -414,12 +414,38 @@ class Measurements:
                     oplat_out[ul_dl] = {'error': f'{err}'}
                     error = True
                     continue
-            if ul_dl == "ul":
-                sum_sent = res["SumSent"]
-            else:
-                sum_recv = res["SumRecv"]
 
                 res = json.loads(oplat_out[ul_dl])
+                if ul_dl == "ul":
+                    sum_sent = res["SumSent"]
+                    self.results[key]['avg_sum_sent'] = float(sum_sent) / 10
+                else:
+                    sum_recv = res["SumRecv"]
+                    self.results[key]['avg_sum_recv'] = float(sum_recv) / 10
+
+                tcp_rates = []
+                icmp_rates = []
+                tcp_sum = 0
+                icmp_sum = 0
+
+                tcp_loads = res["TCPinger"]["PingLoads"]
+                for probe in tcp_loads:
+                    tcp_rates.append(float(probe["Rate"]))
+                    tcp_sum += float(probe["Rate"])
+
+                for rate in set(tcp_rates):
+                    tcp_sum += rate
+
+                icmp_loads = res["ICMPinger"]["PingLoads"]
+                for probe in icmp_loads:
+                    icmp_rates.append(float(probe["Rate"]))
+                    icmp_sum += float(probe["Rate"])
+
+                for rate in set(icmp_rates):
+                    icmp_sum += rate
+
+                self.results[key]['avg_sum_sent_tcp_probes'] = tcp_sum / len(set(tcp_rates))
+                self.results[key]['avg_sum_sent_icmp_probes'] = icmp_sum / len(set(icmp_rates))
                 self.results[key][f'unloaded_icmp_{dst}_pkt_loss_{ul_dl}'] = res["ICMPinger"]["UnloadedStats"]["PacketLoss"]
                 self.results[key][f'unloaded_icmp_{dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
                 self.results[key][f'unloaded_icmp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
@@ -437,6 +463,7 @@ class Measurements:
                 self.results[key][f'loaded_tcp_{dst}_min_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MinRtt"]) * 1e-6
                 self.results[key][f'loaded_tcp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
                 self.results[key][f'loaded_tcp_{dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
+
 
                 #res[ul_dl] = out
 
