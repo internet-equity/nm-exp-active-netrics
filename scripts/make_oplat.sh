@@ -17,7 +17,11 @@ sudo mkdir -p commands/src/oplat/$PROC/
 sudo chown $USER:$USER commands/src/oplat/$PROC/
 cd commands/src/oplat/$PROC
 
-git clone https://github.com/kyle-macmillan/OpLat.git
+if [ -d "OpLat" ]; then
+	cd OpLat; git pull; cd -
+else
+	git clone https://github.com/kyle-macmillan/OpLat.git
+fi
 go env -w GO111MODULE=off
 export GOPATH=$PWD #/commands/$PROC
 
