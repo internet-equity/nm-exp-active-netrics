@@ -773,7 +773,6 @@ class Measurements:
 
         measured_bw = {'upload': 0, 'download': 0}
         measured_jitter = {'upload': 0, 'download': 0}
-        measured_lost = {'upload': 0, 'download': 0}
         
         length = None ##default
         if 'buffer_length' in self.nma.conf['iperf'].keys():
@@ -786,16 +785,17 @@ class Measurements:
             bandwidth = 0
 
             if self.nma.conf['databases']['tinydb_enable']:
-                bandwidth = speed[0][direction] + 10
+                bandwidth = speed[0][direction] * 1.05
                 if direction == 'download':
-                    bandwidth += 40
                     reverse = True
              
             #log.info(f"iperf using buffer_length: {length}")
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
-                    " -c {} -p {} -u -i 0 -P 4 -b {}M {} {} --json"\
-                    .format(client, port, bandwidth/4, f'-l {length}' if length is not None else '',
-                            '-R' if reverse else "")
+                        " -c {} -p {} -u -i 0 -t 5 -P 4 -b {:.2f}M {} {} --json"\
+                        .format(client, port, bandwidth/4, 
+                                f'-l {length}' if length is not None else '',
+                                '-R' if reverse else "")
+            # print(iperf_cmd)
 
             output, err = self.popen_exec(iperf_cmd)
             if len(err) > 0:
@@ -815,23 +815,29 @@ class Measurements:
                 iperf_res[direction] = { f'output' : output, 'error' : f'{err}' }
                 continue
 
-            measured_lost[direction] = float(json_res['end']['sum']['lost_percent'])
-            measured_jitter[direction] = float(json_res['end']['sum']['jitter_ms'])
-            measured_bw[direction] = (float(json_res['end']['sum']['bits_per_second']) \
-                    / 1000 / 1000) * (100 - measured_lost[direction]) / 100
+            if direction == "upload":
+                lost_pct = json_res["end"]["sum"]["lost_percent"]
+                frac_recvd = (100 - lost_pct) / 100
+                measured_bw[direction] = frac_recvd * float(json_res["end"]["sum"]["bits_per_second"]) / 1e6
+            else:
+                measured_bw[direction] = float(json_res["intervals"][0]["sum"]["bits_per_second"]) / 1e6
 
-            self.results['total_bytes_consumed'] = self.results['total_bytes_consumed'] + json_res['end']['sum']['bytes']
             self.results[key][f'iperf_udp_{direction}'] = measured_bw[direction]
+
+            self.results['total_bytes_consumed'] = self.results['total_bytes_consumed'] 
+            if direction == "upload": 
+                self.results['total_bytes_consumed'] += json_res['end']['sum']['bytes']
+            else: 
+                self.results['total_bytes_consumed'] += json_res["intervals"][0]["sum"]["bytes"]
+
+            measured_jitter[direction] = float(json_res['end']['sum']['jitter_ms'])
             self.results[key][f'iperf_udp_{direction}_jitter_ms'] = measured_jitter[direction]
-            self.results[key][f'iperf_udp_{direction}_lost_percent'] = measured_lost[direction]
 
             if not self.quiet:
                 if direction == 'upload':
-                    print('\n --- iperf Bandwidth and Jitter ---')
+                    print('\n --- iperf Bandwidth ---')
                 print(f'{direction} bandwidth: {measured_bw[direction]} Mb/s')
                 print(f'{direction} jitter: {measured_jitter[direction]} ms')
-                if measured_lost[direction] is not None:
-                    print(f'{direction} lost: {measured_lost[direction]} %')
 
         self.results[key]['error'] = error_found
         if self.nma.conf['databases']['tinydb_enable']:
