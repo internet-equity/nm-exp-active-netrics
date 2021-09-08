@@ -174,9 +174,11 @@ class Measurements:
         jitter_ookla = res_json['ping']['jitter']
         latency_ookla = res_json['ping']['latency']
 
-        # Calculating data transferred in MB
-        ul_bw_used = int(res_json['upload']['bytes']) / 1e6
-        dl_bw_used = int(res_json['download']['bytes']) / 1e6
+        # Calculating data transferred 
+        ul_bw_used = int(res_json['upload']['bytes']) 
+        dl_bw_used = int(res_json['download']['bytes']) 
+        self.results['total_bytes_consumed'] += ul_bw_used + dl_bw_used
+
         pktloss_ookla = None
         if 'packetLoss' in res_json.keys():
             pktloss_ookla = res_json['packetLoss']
@@ -196,7 +198,12 @@ class Measurements:
             print(f'Upload:\t\t{upload_ookla} Mb/s')
             print(f'Latency:\t{latency_ookla} ms')
             print(f'Jitter:\t\t{jitter_ookla} ms')
-            print(f'PktLoss:\t{pktloss_ookla} rate')
+            
+            if pktloss_ookla is not None:
+                print(f'PktLoss:\t{pktloss_ookla}%')
+            else:
+                print(f'PktLoss:\tnot returned by test.')
+
         return output #res_json
 
     def speed_ndt7(self, key, run_test):
@@ -783,7 +790,7 @@ class Measurements:
 
         iperf_res = {}
         error_found = False
-
+        
         if self.nma.conf['databases']['tinydb_enable']:
             speed = self.speed_db.all()
 
@@ -840,7 +847,6 @@ class Measurements:
 
             self.results[key][f'iperf_udp_{direction}'] = measured_bw[direction]
 
-            self.results['total_bytes_consumed'] = self.results['total_bytes_consumed'] 
             if direction == "upload": 
                 self.results['total_bytes_consumed'] += json_res['end']['sum']['bytes']
             else: 
@@ -858,7 +864,8 @@ class Measurements:
         self.results[key]['error'] = error_found
         if self.nma.conf['databases']['tinydb_enable']:
             self.update_max_speed(measured_bw['download'],
-                              measured_bw['upload'])
+                                  measured_bw['upload'])
+
         return iperf_res
 
 
