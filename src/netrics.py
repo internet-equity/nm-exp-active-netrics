@@ -289,59 +289,75 @@ output['ipquery']= test.ipquery()
 """ Measure ping latency to list of websites """
 output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
 
-""" Measure last mile latency """
-output['last_mile_rtt'] = test.last_mile_latency('last_mile_rtt', args.last_mile_rtt)
 
-""" Run ookla speed test """
-output['ookla'] = test.speed_ookla('ookla', args.ookla)
+"""
+If we have failures in name resolution,
+further tests are irrelevant, 
+and we can't upload to influx. """
+connectivity_failure = False
+if "ping_latency" in test.results and \
+   "google_error" in test.results["ping_latency"] and \
+   ("amazon_error" in test.results["ping_latency"] or "amazon_rtt_avg_ms" not in test.results["ping_latency"]) and \
+   ("wikipedia_error" in test.results["ping_latency"] or "wikipedia_rtt_avg_ms" not in test.results["ping_latency"]):
+    connectivity_failure = True
 
-""" Run ndt7 speed test """
-output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
 
-""" Run speed tests in sequence ookla/ndt7 """
-if args.speed:
-  output['ookla'], output['ndt7'] = test.speed('ookla', 'ndt7', args.limit_consumption)
+if not connectivity_failure:
 
-""" Measure latency under load """
-if args.latency_under_load:
+    """ Measure last mile latency """
+    output['last_mile_rtt'] = test.last_mile_latency('last_mile_rtt', args.last_mile_rtt)
 
-    if nma.conf['iperf']['targets'][0] == "":
+    """ Measure DNS latency """
+    output['dns_latency'] = test.dns_latency('dns_latency', args.dns)
+    
+    """ Count hops to target website """
+    output['hops_to_target'] = test.hops_to_target('hops_to_target', args.target)
+
+    """ Run ookla speed test """
+    output['ookla'] = test.speed_ookla('ookla', args.ookla)
+    
+    """ Run ndt7 speed test """
+    output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
+
+    """ Run speed tests in sequence ookla/ndt7 """
+    if args.speed:
+      output['ookla'], output['ndt7'] = test.speed('ookla', 'ndt7', args.limit_consumption)
+
+    """ Run iperf3 bandwidth test """
+    if args.iperf:
+      if nma.conf['iperf']['targets'][0] == "":
         log.error("[iperf][targets] not properly set")
-        print("[iperf][targets] not properly set -- needed for latency under load")
+        print("[iperf][targets] not properly set")
         sys.exit(1)
+    
+      for target in nma.conf['iperf']['targets']:
+        server=target.split(':')[0]
+        port=target.split(':')[1]
+        output['iperf'] = test.iperf3_bandwidth('iperf', client=server, port=port,
+                limit=args.limit_consumption)
+    
+    """ Measure latency under load """
+    if args.latency_under_load:
+    
+        if nma.conf['iperf']['targets'][0] == "":
+            log.error("[iperf][targets] not properly set")
+            print("[iperf][targets] not properly set -- needed for latency under load")
+            sys.exit(1)
+    
+        target = nma.conf['iperf']['targets'][0]
+        server = target.split(':')[0]
+        port   = target.split(':')[1]
+    
+        output['latency_under_load'] = test.oplat('oplat', True, client=server,
+                                                  port=port, limit=args.limit_consumption)
 
-    target = nma.conf['iperf']['targets'][0]
-    server = target.split(':')[0]
-    port   = target.split(':')[1]
-
-    output['latency_under_load'] = test.oplat('oplat', True, client=server,
-                                              port=port, limit=args.limit_consumption)
-
-""" Measure DNS latency """
-output['dns_latency'] = test.dns_latency('dns_latency', args.dns)
-
-""" Count hops to target website """
-output['hops_to_target'] = test.hops_to_target('hops_to_target', args.target)
-
+    
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp('connected_devices_arp', args.ndev)
 
 """ Measure consumption using tshark. """
 output['tshark_eth_consumption'] = test.tshark_eth_consumption('tshark_eth_consumption', args.tshark)
 
-
-""" Run iperf3 bandwidth test """
-if args.iperf:
-  if nma.conf['iperf']['targets'][0] == "":
-    log.error("[iperf][targets] not properly set")
-    print("[iperf][targets] not properly set")
-    sys.exit(1)
-
-  for target in nma.conf['iperf']['targets']:
-    server=target.split(':')[0]
-    port=target.split(':')[1]
-    output['iperf'] = test.iperf3_bandwidth('iperf', client=server, port=port,
-            limit=args.limit_consumption)
 
 if not args.quiet:
   print(test.results)
@@ -367,7 +383,9 @@ nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'],
         annotation = args.annotate)
 nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 
-if args.upload:
+
+if args.upload and not connectivity_failure:
+
   upload(test.results, test.results)
 
 

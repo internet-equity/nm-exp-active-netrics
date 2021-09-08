@@ -31,10 +31,10 @@ netrics="""
 
 [reference_site_dict]
     "www.google.com" = "google"
-    "www.youtube.com" = "youtube"
-    "www.facebook.com" = "facebook"
     "www.amazon.com" = "amazon"
     "www.wikipedia.org" = "wikipedia"
+    "www.youtube.com" = "youtube"
+    "www.facebook.com" = "facebook"
     "www.chicagotribune.com" = "tribune"
     "chicago.suntimes.com" = "suntimes"
     "cs.uchicago.edu" = "uchicago"

@@ -290,6 +290,7 @@ class Measurements:
 
         ping_res = {}
         error_found = False
+        ping_failure_count = 0
 
         self.results[key] = {}
         for site in sites:
@@ -310,6 +311,15 @@ class Measurements:
                 self.results[key][label + "_error"] = f'{err}'
                 ping_res[label] = { 'error' : f'{err}' }
                 error_found = True
+
+                if "Name or service not known" in err or \
+                   "Temporary failure in name resolution" in err:
+                    ping_failure_count += 1
+
+                if ping_failure_count >= 3:
+                    log.error("Aborting additional pings: 3 failures.")
+                    break
+
                 continue
 
             try:
