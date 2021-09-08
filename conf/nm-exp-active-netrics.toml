@@ -81,7 +81,7 @@ netrics="""
     iface = "eth0"
 
 [last_mile_latency]
-    "1.1.1.1" = "Cloudflare DNS"
+    "1.1.1.1" = "Cloudflare_DNS"
 
 [oplat]
     targets = ["abbott.cs.uchicago.edu:33317"]
