@@ -463,25 +463,27 @@ class Measurements:
                 for rate in set(icmp_rates):
                     icmp_sum += rate
 
-                self.results[key]['avg_sum_sent_tcp_probes'] = tcp_sum / len(set(tcp_rates))
-                self.results[key]['avg_sum_sent_icmp_probes'] = icmp_sum / len(set(icmp_rates))
-                self.results[key][f'unloaded_icmp_{dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["PacketLoss"])
-                self.results[key][f'unloaded_icmp_{dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'unloaded_icmp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'unloaded_icmp_{dst}_avg_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["AvgRtt"]) * 1e-6
-                self.results[key][f'loaded_icmp_{dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["PacketLoss"])
-                self.results[key][f'loaded_icmp_{dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'loaded_icmp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'loaded_icmp_{dst}_avg_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
+                field_dst = dst.split(":")[0]
 
-                self.results[key][f'unloaded_tcp_{dst}_pkt_loss_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["PacketLoss"])
-                self.results[key][f'unloaded_tcp_{dst}_min_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'unloaded_tcp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'unloaded_tcp_{dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["AvgRtt"]) * 1e-6
-                self.results[key][f'loaded_tcp_{dst}_pkt_loss_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["PacketLoss"])
-                self.results[key][f'loaded_tcp_{dst}_min_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'loaded_tcp_{dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'loaded_tcp_{dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
+                self.results[key][f'avg_sum_sent_tcp_probes_{ul_dl}'] = tcp_sum / len(set(tcp_rates))
+                self.results[key][f'avg_sum_sent_icmp_probes_{ul_dl}'] = icmp_sum / len(set(icmp_rates))
+                self.results[key][f'unloaded_icmp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["PacketLoss"])
+                self.results[key][f'unloaded_icmp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
+                self.results[key][f'unloaded_icmp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
+                self.results[key][f'unloaded_icmp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["AvgRtt"]) * 1e-6
+                self.results[key][f'loaded_icmp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["PacketLoss"])
+                self.results[key][f'loaded_icmp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["MinRtt"]) * 1e-6
+                self.results[key][f'loaded_icmp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
+                self.results[key][f'loaded_icmp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
+
+                self.results[key][f'unloaded_tcp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["PacketLoss"])
+                self.results[key][f'unloaded_tcp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
+                self.results[key][f'unloaded_tcp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
+                self.results[key][f'unloaded_tcp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["AvgRtt"]) * 1e-6
+                self.results[key][f'loaded_tcp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["PacketLoss"])
+                self.results[key][f'loaded_tcp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MinRtt"]) * 1e-6
+                self.results[key][f'loaded_tcp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
+                self.results[key][f'loaded_tcp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
 
 
                 #res[ul_dl] = out
