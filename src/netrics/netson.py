@@ -388,15 +388,51 @@ class Measurements:
                     ip_addr = hop_stats[4].strip('()')
                     try:
                         if not ipaddress.ip_address(ip_addr).is_private:
+                            ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+                                0.25, 10, 5, site)
+                            output[site], err = self.popen_exec(ping_cmd)
+                            if len(err) > 0:
+                                print(f"ERROR: {err}")
+                                log.error(err)
+                                self.results[key][site + "_error"] = f'{err}'
+                                output[site] = { 'error' : f'{err}' }
+                                error_found = True
+                                return
+
+                            try:
+                                ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
+                                                                output[site], re.MULTILINE)[0])
+                            except IndexError:
+                                self.results[key][site + "_error"] = 'Packet Loss IndexError'
+                                output[site] = {'error': 'Packet Loss IndexErorr'}
+                                error_found = True
+                                continue
+
+                            try:
+                                ping_rtt_ms = re.findall(
+                                    'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
+                                    , output[site])[0]
+                            except IndexError:
+                                self.results[key][site + "_error"] = 'Probe IndexError'
+                                output[site] = {'error': 'Probe IndexErorr'}
+                                error_found = True
+                                continue
                             res = [hop_stats[6], hop_stats[9], hop_stats[12]]
+                            ping_rtt_ms = [float(v) for v in ping_rtt_ms]
+
+                            self.results[key][site + "last_mile_ping_packet_loss_pct"] = ping_pkt_loss
+                            self.results[key][site + "last_mile_ping_rtt_min_ms"] = ping_rtt_ms[0]
+                            self.results[key][site + "last_mile_ping_rtt_max_ms"] = ping_rtt_ms[2]
+                            self.results[key][site + "last_mile_ping_rtt_avg_ms"] = ping_rtt_ms[1]
+                            self.results[key][site + "last_mile_ping_rtt_mdev_ms"] = ping_rtt_ms[3]
                             break
                     except ValueError:
                         continue
 
             res.sort()
-            self.results[key][f'{labels[site]}_last_mile_rtt_min_ms'] = float(res[0])
-            self.results[key][f'{labels[site]}_last_mile_rtt_median_ms'] = float(res[1])
-            self.results[key][f'{labels[site]}_last_mile_rtt_max_ms'] = float(res[2])
+            self.results[key][f'{labels[site]}_last_mile_tr_rtt_min_ms'] = float(res[0])
+            self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(res[1])
+            self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[2])
 
         return output
 
