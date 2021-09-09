@@ -308,7 +308,7 @@ class Measurements:
             if len(err) > 0:
                 print(f"ERROR: {err}")
                 log.error(err)
-                self.results[key][label + "_error"] = f'{err}'
+                self.results[key][label + "_error"] = err.strip()
                 ping_res[label] = { 'error' : f'{err}' }
                 error_found = True
 
