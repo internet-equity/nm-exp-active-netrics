@@ -389,7 +389,7 @@ class Measurements:
                     try:
                         if not ipaddress.ip_address(ip_addr).is_private:
                             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
-                                0.25, 10, 5, site)
+                                0.25, 10, 5, ip_addr)
                             output[site], err = self.popen_exec(ping_cmd)
                             if len(err) > 0:
                                 print(f"ERROR: {err}")
@@ -420,11 +420,11 @@ class Measurements:
                             res = [hop_stats[6], hop_stats[9], hop_stats[12]]
                             ping_rtt_ms = [float(v) for v in ping_rtt_ms]
 
-                            self.results[key][site + "last_mile_ping_packet_loss_pct"] = ping_pkt_loss
-                            self.results[key][site + "last_mile_ping_rtt_min_ms"] = ping_rtt_ms[0]
-                            self.results[key][site + "last_mile_ping_rtt_max_ms"] = ping_rtt_ms[2]
-                            self.results[key][site + "last_mile_ping_rtt_avg_ms"] = ping_rtt_ms[1]
-                            self.results[key][site + "last_mile_ping_rtt_mdev_ms"] = ping_rtt_ms[3]
+                            self.results[key][labels[site] + "_last_mile_ping_packet_loss_pct"] = ping_pkt_loss
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_min_ms"] = ping_rtt_ms[0]
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_max_ms"] = ping_rtt_ms[2]
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_avg_ms"] = ping_rtt_ms[1]
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_mdev_ms"] = ping_rtt_ms[3]
                             break
                     except ValueError:
                         continue
