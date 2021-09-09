@@ -206,6 +206,31 @@ class Measurements:
 
         return output #res_json
 
+    def parse_ndt7_output(self, output):
+        """Parse output of non-quiet ndt7-client JSON"""
+
+        res_json = {}
+        dl_bytes = 0
+        ul_bytes = 0
+        res_text = ''
+
+        for obj in output.split("\n")[:-1]:
+            r = json.loads(obj)
+            if r.get("Value", 0):
+                num_bytes = r["Value"]["AppInfo"]["NumBytes"]
+                if r["Value"]["Test"] == "download":
+                    dl_bytes = num_bytes
+                else:
+                    ul_bytes = num_bytes
+            else:
+                res_json = r
+                res_text = obj
+
+        total_bytes = dl_bytes + ul_bytes
+
+        return (res_json, res_text, total_bytes)
+
+
     def speed_ndt7(self, key, run_test):
         """ Test runs NDT7 Speed test """
         """ key: test name """
@@ -214,14 +239,14 @@ class Measurements:
             return
 
         self.results[key] = {}
-        output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -quiet -format 'json'")
+        output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -format 'json' | grep -i 'numbytes\|FQDN'")
         if len(err) > 0:
              self.results[key]["error"] = f'{err}'
              print(f"ERROR: {err}")
              log.error(err)
              return f'{err}'
 
-        res_json = json.loads(output)
+        res_json, res_text, total_bytes = self.parse_ndt7_output(output)
 
         download_speed = float(res_json["Download"]["Value"])
         upload_speed = float(res_json["Upload"]["Value"])
@@ -233,7 +258,8 @@ class Measurements:
         self.results[key]["speedtest_ndt7_upload"] = upload_speed
         self.results[key]["speedtest_ndt7_downloadretrans"] = download_retrans
         self.results[key]["speedtest_ndt7_minrtt"] = minrtt
-
+        self.results["total_bytes_consumed"] += total_bytes
+        
         if not self.quiet:
             print('\n --- NDT7 speed tests ---')
             print(f'Download:\t{download_speed} Mb/s')
@@ -241,7 +267,7 @@ class Measurements:
             print(f'DownloadRetrans:{download_retrans} %')
             print(f'MinRTT:\t\t{minrtt} ms')
  
-        return output #res_json
+        return res_text #res_json
 
     def bandwidth_test_stochastic_limit(self, measured_down=5,
                                         max_monthly_consumption_gb=200,
@@ -454,10 +480,12 @@ class Measurements:
                 res = json.loads(oplat_out[ul_dl])
                 if ul_dl == "ul":
                     sum_sent = res["SumSent"]
-                    self.results[key]['avg_sum_sent'] = float(sum_sent) / 10
+                    self.results[key]['avg_sum_sent'] = float(sum_sent) / 12
+                    self.results['total_bytes_consumed'] += float(sum_sent)
                 else:
                     sum_recv = res["SumRecv"]
-                    self.results[key]['avg_sum_recv'] = float(sum_recv) / 10
+                    self.results[key]['avg_sum_recv'] = float(sum_recv) / 12
+                    self.results['total_bytes_consumed'] += float(sum_recv)
 
                 tcp_rates = []
                 icmp_rates = []

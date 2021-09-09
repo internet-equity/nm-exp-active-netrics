@@ -10,9 +10,9 @@ help:
 	@echo
 	@echo "Steps:"
 	@echo "1. sudo make user"
-	@echo "2. sudo make iperf"
-	@echo "3. make ndt"
-	@echo "4. make oplat"
+	@echo "2. make ndt"
+	@echo "3. make oplat"
+	@echo "4. sudo make iperf"
 	@echo "5. make speedtest"
 	@echo "6. sudo make deps"
 	@echo "7. sudo make venv"

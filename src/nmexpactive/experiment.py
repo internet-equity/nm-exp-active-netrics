@@ -79,7 +79,7 @@ class NetMicroscopeControl:
             load_dotenv(ETC_ENV)
             log.info("ENV using {0}".format(ETC_ENV))
         else:
-            log.warn("ENV not set: ({0}).".format(ETC_ENV))
+            log.info("ENV not set: ({0}).".format(ETC_ENV))
         
         cfg_path = Path('.').absolute() / 'conf' / CFG
         try: 
