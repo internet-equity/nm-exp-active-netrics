@@ -444,10 +444,12 @@ class Measurements:
                 res = json.loads(oplat_out[ul_dl])
                 if ul_dl == "ul":
                     sum_sent = res["SumSent"]
-                    self.results[key]['avg_sum_sent'] = float(sum_sent) / 10
+                    self.results[key]['avg_sum_sent'] = float(sum_sent) / 12
+                    self.results['total_bytes_consumed'] += float(sum_sent)
                 else:
                     sum_recv = res["SumRecv"]
-                    self.results[key]['avg_sum_recv'] = float(sum_recv) / 10
+                    self.results[key]['avg_sum_recv'] = float(sum_recv) / 12
+                    self.results['total_bytes_consumed'] += float(sum_recv)
 
                 tcp_rates = []
                 icmp_rates = []
