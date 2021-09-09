@@ -31,10 +31,10 @@ netrics="""
 
 [reference_site_dict]
     "www.google.com" = "google"
-    "www.youtube.com" = "youtube"
-    "www.facebook.com" = "facebook"
     "www.amazon.com" = "amazon"
     "www.wikipedia.org" = "wikipedia"
+    "www.youtube.com" = "youtube"
+    "www.facebook.com" = "facebook"
     "www.chicagotribune.com" = "tribune"
     "chicago.suntimes.com" = "suntimes"
     "cs.uchicago.edu" = "uchicago"
@@ -81,7 +81,7 @@ netrics="""
     iface = "eth0"
 
 [last_mile_latency]
-    "1.1.1.1" = "Cloudflare DNS"
+    "1.1.1.1" = "Cloudflare_DNS"
 
 [oplat]
     targets = ["abbott.cs.uchicago.edu:33317"]

@@ -24,7 +24,7 @@ export GO111MODULE=on
 echo $PWD
 #go get -v github.com/m-lab/ndt7-client-go/cmd/ndt7-client
 
-mkdir gocache
+mkdir -p gocache
 export GOCACHE=$PWD/gocache
 export GOPATH=$PWD
 
