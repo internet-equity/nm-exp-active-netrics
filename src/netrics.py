@@ -287,7 +287,8 @@ test = Measurements(args, nma)
 output['ipquery']= test.ipquery()
 
 """ Measure ping latency to list of websites """
-output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
+if not args.tshark:
+    output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
 
 
 """
