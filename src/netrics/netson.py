@@ -424,15 +424,51 @@ class Measurements:
                     ip_addr = hop_stats[4].strip('()')
                     try:
                         if not ipaddress.ip_address(ip_addr).is_private:
+                            ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+                                0.25, 10, 5, ip_addr)
+                            output[site], err = self.popen_exec(ping_cmd)
+                            if len(err) > 0:
+                                print(f"ERROR: {err}")
+                                log.error(err)
+                                self.results[key][site + "_error"] = f'{err}'
+                                output[site] = { 'error' : f'{err}' }
+                                error_found = True
+                                return
+
+                            try:
+                                ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
+                                                                output[site], re.MULTILINE)[0])
+                            except IndexError:
+                                self.results[key][site + "_error"] = 'Packet Loss IndexError'
+                                output[site] = {'error': 'Packet Loss IndexErorr'}
+                                error_found = True
+                                continue
+
+                            try:
+                                ping_rtt_ms = re.findall(
+                                    'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
+                                    , output[site])[0]
+                            except IndexError:
+                                self.results[key][site + "_error"] = 'Probe IndexError'
+                                output[site] = {'error': 'Probe IndexErorr'}
+                                error_found = True
+                                continue
                             res = [hop_stats[6], hop_stats[9], hop_stats[12]]
+                            ping_rtt_ms = [float(v) for v in ping_rtt_ms]
+
+                            self.results[key][labels[site] + "_last_mile_ping_packet_loss_pct"] = ping_pkt_loss
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_min_ms"] = ping_rtt_ms[0]
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_max_ms"] = ping_rtt_ms[2]
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_avg_ms"] = ping_rtt_ms[1]
+                            self.results[key][labels[site] + "_last_mile_ping_rtt_mdev_ms"] = ping_rtt_ms[3]
                             break
                     except ValueError:
                         continue
 
             res.sort()
-            self.results[key][f'{labels[site]}_last_mile_rtt_min_ms'] = float(res[0])
-            self.results[key][f'{labels[site]}_last_mile_rtt_median_ms'] = float(res[1])
-            self.results[key][f'{labels[site]}_last_mile_rtt_max_ms'] = float(res[2])
+            self.results[key][f'{labels[site]}_last_mile_tr_rtt_min_ms'] = float(res[0])
+            self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(res[1])
+            self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[2])
 
         return output
 
@@ -481,11 +517,11 @@ class Measurements:
                 if ul_dl == "ul":
                     sum_sent = res["SumSent"]
                     self.results[key]['avg_sum_sent'] = float(sum_sent) / 12
-                    self.results['total_bytes_consumed'] += float(sum_sent)
+                    self.results['total_bytes_consumed'] += int(sum_sent)
                 else:
                     sum_recv = res["SumRecv"]
                     self.results[key]['avg_sum_recv'] = float(sum_recv) / 12
-                    self.results['total_bytes_consumed'] += float(sum_recv)
+                    self.results['total_bytes_consumed'] += int(sum_recv)
 
                 tcp_rates = []
                 icmp_rates = []
@@ -495,7 +531,6 @@ class Measurements:
                 tcp_loads = res["TCPinger"]["PingLoads"]
                 for probe in tcp_loads:
                     tcp_rates.append(float(probe["Rate"]))
-                    tcp_sum += float(probe["Rate"])
 
                 for rate in set(tcp_rates):
                     tcp_sum += rate
@@ -503,15 +538,14 @@ class Measurements:
                 icmp_loads = res["ICMPinger"]["PingLoads"]
                 for probe in icmp_loads:
                     icmp_rates.append(float(probe["Rate"]))
-                    icmp_sum += float(probe["Rate"])
 
                 for rate in set(icmp_rates):
                     icmp_sum += rate
 
                 field_dst = dst.split(":")[0]
 
-                self.results[key][f'avg_sum_sent_tcp_probes_{ul_dl}'] = tcp_sum / len(set(tcp_rates))
-                self.results[key][f'avg_sum_sent_icmp_probes_{ul_dl}'] = icmp_sum / len(set(icmp_rates))
+                self.results[key][f'avg_rate_tcp_probes_{ul_dl}'] = tcp_sum / len(set(tcp_rates))
+                self.results[key][f'avg_rate_icmp_probes_{ul_dl}'] = icmp_sum / len(set(icmp_rates))
                 self.results[key][f'unloaded_icmp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["PacketLoss"])
                 self.results[key][f'unloaded_icmp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
                 self.results[key][f'unloaded_icmp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
