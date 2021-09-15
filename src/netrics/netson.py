@@ -531,7 +531,6 @@ class Measurements:
                 tcp_loads = res["TCPinger"]["PingLoads"]
                 for probe in tcp_loads:
                     tcp_rates.append(float(probe["Rate"]))
-                    tcp_sum += float(probe["Rate"])
 
                 for rate in set(tcp_rates):
                     tcp_sum += rate
@@ -539,15 +538,14 @@ class Measurements:
                 icmp_loads = res["ICMPinger"]["PingLoads"]
                 for probe in icmp_loads:
                     icmp_rates.append(float(probe["Rate"]))
-                    icmp_sum += float(probe["Rate"])
 
                 for rate in set(icmp_rates):
                     icmp_sum += rate
 
                 field_dst = dst.split(":")[0]
 
-                self.results[key][f'avg_sum_sent_tcp_probes_{ul_dl}'] = tcp_sum / len(set(tcp_rates))
-                self.results[key][f'avg_sum_sent_icmp_probes_{ul_dl}'] = icmp_sum / len(set(icmp_rates))
+                self.results[key][f'avg_rate_tcp_probes_{ul_dl}'] = tcp_sum / len(set(tcp_rates))
+                self.results[key][f'avg_rate_icmp_probes_{ul_dl}'] = icmp_sum / len(set(icmp_rates))
                 self.results[key][f'unloaded_icmp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["PacketLoss"])
                 self.results[key][f'unloaded_icmp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
                 self.results[key][f'unloaded_icmp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
