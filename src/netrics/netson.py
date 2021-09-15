@@ -342,8 +342,8 @@ class Measurements:
                    "Temporary failure in name resolution" in err:
                     ping_failure_count += 1
 
-                if ping_failure_count >= 3:
-                    log.error("Aborting additional pings: 3 failures.")
+                if ping_failure_count >= 5:
+                    log.error("Aborting additional pings: 5 failures.")
                     break
 
                 continue

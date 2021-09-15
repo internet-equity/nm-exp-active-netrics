@@ -250,6 +250,26 @@ def upload(upload_results, measurements):
     log.info("influxdb write_points return: OK")
  
 
+def check_connectivity_failure(res, site):
+
+    if "ping_latency" not in res:
+        return None
+
+    latency_res = res["ping_latency"]
+
+    offline_failures = ["Name or service not known",
+                        "Temporary failure in name resolution"]
+
+    if f"{site}_error") in latency_res and \
+       latency_res[f"{site}_error"] in offline_failures:
+        return True
+
+    if f"{site}_rtt_avg_ms" not in latency_res:
+        return None
+
+    return False
+
+
 ################################# MAIN #######################################
 
 parser = build_parser()
@@ -292,15 +312,16 @@ if not args.tshark:
 
 
 """
-If we have failures in name resolution,
-further tests are irrelevant, 
+If we have failures in name resolution, further tests are irrelevant, 
 and we can't upload to influx. """
-connectivity_failure = False
-if "ping_latency" in test.results and \
-   "google_error" in test.results["ping_latency"] and \
-   ("amazon_error" in test.results["ping_latency"] or "amazon_rtt_avg_ms" not in test.results["ping_latency"]) and \
-   ("wikipedia_error" in test.results["ping_latency"] or "wikipedia_rtt_avg_ms" not in test.results["ping_latency"]):
-    connectivity_failure = True
+connectivity_failure = True
+for site in ["google", "amazon", "wikipedia"]:
+
+    # None has no effect; True, leaves it True.
+    # So if any of up to three sites do NOT have a connectivity failure,
+    #  then the connection is not altogether broken.
+    if check_connectivity_failure(test.results, site) is False:
+        connectivity_failure = False
 
 
 if not connectivity_failure:
