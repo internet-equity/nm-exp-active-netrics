@@ -260,7 +260,7 @@ def check_connectivity_failure(res, site):
     offline_failures = ["Name or service not known",
                         "Temporary failure in name resolution"]
 
-    if f"{site}_error") in latency_res and \
+    if f"{site}_error" in latency_res and \
        latency_res[f"{site}_error"] in offline_failures:
         return True
 
@@ -322,6 +322,9 @@ for site in ["google", "amazon", "wikipedia"]:
     #  then the connection is not altogether broken.
     if check_connectivity_failure(test.results, site) is False:
         connectivity_failure = False
+
+if args.tshark:
+    connectivity_failure = False
 
 
 if not connectivity_failure:
