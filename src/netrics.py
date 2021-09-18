@@ -250,24 +250,30 @@ def upload(upload_results, measurements):
     log.info("influxdb write_points return: OK")
  
 
-def check_connectivity_failure(res, site):
+def check_connectivity(res, site):
 
     if "ping_latency" not in res:
         return None
 
     latency_res = res["ping_latency"]
 
+    if f"{site}_rtt_avg_ms" in latency_res:
+        return True
+
     offline_failures = ["Name or service not known",
                         "Temporary failure in name resolution"]
 
-    if f"{site}_error" in latency_res and \
-       latency_res[f"{site}_error"] in offline_failures:
-        return True
+    if f"{site}_error" in latency_res:
 
-    if f"{site}_rtt_avg_ms" not in latency_res:
-        return None
+        offline_failures = ["Name or service not known",
+                            "Temporary failure in name resolution"]
 
-    return False
+        for mode in offline_failures:
+            if mode in latency_res[f"{site}_error"]:
+                return False
+
+
+    return None
 
 
 ################################# MAIN #######################################
@@ -311,21 +317,15 @@ if not args.tshark:
     output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
 
 
-"""
-If we have failures in name resolution, further tests are irrelevant, 
-and we can't upload to influx. """
-connectivity_failure = True
-for site in ["google", "amazon", "wikipedia"]:
 
-    # None has no effect; True, leaves it True.
-    # So if any of up to three sites do NOT have a connectivity failure,
-    #  then the connection is not altogether broken.
-    if check_connectivity_failure(test.results, site) is False:
-        connectivity_failure = False
-
-if args.tshark:
-    connectivity_failure = False
-
+# Check to see if we have connectivity failures on google, amazon, and wikipedia.
+connectivity_status  = [check_connectivity(test.results, site)
+                        for site in ["google", "amazon", "wikipedia"]]
+# Values will be none if no ping test actually ran.
+connectivity_status  = [stat for stat in connectivity_status if stat is not None]
+# If any actual tests ran AND they ALL failed, then we have connectivity failure.
+# print(connectivity_status, any(connectivity_status))
+connectivity_failure = connectivity_status and not any(connectivity_status)
 
 if not connectivity_failure:
 
