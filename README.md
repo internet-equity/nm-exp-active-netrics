@@ -50,7 +50,7 @@ Please use the _unmanaged_ installation with direct influxdb data ingestion if y
    targets = ["server:33001"]
 ...
 ```
-5. Create .env file with server credentials <b>`sudo vim /etc/nm-exp-active-netrics/.env`</b>:
+5. Create .env.netrics file with server credentials <b>`sudo vim /etc/nm-exp-active-netrics/.env.netrics`</b>:
 <pre>
 INFLUXDB_SERVER=
 INFLUXDB_PORT=

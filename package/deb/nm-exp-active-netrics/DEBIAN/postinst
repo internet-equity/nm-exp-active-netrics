@@ -15,20 +15,17 @@ usermod -a -G wireshark netrics
 echo "INFO: Please enable non-root users to run tshark wireshark. Eg.:"
 echo "INFO: \"$ yes | DEBIAN_FRONTEND=teletype dpkg-reconfigure wireshark-common\""
 
-if [ -f /etc/nm-exp-active-netrics/.env ];then
-  chown netrics:netrics /etc/nm-exp-active-netrics/.env
-fi
-
-# uncomment here to stash archive/pending
-#if [ -d /var/nm/ ];then
-#	mv /var/nm /var/nm.backup.$(date +"%Y%m%d")
-#fi
+### uncomment here to stash archive/pending
+## if [ -d /var/nm/ ];then
+##	mv /var/nm /var/nm.backup.$(date +"%Y%m%d")
+## fi
 
 mkdir -p /var/nm/
 
-if [ -f /etc/nm-exp-active-netrics/.env ];then
-	chown netrics:netrics /etc/nm-exp-active-netrics/.env
+if [ -f /etc/nm-exp-active-netrics/.env.netrics ];then
+	chown netrics:netrics /etc/nm-exp-active-netrics/.env.netrics
 fi
+
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
 chmod +x /etc/init.d/nm-exp-active-netrics
 update-rc.d nm-exp-active-netrics defaults

@@ -32,9 +32,9 @@ fi
 
 start_nma() {
     upload=""
-    if [ -f /etc/nm-exp-active-netrics/.env ];then
+    if [ -f /etc/nm-exp-active-netrics/.env.netrics ];then
 	    upload="-u"
-	    echo "INFO: /etc/nm-exp-active-netrics/.env present, using -u (upload flag)"
+	    echo "INFO: /etc/nm-exp-active-netrics/.env.netrics present, using -u (upload flag)"
     fi
     echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
 
