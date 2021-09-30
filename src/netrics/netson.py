@@ -886,10 +886,10 @@ class Measurements:
              
             #log.info(f"iperf using buffer_length: {length}")
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
-                        " -c {} -p {} -u -i 0 -t 5 -P 4 -b {:.2f}M {} {} --json"\
+                        " -c {} -p {} -u -i 0 -P 4 -b {:.2f}M {} {} --json"\
                         .format(client, port, bandwidth/4, 
                                 f'-l {length}' if length is not None else '',
-                                '-R' if reverse else "")
+                                '-t 20 -R' if reverse else "-t 5")
             # print(iperf_cmd)
 
             output, err = self.popen_exec(iperf_cmd)
