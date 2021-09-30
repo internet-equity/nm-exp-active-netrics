@@ -52,7 +52,7 @@ update-rc.d nm-exp-active-netrics defaults
 
 cd -
 
-if [ -f env/.env ];then
+if [ -f env/.env.netrics ];then
   echo "INFO: env detected. copying env/.env.netrics /etc/nm-exp-active-netrics/.env.netrics ..."
   chmod go-rw env/.env.netrics
   cp env/.env.netrics /etc/nm-exp-active-netrics/.env.netrics
