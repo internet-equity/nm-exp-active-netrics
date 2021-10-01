@@ -52,10 +52,10 @@ update-rc.d nm-exp-active-netrics defaults
 
 cd -
 
-if [ -f env/.env ];then
-  echo "INFO: env detected. copying env/.env /etc/nm-exp-active-netrics/.env ..."
-  chmod go-rw env/.env
-  cp env/.env /etc/nm-exp-active-netrics/.env
+if [ -f env/.env.netrics ];then
+  echo "INFO: env detected. copying env/.env.netrics /etc/nm-exp-active-netrics/.env.netrics ..."
+  chmod go-rw env/.env.netrics
+  cp env/.env.netrics /etc/nm-exp-active-netrics/.env.netrics
 else
   echo "INFO: NO env detected."
 fi
@@ -65,5 +65,5 @@ if [ ! -d "/var/nm" ]; then
   chown netrics:netrics /var/nm -R
 fi
 
-chown netrics:netrics /etc/nm-exp-active-netrics/.env
+chown netrics:netrics /etc/nm-exp-active-netrics/.env.netrics
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R

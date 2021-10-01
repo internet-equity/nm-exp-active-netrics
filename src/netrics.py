@@ -15,8 +15,9 @@ log = logging.getLogger(__name__)
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
-__version__ = "0.1.11"
-__author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins, Nick Feamster"
+__version__ = "1.0.0"
+__author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins,"\
+             "Marc Richardson, Nick Feamster"
 
 #Used for Annotations
 class keyvalue(argparse.Action):
@@ -250,6 +251,32 @@ def upload(upload_results, measurements):
     log.info("influxdb write_points return: OK")
  
 
+def check_connectivity(res, site):
+
+    if "ping_latency" not in res:
+        return None
+
+    latency_res = res["ping_latency"]
+
+    if f"{site}_rtt_avg_ms" in latency_res:
+        return True
+
+    offline_failures = ["Name or service not known",
+                        "Temporary failure in name resolution"]
+
+    if f"{site}_error" in latency_res:
+
+        offline_failures = ["Name or service not known",
+                            "Temporary failure in name resolution"]
+
+        for mode in offline_failures:
+            if mode in latency_res[f"{site}_error"]:
+                return False
+
+
+    return None
+
+
 ################################# MAIN #######################################
 
 parser = build_parser()
@@ -287,20 +314,19 @@ test = Measurements(args, nma)
 output['ipquery']= test.ipquery()
 
 """ Measure ping latency to list of websites """
-output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
+if not args.tshark:
+    output['ping_latency'] = test.ping_latency('ping_latency', args.ping)
 
 
-"""
-If we have failures in name resolution,
-further tests are irrelevant, 
-and we can't upload to influx. """
-connectivity_failure = False
-if "ping_latency" in test.results and \
-   "google_error" in test.results["ping_latency"] and \
-   ("amazon_error" in test.results["ping_latency"] or "amazon_rtt_avg_ms" not in test.results["ping_latency"]) and \
-   ("wikipedia_error" in test.results["ping_latency"] or "wikipedia_rtt_avg_ms" not in test.results["ping_latency"]):
-    connectivity_failure = True
 
+# Check to see if we have connectivity failures on google, amazon, and wikipedia.
+connectivity_status  = [check_connectivity(test.results, site)
+                        for site in ["google", "amazon", "wikipedia"]]
+# Values will be none if no ping test actually ran.
+connectivity_status  = [stat for stat in connectivity_status if stat is not None]
+# If any actual tests ran AND they ALL failed, then we have connectivity failure.
+# print(connectivity_status, any(connectivity_status))
+connectivity_failure = connectivity_status and not any(connectivity_status)
 
 if not connectivity_failure:
 
