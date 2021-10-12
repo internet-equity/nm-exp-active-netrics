@@ -894,7 +894,7 @@ class Measurements:
                         " -c {} -p {} -u -i 0 -P 4 -b {:.2f}M {} {} --json"\
                         .format(client, port, bandwidth/4, 
                                 f'-l {length}' if length is not None else '',
-                                '-t 20 -R' if reverse else "-t 5")
+                                '-t 5 -R' if reverse else "-t 20")
             # print(iperf_cmd)
 
             output, err = self.popen_exec(iperf_cmd)
