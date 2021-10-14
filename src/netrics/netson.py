@@ -41,10 +41,10 @@ class Measurements:
                 if self.nma.conf['limit_consumption']['measured_down'] > 0:
                     self.measured_down = self.nma.conf['limit_consumption']['measured_down']
             if 'max_monthly_consumption_gb' in self.nma.conf['limit_consumption']:
-                if self.nma.conf['limit_consumption']['max_monthly_consumption_gb'] > 0:
+                if self.nma.conf['limit_consumption']['max_monthly_consumption_gb'] is not None:
                     self.max_monthly_consumption_gb = int(self.nma.conf['limit_consumption']['max_monthly_consumption_gb'])
             if 'max_monthly_tests' in self.nma.conf['limit_consumption']:
-                if self.nma.conf['limit_consumption']['max_monthly_tests'] > 0:
+                if self.nma.conf['limit_consumption']['max_monthly_tests'] is not None:
                     self.max_monthly_tests = int(self.nma.conf['limit_consumption']['max_monthly_tests'])
 
         if self.nma.conf['databases']['tinydb_enable']:
