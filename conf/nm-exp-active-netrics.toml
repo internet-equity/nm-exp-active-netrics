@@ -53,8 +53,8 @@ netrics="""
 
 [limit_consumption]
     measured_down = 5
-    max_monthly_consumption_gb = {max_monthly_consumption_gb}
-    max_monthly_tests = {max_monthly_tests}
+    max_monthly_consumption_gb = '{max_monthly_consumption_gb}'
+    max_monthly_tests = '{max_monthly_tests}'
 
 [latency_under_load]
     targets = ["www.google.com"]
