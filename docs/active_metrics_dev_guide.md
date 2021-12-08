@@ -35,25 +35,56 @@ Follow the steps below to develop code locally.
      (a) The raw output of the tool is returned, and passed into a dictionary, that gets zipped up, so that we retain all raw files.
      (b) The processed output is loaded into the `self.results` dictionary, which is shared across all tests in that instance,
          and dumped as a json, for upload by the management code.
-4. Once you have your changes, you **must** test one-off cases, edge-cases, and continuous performance.
+   * **[nm-exp-active-netrics.toml](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/conf/nm-exp-active-netrics.toml)**:
+     This file controls all configurations, that you may need for your tests.  For example, 
+     [reference_site_dict](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/83b135f528dce3eaa48a54eb9800b85e4092b096/conf/nm-exp-active-netrics.toml#L32)
+     defines the list of `ping` destinations.
+     If, for instance, you wish to test encrypted DNS, you may want to specify your targets; 
+     if you're checking page loads, you'll list your pages.
+     You will also need to edit the `cron` [schedule](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/83b135f528dce3eaa48a54eb9800b85e4092b096/conf/nm-exp-active-netrics.toml#L20)
+     so that your test runs at all.
+     Ultimately, we recommend adding a line like the following:
+     ```
+     {MY_NEW_TEST_SCHEDULE} netrics env USER=$LOGNAME /usr/local/bin/netrics --my_new_test >{log} 2>&1
+     ```
+4. Once you have your changes, you **must** (!!) test: one-off, edge-cases, and continuous performance.
    For initial tests, you may want to just do `./netrics --your_test`.
+   If all you've changed is `netrics.py` and `netson.py`, I would recommend rebuilding
+   (see `make -h` and probably `make install`)
+   or simply copy the two files to the installed version (if you're using the managed install), at
+   ```
+   /usr/local/src/nm-exp-active-netrics/src/
+   ```
+   I also just directly edit the cront file, 
+   ```
+   /etc/cron.d/cron-nm-exp-active-netrics
+   ```
+   to run a very-vigorous test schedule.
+   Once this has run for 24-48 hours on your device as expected -- you can monitor via logs at 
+   ```
+   /var/nm/nm-exp-local-dashboard/upload/
+   ```
+   and via your grafana dashboard.
+5. Commit your code (push or a pull request) interface with the team for testing on the beta group.
+   Your work may be done; ours continues.  Unless you are a member of the team,
+   the links in the follow part of the document will not be accessible to you.
+6. Build (`make build`) the active metrics package and copy it to `tigerteam.io:/scratch/databases/saltstack/saltstack1/srv/salt/files/dev/deb/`.
+7. Each change to the cron job above in (3), i.e., `{MY_NEW_TEST_SCHEDULE}`,
+   requires a change in _each_ of the management [templates](https://github.com/chicago-cdac/nm-mgmt-cms/tree/main/templates).
+   For example, to _turn off_ the tests that you have just written, you would add a line like
+   ```
+   MY_NEW_TEST_SCHEDULE=#
+   ```
+   to the files like [ssx.template.conf](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/templates/default/ssx.template.conf).
+   This will get replaced, by [this function](https://github.com/chicago-cdac/nm-mgmt-cms/blob/a30bf836ee298dc98b0ad7894132199fad8b80db/scripts/generate_pillar/generate_pillar.py#L87) 
+   in `generate_pillar.py`.
+8. Set the git and deb packages, and copy the toml into your directory, per [deploy.tigerteam.sh](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/deploy.tigerteam.sh#L13). 
+9. Next, run `generate_pllar` (this is the last step of the `deploy.tigerteam.sh` script),
+   and then verify that the files at
+   ```
+   /srv/salt/devices/dev/*/etc/nm-exp-active-metrics/nm-exp-active-netrics.toml
+   ```
+   reflect your intent.
+10. Deploy to the devices, via [update_netrics.sh](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/scripts/update_netrics.sh).
    
 
-   There are a few ways of doing this You may need to build the package to be able to test your changes. Change directories to the git repository and run make help. Follow the steps in make help to build the package.
-Make changes to the files in the cloned git repository
-Add new testing functions to netson.py located at ./src/netrics/netson.py
-Add new argument flag and function call to netrics.py located at ./src/netrics.py
-Test locally
-Once you are ready to deploy the changes to the beta testers, commit your changes/open a pull request
-
-After testing changes on your local device, push the changes to the master github branch and notify Marc to deploy the new package to testing devices
-
-Update toml file at nm-exp-active-netrics/conf/toml with new line in cron for the added test
-Add any necessary conf parameters to the configuration templates at nm-mgmt-cms/templates/*
-Run deploy.tigerteam.sh
-From tigerteam, run ssx a un
-
-Local the source code on the device at /usr/local/src/nm-exp-active-netrics/
-Add test function to netson.py located at /usr/local/src/nm-exp-active-netrics/src/netrics/
-Add new argument flag and function call to netrics.py located at /usr/local/src/nm-exp-active-netrics/src/
-Update cron file (‘cron-nm-exp-active-netrics’) located at /etc/cron.d/cron-nm-exp-active-netrics with new netrics command
