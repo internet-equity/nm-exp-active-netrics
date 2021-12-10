@@ -94,8 +94,9 @@ Follow the steps below to develop code locally.
 
 Your work may be done; ours continues.  Unless you are a member of the team, the links in the follow part of the document will not be accessible to you.
 
-1. Build (`make build`) the active netrics package and copy it to `tigerteam.io:/scratch/databases/saltstack/saltstack1/srv/salt/files/dev/deb/`.
-2. Each change to the cron job above in (3), i.e., `{MY_NEW_TEST_SCHEDULE}`,
+1. Merge the pull request branch with the main branch for `nm-exp-active-netrics`.
+2. Build (`make build`) the active netrics package and copy it to `tigerteam.io:/scratch/databases/saltstack/saltstack1/srv/salt/files/dev/deb/`.
+3. Each change to the cron job above in (3), i.e., `{MY_NEW_TEST_SCHEDULE}`,
    requires a change in _each_ of the management [templates](https://github.com/chicago-cdac/nm-mgmt-cms/tree/main/templates).
    For example, to _turn off_ the tests that you have just written, you would add a line like
    ```
@@ -104,12 +105,12 @@ Your work may be done; ours continues.  Unless you are a member of the team, the
    to the files like [ssx.template.conf](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/templates/default/ssx.template.conf).
    This will get replaced, by [this function](https://github.com/chicago-cdac/nm-mgmt-cms/blob/a30bf836ee298dc98b0ad7894132199fad8b80db/scripts/generate_pillar/generate_pillar.py#L87) 
    in `generate_pillar.py`.
-3. Set the git and deb packages, and copy the toml into your directory, per [deploy.tigerteam.sh](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/deploy.tigerteam.sh#L13). 
-4. Next, run `generate_pllar` (this is the last step of the `deploy.tigerteam.sh` script),
+4. Set the git and deb packages, and copy the toml into your directory, per [deploy.tigerteam.sh](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/deploy.tigerteam.sh#L13). 
+5. Next, run `generate_pllar` (this is the last step of the `deploy.tigerteam.sh` script),
    and then verify that the files at
    ```
    /srv/salt/devices/dev/*/etc/nm-exp-active-metrics/nm-exp-active-netrics.toml
    ```
    reflect your intent.
-5. Deploy to the devices, via [update_netrics.sh](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/scripts/update_netrics.sh).
+6. Deploy to the devices, via [update_netrics.sh](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/scripts/update_netrics.sh).
 
