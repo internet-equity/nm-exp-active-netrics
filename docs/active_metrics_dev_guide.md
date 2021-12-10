@@ -2,7 +2,7 @@
 
 ## Developing code locally on a Raspberry Pi
 
-The best place to start developing new code for the nm-exp-active-netrics package is on a
+The best place to start developing new code for the `nm-exp-active-netrics` package is on a
 Raspberry Pi device that you have connected to your home network.
 
 If you need a Raspberry Pi device to use for development, email mtrichardson@uchicago.edu.
@@ -17,8 +17,8 @@ Follow the steps below to develop code locally.
    If that does not work or you are using an unmanaged devce, you'll have to do some `nmap` sleuthing.
    
    * If developing on a device at home, you will need to be connected to your home network to ssh to the device.
-   * Developing in the IoT lab is not recommended, because we have measurements running on that devices.
-     However, you can _do_ testing on that device. You will need to first `ssh` to tigerteam and then ssh to the testing device in the lab using tigerteam's auxiliary ethernet interface.  Ask us about IP addresses.
+   * Developing in the IoT lab is not recommended, because we have measurements running on those devices.
+     However, you can _do_ testing on that device. You will need to first `ssh` to tigerteam and then `ssh` to the testing device in the lab using tigerteam's auxiliary ethernet interface. Ask us about IP addresses.
 2. Next, pull the `nm-exp-active-netrics` source code from github by your preferred method.
    This repo is public and does not require special access to pull, but you'll have to ask Marc (mtrichardson) for commit rights.
 3. After pulling the `nm-exp-active-netrics` repository from github, create a new branch for your test. You should name the branch based on the test that you are developing. So, for example, if you are developing a new test for encrypted dns, you could name the branch `add-encrypted-dns`.
@@ -33,7 +33,8 @@ Follow the steps below to develop code locally.
       ```
 
       (c) Add your new make command to the `help` [section](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/Makefile#L7) of the Makefile as an additional step for installation.
-      (b) Run the command `make_{your_binary}.sh`.
+
+      (d) Run the command `make_{your_binary}.sh`.
    
    _Note_: Dependencies that you can install through apt-get can be added to the Makefile under the `deps` [section](https://github.com/chicago-cdac/nm-exp-active-netrics/blob/main/Makefile#L34) of the file. There is no need to do anything else additional for dependencies installed through apt-get. (That is, the above steps for creating a make script and adding it to the makefile are unnecessary.) Once you've added the new dependency, you will need to run `sudo make deps` to install your new dependency.
 
@@ -77,22 +78,21 @@ Follow the steps below to develop code locally.
    ```
    /usr/local/src/nm-exp-active-netrics/src/
    ```
-   I also just directly edit the cron file, 
+   You could also directly edit the cron file, 
    ```
    /etc/cron.d/cron-nm-exp-active-netrics
    ```
-   to run a very-vigorous test schedule.
+   to run a very vigorous test schedule.
    Once this has run for 24-48 hours on your device as expected, move to the next step. You can monitor performance via logs at 
    ```
-   /var/nm/nm-exp-local-dashboard/upload/
+   /var/nm/nm-exp-active-netrics/log
    ```
    and via your grafana dashboard.
 7. Commit your code (via a pull request for the branch on which you are developing) and interface with the team for testing on the beta group.
 
 ## Deploying to beta testers
 
-   Your work may be done; ours continues.  Unless you are a member of the team,
-   the links in the follow part of the document will not be accessible to you.
+Your work may be done; ours continues.  Unless you are a member of the team, the links in the follow part of the document will not be accessible to you.
 
 1. Build (`make build`) the active netrics package and copy it to `tigerteam.io:/scratch/databases/saltstack/saltstack1/srv/salt/files/dev/deb/`.
 2. Each change to the cron job above in (3), i.e., `{MY_NEW_TEST_SCHEDULE}`,
