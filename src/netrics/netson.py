@@ -161,7 +161,7 @@ class Measurements:
             return
 
         self.results[key] = {}
-        output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
+        output, err = self.popen_exec("timeout 35 /usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
         if len(err) > 0:
              self.results[key]["error"] = f'{err}'
              print(f"ERROR: {err}")
@@ -189,6 +189,11 @@ class Measurements:
         self.results[key]["speedtest_ookla_upload"] = float(upload_ookla)
         self.results[key]["speedtest_ookla_jitter"] = float(jitter_ookla)
         self.results[key]["speedtest_ookla_latency"] = float(latency_ookla)
+
+        self.results[key]["speedtest_ookla_server_host"] = res_json["server"]["host"]
+        self.results[key]["speedtest_ookla_server_name"] = res_json["server"]["name"]
+        self.results[key]["speedtest_ookla_server_id"]   = res_json["server"]["id"] 
+
         if pktloss_ookla is not None:
             self.results[key]["speedtest_ookla_pktloss2"] = float(pktloss_ookla)
 
@@ -256,8 +261,9 @@ class Measurements:
         self.results[key] = {}
         self.results[key]["speedtest_ndt7_download"] = download_speed
         self.results[key]["speedtest_ndt7_upload"] = upload_speed
-        self.results[key]["speedtest_ndt7_downloadretrans"] = download_retrans
+        self.results[key]["speedtest_ndt7_download_retrans"] = download_retrans
         self.results[key]["speedtest_ndt7_minrtt"] = minrtt
+        self.results[key]["speedtest_ndt7_server"] = res_json['ServerFQDN']
         self.results["total_bytes_consumed"] += total_bytes
         
         if not self.quiet:
@@ -891,10 +897,10 @@ class Measurements:
              
             #log.info(f"iperf using buffer_length: {length}")
             iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
-                        " -c {} -p {} -u -i 0 -P 4 -b {:.2f}M {} {} --json"\
+                        " -c {} -p {} -u -P 4 -b {:.2f}M {} {} --json"\
                         .format(client, port, bandwidth/4, 
                                 f'-l {length}' if length is not None else '',
-                                '-t 5 -R' if reverse else "-t 20")
+                                '-t 5 -R -i 1' if reverse else "-t 20 -i 0")
             # print(iperf_cmd)
 
             output, err = self.popen_exec(iperf_cmd)
@@ -919,15 +925,25 @@ class Measurements:
                 lost_pct = json_res["end"]["sum"]["lost_percent"]
                 frac_recvd = (100 - lost_pct) / 100
                 measured_bw[direction] = frac_recvd * float(json_res["end"]["sum"]["bits_per_second"]) / 1e6
+
+                self.results['total_bytes_consumed'] += json_res['end']['sum']['bytes']
+
             else:
-                measured_bw[direction] = float(json_res["intervals"][0]["sum"]["bits_per_second"]) / 1e6
+
+                seconds     = sum([i["sum"]["seconds"] for i in json_res["intervals"]])
+                total_bytes = sum([i["sum"]["bytes"]   for i in json_res["intervals"]])
+
+                measured_bw[direction] = total_bytes * 8. / seconds / 1e6
+                self.results['total_bytes_consumed'] += total_bytes
+
+                for i in range(5):
+
+                    interval_seconds = json_res["intervals"][i]["sum"]["seconds"]
+                    interval_bytes   = json_res["intervals"][i]["sum"]["bytes"]
+                    self.results[key][f'iperf_udp_download_i{i}'] = interval_bytes * 8 / interval_seconds / 1e6
 
             self.results[key][f'iperf_udp_{direction}'] = measured_bw[direction]
 
-            if direction == "upload": 
-                self.results['total_bytes_consumed'] += json_res['end']['sum']['bytes']
-            else: 
-                self.results['total_bytes_consumed'] += json_res["intervals"][0]["sum"]["bytes"]
 
             measured_jitter[direction] = float(json_res['end']['sum']['jitter_ms'])
             self.results[key][f'iperf_udp_{direction}_jitter_ms'] = measured_jitter[direction]
