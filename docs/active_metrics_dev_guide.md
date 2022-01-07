@@ -140,11 +140,13 @@ MY_NEW_TEST_SCHEDULE=#
 to the files like [ssx.template.conf](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/templates/default/ssx.template.conf).
 This will get replaced, by [this function](https://github.com/chicago-cdac/nm-mgmt-cms/blob/a30bf836ee298dc98b0ad7894132199fad8b80db/scripts/generate_pillar/generate_pillar.py#L87) 
 in `generate_pillar.py`. 
+
 13. Go to the git repository for `nm-exp-active-netrics` that is linked to the saltstack docker container on tigerteam and pull the new changes to that repository.
 ```
 cd /scratch/databases/saltstack/saltstack1/srv/salt/git/nm-exp-active-netrics/; git pull
 ```
 These commands will update the git repository that the saltstack container uses to generate the configuration toml and pillars for the beta devices. 
+
 14. Update on the saltstack container the toml template file from which we generate the individual toml files for each device using `generate_pillar`, per [deploy.tigerteam.sh](https://github.com/chicago-cdac/nm-mgmt-cms/blob/main/deploy.tigerteam.sh#L13).
 ```
 docker exec saltstack1 bash -c 'cd generate_pillar/templates/devices/dev/etc/nm-exp-active-netrics;./update.sh'
