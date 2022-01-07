@@ -130,6 +130,7 @@ echo $h > ~/DEBHASH; scp ~/DEBHASH {user}@tigerteam.io:/scratch/databases/saltst
 git log -1 --format=%s > ~/GITLOG; scp ~/GITLOG gmartins@tigerteam.io:/scratch/databases/saltstack/saltstack1/srv/salt/files/dev/
 ```
 **The rest of the deployment will take place on the tigerteam server. You can disconnect from the IoT Lab device and connect to the tigerteam server.**
+
 12. If you made changes to the configuration toml, you will need to update the management templates on tigerteam before deploying. Each change to the cron job above in (5) of the [previous section](#developing-code-locally-on-a-raspberry-pi), i.e., `{MY_NEW_TEST_SCHEDULE}`,
 requires a change in _each_ of the management [templates](https://github.com/chicago-cdac/nm-mgmt-cms/tree/main/templates). The path for these files on tigerteam in the salt docker container is `/generate_pillars/templates/`.
 For example, to _turn off_ the tests that you have just written, you would add a line like
