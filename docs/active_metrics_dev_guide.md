@@ -158,7 +158,7 @@ docker exec saltstack1 bash -c "cd generate_pillar/templates/devices/dev/etc/nm-
 16. Next, run `generate_pillar` (this is the last step of the `deploy.tigerteam.sh` script) using `ssx a gp`,
 and then verify that the files at
 ```
-/srv/salt/devices/dev/*/etc/nm-exp-active-metrics/nm-exp-active-netrics.toml
+/srv/salt/devices/dev/*/etc/nm-exp-active-netrics/nm-exp-active-netrics.toml
 ```
 reflect your intent.
 
