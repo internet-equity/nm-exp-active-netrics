@@ -261,7 +261,7 @@ class Measurements:
         self.results[key] = {}
         self.results[key]["speedtest_ndt7_download"] = download_speed
         self.results[key]["speedtest_ndt7_upload"] = upload_speed
-        self.results[key]["speedtest_ndt7_download_retrans"] = download_retrans
+        self.results[key]["speedtest_ndt7_downloadretrans"] = download_retrans
         self.results[key]["speedtest_ndt7_minrtt"] = minrtt
         self.results[key]["speedtest_ndt7_server"] = res_json['ServerFQDN']
         self.results["total_bytes_consumed"] += total_bytes
