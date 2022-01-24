@@ -166,7 +166,21 @@ class Measurements:
              self.results[key]["error"] = f'{err}'
              print(f"ERROR: {err}")
              log.error(err)
-             return f'{err}'
+
+             results_available = False
+             if len(output):
+                 res_json = json.loads(output)
+                 if "download"  in res_json and \
+                    "bandwidth" in res_json["download"]:
+                     results_available = True
+
+             if results_available and \
+                "Timeout occurred in connect" in err:
+
+                print("WARNING: saving speedtest despite connect timeout error.")
+
+             else:
+                return f'{err}'
 
         res_json = json.loads(output)
         download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
