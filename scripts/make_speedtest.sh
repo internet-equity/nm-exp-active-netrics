@@ -21,5 +21,5 @@ else
   # Other non-official binaries will conflict with Speedtest CLI
   # Example how to remove using apt-get
   # sudo apt-get remove speedtest-cli
-  sudo apt-get install -y speedtest
+  sudo apt-get install -y speedtest=1.0.0.2-1.5ae238b
 fi
