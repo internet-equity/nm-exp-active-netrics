@@ -53,7 +53,6 @@ class Measurements:
                 speedtest_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'speedtest.json')
                 seen_devices_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'seen_devices.json')
                 consumption_json = Path.cwd().joinpath(self.nma.conf['databases']['tinydb_path'], 'consumption.json')
-
                 if not speedtest_json.exists():
                     speedtest_json.touch()
                 if not seen_devices_json.exists():
@@ -161,6 +160,7 @@ class Measurements:
             return
 
         self.results[key] = {}
+        error_found = False
         output, err = self.popen_exec("timeout 35 /usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
         if len(err) > 0:
              self.results[key]["error"] = f'{err}'
@@ -168,6 +168,7 @@ class Measurements:
              log.error(err)
 
              results_available = False
+             error_found = True
              if len(output):
                  res_json = json.loads(output)
                  if "download"  in res_json and \
@@ -177,12 +178,20 @@ class Measurements:
              if results_available and \
                 "Timeout occurred in connect" in err:
 
-                print("WARNING: saving speedtest despite connect timeout error.")
+                log.warn("Saving speedtest despite connect timeout error.")
 
              else:
+                self.results[key]["ookla_error"] = error_found 
                 return f'{err}'
 
-        res_json = json.loads(output)
+        try:
+            res_json = json.loads(output)
+        except Exception as err:
+            self.results[key]["ookla_json_error"] = f'{err}'
+            error_found = True
+            self.results[key]["ookla_error"] = error_found
+            log.error(f'Ookla JSON failed to load. Aborting test. {err}')
+            return
         download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
         upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
         jitter_ookla = res_json['ping']['jitter']
@@ -196,9 +205,9 @@ class Measurements:
         pktloss_ookla = None
         if 'packetLoss' in res_json.keys():
             pktloss_ookla = res_json['packetLoss']
-        self.update_max_speed(float(download_ookla), float(upload_ookla))
+        if self.nma.conf['databases']['tinydb_enable']:
+            self.update_max_speed(float(download_ookla), float(upload_ookla))
 
-        self.results[key] = {}
         self.results[key]["speedtest_ookla_download"] = float(download_ookla)
         self.results[key]["speedtest_ookla_upload"] = float(upload_ookla)
         self.results[key]["speedtest_ookla_jitter"] = float(jitter_ookla)
@@ -222,6 +231,8 @@ class Measurements:
                 print(f'PktLoss:\t{pktloss_ookla}%')
             else:
                 print(f'PktLoss:\tnot returned by test.')
+        
+        self.results[key]["ookla_error"] = error_found
 
         return output #res_json
 
@@ -258,11 +269,14 @@ class Measurements:
             return
 
         self.results[key] = {}
+        error_found = False
         output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -format 'json' | grep -i 'numbytes\|FQDN'")
         if len(err) > 0:
              self.results[key]["error"] = f'{err}'
              print(f"ERROR: {err}")
              log.error(err)
+             error_found = True
+             self.results[key]["ndt_error"] = error_found
              return f'{err}'
 
         res_json, res_text, total_bytes = self.parse_ndt7_output(output)
@@ -272,7 +286,6 @@ class Measurements:
         download_retrans = float(res_json["DownloadRetrans"]["Value"])
         minrtt = float(res_json['MinRTT']['Value'])
 
-        self.results[key] = {}
         self.results[key]["speedtest_ndt7_download"] = download_speed
         self.results[key]["speedtest_ndt7_upload"] = upload_speed
         self.results[key]["speedtest_ndt7_downloadretrans"] = download_retrans
@@ -287,6 +300,8 @@ class Measurements:
             print(f'DownloadRetrans:{download_retrans} %')
             print(f'MinRTT:\t\t{minrtt} ms')
  
+        self.results[key]["ndt_error"] = error_found
+
         return res_text #res_json
 
     def bandwidth_test_stochastic_limit(self, measured_down=5,
@@ -916,9 +931,20 @@ class Measurements:
                                 f'-l {length}' if length is not None else '',
                                 '-t 5 -R -i 1' if reverse else "-t 20 -i 0")
             # print(iperf_cmd)
-
-            output, err = self.popen_exec(iperf_cmd)
-            if len(err) > 0:
+            retry_test = True
+            retry_count = 0
+            while retry_test and retry_count < 4:
+                output, err = self.popen_exec(iperf_cmd)
+                if len(err) > 0:
+                    if 'try again later' in err:
+                        log.error(f'{err}Trying test again...')
+                        time.sleep(30 + random.randint(1, 60))
+                        retry_count += 1
+                    else:
+                        retry_test = False
+                else:
+                    retry_test = False
+            if len(err) > 0:            
                 print(f"ERROR: {err}")
                 self.results[key][f'iperf_{direction}_error'] = f'{err}'
                 iperf_res[direction] = { f'output' : output, 'error' : err }
@@ -1042,6 +1068,3 @@ class Measurements:
             self.consumption_db.update({'total_bytes_consumed' : total_bytes_consumed})
             return total_bytes_consumed
        return 0
-
-
-       
