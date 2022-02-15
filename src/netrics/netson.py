@@ -190,7 +190,7 @@ class Measurements:
             self.results[key]["ookla_json_error"] = f'{err}'
             error_found = True
             self.results[key]["ookla_error"] = error_found
-            log.error(f'Ookla JSON failed to load. Aborting test. {err}')
+            log.exception('Ookla JSON failed to load. Aborting test.')
             return
         download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
         upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
