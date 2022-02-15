@@ -931,19 +931,16 @@ class Measurements:
                                 f'-l {length}' if length is not None else '',
                                 '-t 5 -R -i 1' if reverse else "-t 20 -i 0")
             # print(iperf_cmd)
-            retry_test = True
-            retry_count = 0
-            while retry_test and retry_count < 4:
-                output, err = self.popen_exec(iperf_cmd)
-                if len(err) > 0:
-                    if 'try again later' in err:
-                        log.error(f'{err}Trying test again...')
+            for attempt_num in range(1, 5):
+                (output, err) = self.popen_exec(iperf_cmd)
+                if 'try again later' in err:
+                    if attempt_num < 4:
+                        log.error(f'{attempt_num} / 4: {err}: Will try test again...')
                         time.sleep(30 + random.randint(1, 60))
-                        retry_count += 1
                     else:
-                        retry_test = False
+                        log.error(f'{attempt_num} / 4: {err}: Will *not* try test again.')
                 else:
-                    retry_test = False
+                    break
             if len(err) > 0:            
                 print(f"ERROR: {err}")
                 self.results[key][f'iperf_{direction}_error'] = f'{err}'
