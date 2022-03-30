@@ -1,5 +1,6 @@
 # [Netrics](https://chicago-cdac.github.io/nm-exp-active-netrics)
-NetMicroscope Experiment - Active Measurements (AKA Netrics)
+
+Netrics - Active Measurement of Network Performance
 
 ## 1. [About Netrics](https://chicago-cdac.github.io/nm-exp-active-netrics)
 
