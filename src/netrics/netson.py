@@ -505,11 +505,11 @@ class Measurements:
                     except ValueError:
                         continue
 
-            res.sort()
-            self.results[key][f'{labels[site]}_last_mile_tr_rtt_min_ms'] = float(res[0])
-            self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(res[1])
-            self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[2])
-
+            if res:
+                res.sort()
+                self.results[key][f'{labels[site]}_last_mile_tr_rtt_min_ms'] = float(res[0])
+                self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(res[1])
+                self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[2])
         return output
 
     def oplat(self, key, run_test, client, port, limit):
