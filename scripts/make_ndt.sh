@@ -31,4 +31,5 @@ export GOPATH=$PWD
 git clone https://github.com/m-lab/ndt7-client-go.git
 cd ndt7-client-go/cmd/ndt7-client
 go build -o ndt7-client main.go
+mkdir -p $NMAPATH/commands/$PROC/bin/
 cp ndt7-client $NMAPATH/commands/$PROC/bin/
