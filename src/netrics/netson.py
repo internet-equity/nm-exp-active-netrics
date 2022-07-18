@@ -444,6 +444,7 @@ class Measurements:
             return
 
         output = {}
+        res = None
         for site in sites:
             tr_cmd = f'traceroute {site}'
 
