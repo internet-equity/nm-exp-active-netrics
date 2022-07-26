@@ -169,11 +169,14 @@ class Measurements:
 
              results_available = False
              error_found = True
-             if len(output):
-                 res_json = json.loads(output)
-                 if "download"  in res_json and \
-                    "bandwidth" in res_json["download"]:
-                     results_available = True
+             if len(output) > 0:
+                 try:
+                    res_json = json.loads(output)
+                    if "download"  in res_json and \
+                       "bandwidth" in res_json["download"]:
+                       results_available = True
+                 except ValueError:
+                    log.warn("Unable to parse output")
 
              if results_available and \
                 "Timeout occurred in connect" in err:
@@ -191,7 +194,7 @@ class Measurements:
             error_found = True
             self.results[key]["ookla_error"] = error_found
             log.exception('Ookla JSON failed to load. Aborting test.')
-            return
+            return output
         download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
         upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
         jitter_ookla = res_json['ping']['jitter']
