@@ -735,7 +735,6 @@ class Measurements:
                label = self.labels[site]
             except KeyError:
                label = site
-            print(site)
             dig_cmd = f'dig @{target} {site}'
             dig_res[label], err = self.popen_exec(dig_cmd)
             if len(err) > 0:
