@@ -693,6 +693,21 @@ class Measurements:
         self.results[key]['error'] = error_found
         return ping_res
 
+    # function taken from
+    # https://stackoverflow.com/questions/11264005/using-a-regex-to-match-ip-addresses
+    def valid_ip(self, address):
+        """
+        Check if a site in self.sites is an IP address
+        """
+        try:
+            host_bytes = address.split('.')
+            valid = [int(b) for b in host_bytes]
+            valid = [b for b in valid if b >=0 and b<=255]
+            return len(host_bytes) == 4 and len(valid) == 4
+        except:
+            return False
+
+
     def dns_latency(self, key, run_test):
         """
         Method records dig latency for each site in self.sites
@@ -712,12 +727,14 @@ class Measurements:
         dig_delays = []
         dig_res = {}
         for site in self.sites:
+            
+            if self.valid_ip(site):
+                continue
 
             try:
                label = self.labels[site]
             except KeyError:
                label = site
-
             dig_cmd = f'dig @{target} {site}'
             dig_res[label], err = self.popen_exec(dig_cmd)
             if len(err) > 0:
