@@ -16,7 +16,8 @@ else
   sudo apt-get install -y gnupg1 apt-transport-https dirmngr
 
   # https://www.speedtest.net/apps/cli
-  curl -s https://install.speedtest.net/app/cli/install.deb.sh | sudo bash
+  curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+  # curl -s https://install.speedtest.net/app/cli/install.deb.sh | sudo bash
 
   # Other non-official binaries will conflict with Speedtest CLI
   # Example how to remove using apt-get
