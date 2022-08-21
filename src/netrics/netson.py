@@ -426,7 +426,7 @@ class Measurements:
             
             try:
                 ping_ip = re.findall(
-                    'PING.*\((\d+\.\d+\.\d+\.\d+)\) ',
+                    'PING.*\((.*)\) \d',
                     ping_res[label]
                 )[0]
             except IndexError:
