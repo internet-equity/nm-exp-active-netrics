@@ -123,6 +123,22 @@ class Measurements:
 
         self.speed_db.update({'test': True})
 
+
+    # function taken from
+    # https://stackoverflow.com/questions/11264005/using-a-regex-to-match-ip-addresses
+    def valid_ip(self, address):
+        """
+        Check if a site in self.sites is an IP address
+        """
+        try:
+            host_bytes = address.split('.')
+            valid = [int(b) for b in host_bytes]
+            valid = [b for b in valid if b >=0 and b<=255]
+            return len(host_bytes) == 4 and len(valid) == 4
+        except:
+            return False
+
+
     def ipquery(self, key="ipquery", run_test=True):
         j4 = None
         #j6 = None
@@ -703,20 +719,6 @@ class Measurements:
 
         self.results[key]['error'] = error_found
         return ping_res
-
-    # function taken from
-    # https://stackoverflow.com/questions/11264005/using-a-regex-to-match-ip-addresses
-    def valid_ip(self, address):
-        """
-        Check if a site in self.sites is an IP address
-        """
-        try:
-            host_bytes = address.split('.')
-            valid = [int(b) for b in host_bytes]
-            valid = [b for b in valid if b >=0 and b<=255]
-            return len(host_bytes) == 4 and len(valid) == 4
-        except:
-            return False
 
 
     def dns_latency(self, key, run_test):
