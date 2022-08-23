@@ -10,6 +10,7 @@ from nmexpactive.experiment import NetMicroscopeControl
 
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.client.exceptions import InfluxDBError
 
 
 log = logging.getLogger(__name__)
@@ -37,6 +38,20 @@ class keyvalue(argparse.Action):
                   getattr(namespace, self.dest)[keyop] = ""
               getattr(namespace, self.dest)[keyop] = \
                 (getattr(namespace, self.dest)[keyop] + " " + value).strip()
+
+class BatchingCallback(object):
+
+    def success(self, conf: (str, str, str), data: str):
+        print(f"Written batch: {conf}, data: {data}")
+        log.info("influxdb write_api return: OK")
+
+    def error(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+        print(f"Cannot write batch: {conf}, data: {data} due: {exception}")
+        log.error("influxdb write_api return: error")
+
+    def retry(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+        print(f"Retryable error occurs for batch: {conf}, data: {data} retry: {exception}")
+        log.error("influxdb write_api return: error")
 
 #Used to report consumption (Human Readable)
 def sizeof_fmt(num, suffix='B'):
@@ -225,7 +240,11 @@ def upload(upload_results, measurements):
         return
  
     with InfluxDBClient(url = "https://{0}:{1}".format(server, port), token = token,  org = org) as client:
-        write_api = client.write_api(write_options=SYNCHRONOUS)
+        callback = BatchingCallback()
+        write_api = client.write_api(write_options=SYNCHRONOUS,
+                                    success_callback=callback.success,
+                                    error_callback=callback.error,
+                                    retry_callback=callback.retry)
 
         insert = {}
         for m in measurements.keys():
@@ -253,12 +272,14 @@ def upload(upload_results, measurements):
         ]
 
         ret = write_api.write(bucket=db, record=record)
-        print(ret)
 
-        if not ret:
-            log.error("influxdb write_points return: false")
-            return
-        log.info("influxdb write_points return: OK")
+        return
+
+        
+        #if not ret:
+        #    log.error("influxdb write_points return: false")
+        #    return
+        #log.info("influxdb write_points return: OK")
  
 
 def check_connectivity(res, site):
