@@ -43,21 +43,27 @@ Please use the _unmanaged_ installation with direct influxdb data ingestion if y
 `wget https://github.com/chicago-cdac/nm-exp-active-netrics/releases/download/v0.1.10-arm64/nm-exp-active-netrics-v0.1.10-arm64.deb`
 3. run `sudo apt install ./nm-exp-active-netrics-v0.1.10-arm64.deb`<br>
 (To reinstall run):<br>`sudo apt remove --purge nm-exp-active-netrics`<br>`sudo apt install --reinstall ./nm-exp-active-netrics-v0.1.10-arm64.deb`, and if necessary run:<br>`sudo rm -Rf /usr/local/src/nm-exp-active-netrics`
-4. edit your `/etc/nm-exp-active-netrics/nm-exp-active-netrics.toml` file to include <b>[iperf]</b> target servers:
+4. edit your `/etc/nm-exp-active-netrics/nm-exp-active-netrics.toml` file to include <b>[iperf]</b> target servers and appropriate <b>[limit_consumption]</b> values:
 ```
 ...
 [iperf]
 
    targets = ["server:33001"]
 ...
+[limit_consumption]
+    measured_down = 5
+    max_monthly_consumption_gb = 200
+    max_monthly_tests = 200
+...
 ```
 5. Create .env.netrics file with server credentials <b>`sudo vim /etc/nm-exp-active-netrics/.env.netrics`</b>:
 <pre>
 INFLUXDB_SERVER=
 INFLUXDB_PORT=
-INFLUXDB_USERNAME=
-INFLUXDB_PASSWORD=
 INFLUXDB_DATABASE=
+INFLUXDB_TOKEN=
+INFLUXDB_ORG=
+
 INSTALL_ID=<b>myid</b> <---- use your lastname here so you can filter out grafana/influxdb queries.
 </pre>
 6. Restart netrics: <b>`sudo /etc/init.d/nm-exp-active-netrics restart`</b>
