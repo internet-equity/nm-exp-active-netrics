@@ -128,7 +128,7 @@ class Measurements:
     # https://stackoverflow.com/questions/11264005/using-a-regex-to-match-ip-addresses
     def valid_ip(self, address):
         """
-        Check if a site in self.sites is an IP address
+        Check if a site in self.sites is an IPv4 address
         """
         try:
             host_bytes = address.split('.')
@@ -441,11 +441,15 @@ class Measurements:
             self.results[key][label + "_rtt_max_ms"] = ping_rtt_ms[2]
             self.results[key][label + "_rtt_avg_ms"] = ping_rtt_ms[1]
             self.results[key][label + "_rtt_mdev_ms"] = ping_rtt_ms[3]
-            self.results[key][label + "_ip_address"] = ping_ip
+            if self.valid_ip(ping_ip):
+                self.results[key][label + "_ip_address"] = ping_ip
+            else:
+                log.warn("IP Address matched by regex is not valid IPv4 address. Excluding from saved results...")
 
             if not self.quiet:
                 print(f'\n --- {label} ping latency (MANDATORY) ---')
-                print(f'IP Address: {ping_ip}')
+                if self.valid_ip(ping_ip):
+                    print(f'IP Address: {ping_ip}')
                 print(f'Packet Loss: {ping_pkt_loss}%')
                 print(f'Average RTT: {ping_rtt_ms[0]} (ms)')
                 print(f'Minimum RTT: {ping_rtt_ms[1]} (ms)')
