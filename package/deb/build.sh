@@ -24,7 +24,6 @@ if [ -d nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/venv ];then
 	rm -Rf nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/venv
 fi
 
-mkdir -p  nm-exp-active-netrics/
 cp -R /usr/local/src/nm-exp-active-netrics/src/ nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/
 cp -R /usr/local/src/nm-exp-active-netrics/venv/ nm-exp-active-netrics/usr/local/src/nm-exp-active-netrics/
 
