@@ -197,6 +197,14 @@ def build_parser():
             help='Check dependencies and overall health parameters'
     )
 
+    parser.add_argument(
+            '-e', '--encrypted',
+            default=False,
+            action='store_true',
+            help="Measure encrypted resolver response time"
+    )
+
+
     return parser
 
 
@@ -345,6 +353,9 @@ if not connectivity_failure:
     """ Run ndt7 speed test """
     output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
 
+    """ Run resolver response time test """
+    if args.encrypted_dns:
+      output['encrypted_dns'] = test.encrypted_dns_latency('encrypted_dns_latency', args.limit_consumption)
     """ Run speed tests in sequence ookla/ndt7 """
     if args.speed:
       output['ookla'], output['ndt7'] = test.speed('ookla', 'ndt7', args.limit_consumption)

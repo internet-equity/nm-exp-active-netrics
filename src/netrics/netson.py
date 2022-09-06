@@ -761,6 +761,59 @@ class Measurements:
 
         return dig_res
 
+    def encrypted_dns_latency(self, key, run_test):
+        """
+        Method records dig latency for each site in self.sites
+        """
+        """ key: test name """
+
+        if not run_test:
+            return
+
+        dig_res = None
+        error_found = False
+#        target = '8.8.8.8'
+
+#        if 'target' in self.nma.conf['dns_latency'].keys():
+#            target = self.nma.conf['dns_latency']['target']
+
+        dig_delays = []
+        dig_res = {}
+        for site in self.sites:
+            for resolver in self.resolvers:
+            	if self.valid_ip(site):
+                	continue
+
+            	try:
+			label = self.labels[site]
+            	except KeyError:
+               		label = site
+            	dig_cmd = f'/usr/local/dig/bin/dig +https @{resolver} {site}'
+            	dig_res[label], err = self.popen_exec(dig_cmd)
+            	if len(err) > 0:
+               		print(f"ERROR: {err}")
+               		self.results[key][f'{label}_error'] = f'{err}'
+               		dir_res[label] = { 'error': f'{err}' }
+               		log.error(err)
+               		error_found = True
+               		continue
+
+            	dig_res_qt = re.findall('Query time: ([0-9]*) msec',
+                                 dig_res[label], re.MULTILINE)[0]
+            	dig_delays.append(int(dig_res_qt))
+
+        self.results[key] = {}
+        self.results[key]["dns_query_avg_ms"] = sum(dig_delays) / len(dig_delays)
+        self.results[key]["dns_query_max_ms"] = max(dig_delays)
+        self.results[key]["error"] = error_found
+
+        if not self.quiet:
+            print(f'\n --- DNS Delays (n = {len(dig_delays)}) ---')
+            print(f'Avg DNS Query Time: {self.results[key]["dns_query_avg_ms"]} ms')
+            print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
+
+        return dig_res
+
     def hops_to_target(self, key, site):
         """
         Method counts the number of hops to the target site
