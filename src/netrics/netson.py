@@ -31,7 +31,7 @@ class Measurements:
 
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
-
+	self.resolvers = self.nma.conf['dns_latency']['encrypted_dns_targets']
         self.measured_down = 5
         self.max_monthly_consumption_gb = 200
         self.max_monthly_tests = 200
