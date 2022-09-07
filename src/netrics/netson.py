@@ -779,11 +779,11 @@ class Measurements:
 
         dig_delays = []
         dig_res = {}
+	self.results[key] = {}
         for site in self.sites:
+	    if self.valid_ip(site):
+	            continue
             for resolver in self.resolvers:
-            	if self.valid_ip(site):
-                	continue
-
             	try:
 			label = self.labels[site]
             	except KeyError:
@@ -801,11 +801,7 @@ class Measurements:
             	dig_res_qt = re.findall('Query time: ([0-9]*) msec',
                                  dig_res[label], re.MULTILINE)[0]
             	dig_delays.append(int(dig_res_qt))
-
-        self.results[key] = {}
-        self.results[key]["dns_query_avg_ms"] = sum(dig_delays) / len(dig_delays)
-        self.results[key]["dns_query_max_ms"] = max(dig_delays)
-        self.results[key]["error"] = error_found
+		self.results[key][f'{resolver}_{site}_encrypted_dns_latency'] = int(dig_res_qt)
 
         if not self.quiet:
             print(f'\n --- DNS Delays (n = {len(dig_delays)}) ---')
