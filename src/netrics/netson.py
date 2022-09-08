@@ -31,7 +31,7 @@ class Measurements:
 
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
-	self.resolvers = self.nma.conf['dns_latency']['encrypted_dns_targets']
+        self.resolvers = self.nma.conf['dns_latency']['encrypted_dns_targets']
         self.measured_down = 5
         self.max_monthly_consumption_gb = 200
         self.max_monthly_tests = 200
@@ -740,7 +740,7 @@ class Measurements:
             if len(err) > 0:
                print(f"ERROR: {err}")
                self.results[key][f'{label}_error'] = f'{err}'
-               dir_res[label] = { 'error': f'{err}' }
+               dig_res[label] = { 'error': f'{err}' }
                log.error(err)
                error_found = True
                continue
@@ -761,6 +761,7 @@ class Measurements:
 
         return dig_res
 
+
     def encrypted_dns_latency(self, key, run_test):
         """
         Method records dig latency for each site in self.sites
@@ -770,45 +771,47 @@ class Measurements:
         if not run_test:
             return
 
-        dig_res = None
         error_found = False
-#        target = '8.8.8.8'
-
-#        if 'target' in self.nma.conf['dns_latency'].keys():
-#            target = self.nma.conf['dns_latency']['target']
 
         dig_delays = []
         dig_res = {}
-	self.results[key] = {}
+        self.results[key] = {}
+        
         for site in self.sites:
-	    if self.valid_ip(site):
-	            continue
+
+            if self.valid_ip(site):
+                continue
+
+            try:
+                label = self.labels[site]
+            except KeyError:
+                label = site
+
             for resolver in self.resolvers:
-            	try:
-			label = self.labels[site]
-            	except KeyError:
-               		label = site
-            	dig_cmd = f'/usr/local/dig/bin/dig +https @{resolver} {site}'
-            	dig_res[label], err = self.popen_exec(dig_cmd)
-            	if len(err) > 0:
-               		print(f"ERROR: {err}")
-               		self.results[key][f'{label}_error'] = f'{err}'
-               		dir_res[label] = { 'error': f'{err}' }
-               		log.error(err)
-               		error_found = True
-               		continue
 
-            	dig_res_qt = re.findall('Query time: ([0-9]*) msec',
-                                 dig_res[label], re.MULTILINE)[0]
-            	dig_delays.append(int(dig_res_qt))
-		self.results[key][f'{resolver}_{site}_encrypted_dns_latency'] = int(dig_res_qt)
+                dig_cmd = f'/usr/local/dig/bin/dig +https @{resolver} {site}'
+                dig_res[f'{resolver}_{label}'], err = self.popen_exec(dig_cmd)
+                if len(err) > 0:
+                    print(f"ERROR: {err}")
+                    self.results[key][f'{label}_error'] = f'{err}'
+                    dig_res[label] = { 'error': f'{err}' }
+                    log.error(err)
+                    error_found = True
+                    continue
 
-        if not self.quiet:
-            print(f'\n --- DNS Delays (n = {len(dig_delays)}) ---')
-            print(f'Avg DNS Query Time: {self.results[key]["dns_query_avg_ms"]} ms')
-            print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
+                dig_res_qt = re.findall(
+                    'Query time: ([0-9]*) msec',
+                    dig_res[label], re.MULTILINE
+                )[0]
+                self.results[key][f'{resolver}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
+
+        # if not self.quiet:
+        #     print(f'\n --- Encrypted DNS Delays (n = {len(dig_delays)}) ---')
+        #     print(f'Avg DNS Query Time: {self.results[key]["dns_query_avg_ms"]} ms')
+        #     print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
 
         return dig_res
+
 
     def hops_to_target(self, key, site):
         """
