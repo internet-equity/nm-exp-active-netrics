@@ -284,10 +284,10 @@ class Measurements:
 
         res_json, res_text, total_bytes = self.parse_ndt7_output(output)
 
-        download_speed = float(res_json["Download"]["Value"])
-        upload_speed = float(res_json["Upload"]["Value"])
-        download_retrans = float(res_json["DownloadRetrans"]["Value"])
-        minrtt = float(res_json['MinRTT']['Value'])
+        download_speed = float(res_json["Download"]["Throughput"]["Value"])
+        upload_speed = float(res_json["Upload"]["Throughput"]["Value"])
+        download_retrans = float(res_json["Download"]["Retransmission"]["Value"])
+        minrtt = float(res_json["Download"]["Latency"]['Value'])
 
         self.results[key]["speedtest_ndt7_download"] = download_speed
         self.results[key]["speedtest_ndt7_upload"] = upload_speed
