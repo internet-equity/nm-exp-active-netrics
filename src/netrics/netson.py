@@ -788,21 +788,22 @@ class Measurements:
                 label = site
 
             for resolver in self.resolvers:
-
+                print(f'RUNNING: {resolver} {site}')
                 dig_cmd = f'/usr/local/dig/bin/dig +https @{resolver} {site}'
                 dig_res[f'{resolver}_{label}'], err = self.popen_exec(dig_cmd)
                 if len(err) > 0:
                     print(f"ERROR: {err}")
-                    self.results[key][f'{label}_error'] = f'{err}'
-                    dig_res[label] = { 'error': f'{err}' }
+                    self.results[key][f'{resolver}_{label}_error'] = f'{err}'
+                    dig_res[f'{resolver}_{label}'] = { 'error': f'{err}' }
                     log.error(err)
                     error_found = True
                     continue
-
-                dig_res_qt = re.findall(
-                    'Query time: ([0-9]*) msec',
-                    dig_res[label], re.MULTILINE
-                )[0]
+                try:
+                    dig_res_qt = re.findall('Query time: ([0-9]*) msec',dig_res[f'{resolver}_{label}'], re.MULTILINE)[0]
+                except IndexError as e:
+                    print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
+                    continue
+                print(f"RESULT: {dig_res_qt}")
                 self.results[key][f'{resolver}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
 
         # if not self.quiet:
