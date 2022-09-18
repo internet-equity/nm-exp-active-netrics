@@ -23,4 +23,5 @@ else
   # Example how to remove using apt-get
   # sudo apt-get remove speedtest-cli
   sudo apt-get install -y speedtest=1.2.0.84-1.ea6b6773cf
+  cp -f /usr/bin/speedtest ./commands/${PROC}/bin/
 fi
