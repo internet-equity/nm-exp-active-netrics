@@ -78,4 +78,4 @@ netrics="""
     "1.1.1.1" = "Cloudflare_DNS"
 
 [oplat]
-    targets = ["abbott.cs.uchicago.edu:33317"]
+    targets = ["calliope.merit.edu:33317"]
