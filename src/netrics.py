@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins,"\
              "Marc Richardson, Nick Feamster"
 

@@ -363,7 +363,7 @@ class Measurements:
 
         self.results[key] = {}
         for site in sites:
-            ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+            ping_cmd = "ping -4 -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
 
             try:
@@ -468,7 +468,7 @@ class Measurements:
                     ip_addr = hop_stats[4].strip('()')
                     try:
                         if not ipaddress.ip_address(ip_addr).is_private:
-                            ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+                            ping_cmd = "ping -4 -i {:.2f} -c {:d} -w {:d} {:s}".format(
                                 0.25, 10, 5, ip_addr)
                             output[site], err = self.popen_exec(ping_cmd)
                             if len(err) > 0:
@@ -652,7 +652,7 @@ class Measurements:
                 except KeyError:
                   label = site
 
-                ping_cmd = "ping -i 0.25 -c 10 -w 5 {:s}".format(site)
+                ping_cmd = "ping -4 -i 0.25 -c 10 -w 5 {:s}".format(site)
                 
                 start = time.time()
                 ping_res[direction][label], err = self.popen_exec(load + ping_cmd)
