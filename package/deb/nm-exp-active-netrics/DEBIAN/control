@@ -1,5 +1,5 @@
 Package: nm-exp-active-netrics
-Version: 1.0.1
+Version: 1.0.2
 Section: custom
 Priority: optional
 Architecture: arm64

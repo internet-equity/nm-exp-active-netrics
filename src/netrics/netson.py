@@ -552,7 +552,9 @@ class Measurements:
                 if len(err) > 0:
                     print(f'ERROR: {err}')
                     log.error(err)
-                    self.results[key][f'{dst}_{ul_dl}_error'] = f'{err}'
+                    field_dst = dst.split(":")[0]
+                    field_port = dst.split(":")[1]
+                    self.results[key][f'{field_dst}_{field_port}_{ul_dl}_error'] = f'{err}' 
                     oplat_out[ul_dl] = {'error': f'{err}'}
                     error = True
                     continue
