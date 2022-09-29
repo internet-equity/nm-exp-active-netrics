@@ -5,9 +5,17 @@ volumes:
 services:
    netrics:
       container_name: netrics-anon-v0
-      build: .
+      build: ./netrics/
+      volumes:
+         - 'netrics-etc:/etc/nm-exp-active-netrics/'
+         - 'netrics-data:/var/nm/'
+      network_mode: bridge
+   collect:
+      container_name: collect-anon-v0
+      build:  ./collect/
       volumes:
          - 'netrics-etc:/etc/nm-exp-active-netrics/'
          - 'netrics-data:/var/nm/'
       environment:
          - NETRICS_ID=nm-anon-20220920-00000001
+      network_mode: bridge
