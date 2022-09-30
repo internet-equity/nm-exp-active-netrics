@@ -19,6 +19,7 @@ echo "INFO: working dir ("$(pwd)")"
 mkdir -p commands/src/dig/$PROC/
 cd commands/src/dig/$PROC/
 
+apt-get update && apt-get install -y wget
 # link from https://www.linuxfromscratch.org/blfs/view/svn/basicnet/bind-utils.html 
 wget https://ftp.isc.org/isc/bind9/9.18.6/bind-9.18.6.tar.xz
 tar -xvf bind-9.18.6.tar.xz
