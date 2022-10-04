@@ -17,5 +17,8 @@ services:
          - 'netrics-etc:/etc/nm-exp-active-netrics/'
          - 'netrics-data:/var/nm/'
       environment:
-         - NETRICS_ID=nm-anon-20220920-00000001
+         - BALENA_DEVICE_UUID=df0d94716857f9d9e85d74027673bd1d
+         - NETRICS_ACTIVATION_DATE=20220920
+         #- NETRICS_ID=nm-anon-20220920-00000000
+
       network_mode: bridge
