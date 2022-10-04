@@ -5,5 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates sudo apt-utils
 COPY nm-mgmt-collect-http-anon-v0.7.0-arm64-dev1.deb /
 RUN dpkg -i nm-mgmt-collect-http-anon-v0.7.0-arm64-dev1.deb
 COPY /collectd-http.sh /
+RUN chown netrics:netrics /collectd-http.sh
 RUN chmod u+x /collectd-http.sh
+USER netrics
 CMD ["/collectd-http.sh"] 
