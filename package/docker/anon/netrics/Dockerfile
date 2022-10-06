@@ -5,5 +5,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates sudo apt-utils
 RUN yes | DEBIAN_FRONTEND=teletype apt install  -y tshark
 COPY nm-exp-active-netrics-v1.0.0-arm64.deb /
 RUN dpkg -i nm-exp-active-netrics-v1.0.0-arm64.deb
+COPY volume/etc/cron.d/cron-reboot /etc/cron.d/
 COPY volume/etc/nm-exp-active-netrics/nm-exp-active-netrics.toml /etc/nm-exp-active-netrics/
-CMD ["cron", "-f"]
+COPY cron.sh /
+RUN chmod a+x /cron.sh
+CMD ["/cron.sh"]
