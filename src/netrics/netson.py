@@ -795,7 +795,7 @@ class Measurements:
                 except KeyError:
                     res_label = resolver
                 print(f'RUNNING: {resolver} {site}')
-                dig_cmd = f'/usr/local/dig/bin/dig +https @{resolver} {site}'
+                dig_cmd = f'/usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
                 dig_res[f'{res_label}_{label}'], err = self.popen_exec(dig_cmd)
                 if len(err) > 0:
                     print(f"ERROR: {err}")
