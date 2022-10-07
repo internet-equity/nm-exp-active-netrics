@@ -27,7 +27,7 @@ cd bind-$VER
 
 mkdir -p $NMAPATH/commands/$PROC/
 
-apt-get install -y pkg-config libuv1-dev libnghttp2-dev libcap-dev libssl-dev
+apt-get install -y pkg-config libuv1-dev libnghttp2-dev libcap-dev libssl-dev libjemalloc-dev
 
 ./configure --prefix=$NMAPATH/commands/$PROC/ &&
 make -C lib/isc    &&
