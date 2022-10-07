@@ -31,6 +31,9 @@ oplat: ## Install oplat command for host arch
 speedtest: ## Install speedtest command for host arch
 	./scripts/make_speedtest.sh
 
+dig: ## Install dig command from source, use host arch (no cross compile) 
+	./scripts/make_dig.sh
+
 deps: ## Install dependencies via apt-get install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 	python3 get-pip.py
