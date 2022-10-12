@@ -737,7 +737,7 @@ class Measurements:
                label = self.labels[site]
             except KeyError:
                label = site
-            dig_cmd = f'/usr/local/dig/bin/dig @{target} {site}'
+            dig_cmd = f'/usr/local/src/nm-exp-active-netrics/bin/dig @{target} {site}'
             dig_res[label], err = self.popen_exec(dig_cmd)
             if len(err) > 0:
                print(f"ERROR: {err}")
