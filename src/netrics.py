@@ -8,14 +8,16 @@ from datetime import datetime
 from netrics.netson import Measurements
 from nmexpactive.experiment import NetMicroscopeControl
 
+from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
-from influxdb import InfluxDBClient
+from influxdb_client.client.exceptions import InfluxDBError
+
 
 log = logging.getLogger(__name__)
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
-__version__ = "1.0.0"
+__version__ = "1.0.2"
 __author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins,"\
              "Marc Richardson, Nick Feamster"
 
@@ -36,6 +38,20 @@ class keyvalue(argparse.Action):
                   getattr(namespace, self.dest)[keyop] = ""
               getattr(namespace, self.dest)[keyop] = \
                 (getattr(namespace, self.dest)[keyop] + " " + value).strip()
+
+class BatchingCallback(object):
+
+    def success(self, conf: (str, str, str), data: str):
+        print(f"Written batch: {conf}, data: {data}")
+        log.info("influxdb write_api return: OK")
+
+    def error(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+        print(f"Cannot write batch: {conf}, data: {data} due: {exception}")
+        log.error("influxdb write_api return: error")
+
+    def retry(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+        print(f"Retryable error occurs for batch: {conf}, data: {data} retry: {exception}")
+        log.error("influxdb write_api return: error")
 
 #Used to report consumption (Human Readable)
 def sizeof_fmt(num, suffix='B'):
@@ -207,14 +223,14 @@ def upload(upload_results, measurements):
 
     server = None
     port = 0
-    username = None
-    password = None
+    token = None
+    org = None
     installid = None
 
     server = os.getenv("INFLUXDB_SERVER")
     port = os.getenv("INFLUXDB_PORT")
-    username = os.getenv("INFLUXDB_USERNAME")
-    password = os.getenv("INFLUXDB_PASSWORD")
+    token = os.getenv("INFLUXDB_TOKEN")
+    org = os.getenv("INFLUXDB_ORG")
     db = os.getenv("INFLUXDB_DATABASE")
     installid = os.getenv("INSTALL_ID")
 
@@ -223,32 +239,47 @@ def upload(upload_results, measurements):
         print(("Unable to insert data (influxdb), missing .env or INFLUXDB_* not set."))
         return
  
-    creds = InfluxDBClient(host=server, port=port, username=username,
-                password=password, database=db, ssl=True, verify_ssl=True)
+    with InfluxDBClient(url = "https://{0}:{1}".format(server, port), token = token,  org = org) as client:
+        callback = BatchingCallback()
+        write_api = client.write_api(write_options=SYNCHRONOUS,
+                                    success_callback=callback.success,
+                                    error_callback=callback.error,
+                                    retry_callback=callback.retry)
 
-    insert = {}
-    for m in measurements.keys():
-        if m != 'ipquery':
-          if type(measurements[m]) is dict:
-            for k in measurements[m].keys():
-                if k != 'error':
-                    insert[k] = measurements[m][k]
-          ## the below code address for measurements without keys
-          ## like total_bytes_consumed,  
-          else:
-            insert[m] = measurements[m]
+        insert = {}
+        for m in measurements.keys():
+            if m != 'ipquery':
+              if type(measurements[m]) is dict:
+                for k in measurements[m].keys():
+                    if k != 'error':
+                        insert[k] = measurements[m][k]
+              ## the below code address for measurements without keys
+              ## like total_bytes_consumed,  
+              else:
+                insert[m] = measurements[m]
 
-    #print("---> {}".format(insert))
+        #print("---> {}".format(insert))
 
-    ret = creds.write_points([{"measurement": "networks",
-                         "tags"        : {"install": installid},
-                         "fields"      : insert,
-                         "time"        : datetime.utcnow()}])
-    if not ret:
-        log.error("influxdb write_points return: false")
-        print("influxdb write_points return: false")
+        record = [
+                {
+                    "measurement": "networks",
+                    "tags"       : {
+                        "install": installid
+                    },
+                    "fields"      : insert,
+                    "time"        : datetime.utcnow()
+                }
+        ]
+
+        ret = write_api.write(bucket=db, record=record)
+
         return
-    log.info("influxdb write_points return: OK")
+
+        
+        #if not ret:
+        #    log.error("influxdb write_points return: false")
+        #    return
+        #log.info("influxdb write_points return: OK")
  
 
 def check_connectivity(res, site):

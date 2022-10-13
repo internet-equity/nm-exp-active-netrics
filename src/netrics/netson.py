@@ -284,10 +284,10 @@ class Measurements:
 
         res_json, res_text, total_bytes = self.parse_ndt7_output(output)
 
-        download_speed = float(res_json["Download"]["Value"])
-        upload_speed = float(res_json["Upload"]["Value"])
-        download_retrans = float(res_json["DownloadRetrans"]["Value"])
-        minrtt = float(res_json['MinRTT']['Value'])
+        download_speed = float(res_json["Download"]["Throughput"]["Value"])
+        upload_speed = float(res_json["Upload"]["Throughput"]["Value"])
+        download_retrans = float(res_json["Download"]["Retransmission"]["Value"])
+        minrtt = float(res_json["Download"]["Latency"]['Value'])
 
         self.results[key]["speedtest_ndt7_download"] = download_speed
         self.results[key]["speedtest_ndt7_upload"] = upload_speed
@@ -363,7 +363,7 @@ class Measurements:
 
         self.results[key] = {}
         for site in sites:
-            ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+            ping_cmd = "ping -4 -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
 
             try:
@@ -468,7 +468,7 @@ class Measurements:
                     ip_addr = hop_stats[4].strip('()')
                     try:
                         if not ipaddress.ip_address(ip_addr).is_private:
-                            ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+                            ping_cmd = "ping -4 -i {:.2f} -c {:d} -w {:d} {:s}".format(
                                 0.25, 10, 5, ip_addr)
                             output[site], err = self.popen_exec(ping_cmd)
                             if len(err) > 0:
@@ -552,7 +552,9 @@ class Measurements:
                 if len(err) > 0:
                     print(f'ERROR: {err}')
                     log.error(err)
-                    self.results[key][f'{dst}_{ul_dl}_error'] = f'{err}'
+                    field_dst = dst.split(":")[0]
+                    field_port = dst.split(":")[1]
+                    self.results[key][f'{field_dst}_{field_port}_{ul_dl}_error'] = f'{err}' 
                     oplat_out[ul_dl] = {'error': f'{err}'}
                     error = True
                     continue
@@ -652,7 +654,7 @@ class Measurements:
                 except KeyError:
                   label = site
 
-                ping_cmd = "ping -i 0.25 -c 10 -w 5 {:s}".format(site)
+                ping_cmd = "ping -4 -i 0.25 -c 10 -w 5 {:s}".format(site)
                 
                 start = time.time()
                 ping_res[direction][label], err = self.popen_exec(load + ping_cmd)
