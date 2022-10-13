@@ -43,11 +43,11 @@ make -C bin/dig    && make -C doc
 make -C bin/dig    install
 
 
-mkdir -p $NMAPATH/commands/$PROC/libs
+mkdir -p $NMAPATH/commands/$PROC/lib
 
-cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/isc/.libs/libisc-$VER.so $NMAPATH/commands/$PROC/libs
-cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/dns/.libs/libdns-$VER.so $NMAPATH/commands/$PROC/libs
-cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/isccfg/.libs/libisccfg-$VER.so $NMAPATH/commands/$PROC/libs
-cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/irs/.libs/libirs-$VER.so $NMAPATH/commands/$PROC/libs
-cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/bind9/.libs/libbind9-$VER.so $NMAPATH/commands/$PROC/libs
+cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/isc/.libs/libisc-$VER.so $NMAPATH/commands/$PROC/lib
+cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/dns/.libs/libdns-$VER.so $NMAPATH/commands/$PROC/lib
+cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/isccfg/.libs/libisccfg-$VER.so $NMAPATH/commands/$PROC/lib
+cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/irs/.libs/libirs-$VER.so $NMAPATH/commands/$PROC/lib
+cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/bind9/.libs/libbind9-$VER.so $NMAPATH/commands/$PROC/lib
 
