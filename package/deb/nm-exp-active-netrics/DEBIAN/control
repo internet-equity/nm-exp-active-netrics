@@ -8,4 +8,4 @@ Installed-Size: 28192
 Maintainer: gmartins
 Homepage: https://github.com/chicago-cdac/nm-exp-active-netrics
 Description: NetMicroscope Experiment - Active Measurements Netrics
-Depends: net-tools, traceroute, dnsutils, nmap, tshark, logrotate, iproute2
+Depends: net-tools, traceroute, dnsutils, nmap, tshark, logrotate, iproute2, iputils-ping
