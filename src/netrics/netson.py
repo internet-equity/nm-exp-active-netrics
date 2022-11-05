@@ -123,6 +123,22 @@ class Measurements:
 
         self.speed_db.update({'test': True})
 
+
+    # function taken from
+    # https://stackoverflow.com/questions/11264005/using-a-regex-to-match-ip-addresses
+    def valid_ip(self, address):
+        """
+        Check if a site in self.sites is an IPv4 address
+        """
+        try:
+            host_bytes = address.split('.')
+            valid = [int(b) for b in host_bytes]
+            valid = [b for b in valid if b >=0 and b<=255]
+            return len(host_bytes) == 4 and len(valid) == 4
+        except:
+            return False
+
+
     def ipquery(self, key="ipquery", run_test=True):
         j4 = None
         #j6 = None
@@ -363,6 +379,7 @@ class Measurements:
 
         self.results[key] = {}
         for site in sites:
+
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
 
@@ -372,13 +389,12 @@ class Measurements:
                 label = site
 
             ping_res[label] = {}
-
             ping_res[label], err = self.popen_exec(ping_cmd)
+
             if len(err) > 0:
                 print(f"ERROR: {err}")
                 log.error(err)
                 self.results[key][label + "_error"] = err.strip()
-                ping_res[label] = { 'error' : f'{err}' }
                 error_found = True
 
                 if "Name or service not known" in err or \
@@ -396,7 +412,6 @@ class Measurements:
                                                 ping_res[label], re.MULTILINE)[0])
             except IndexError:
                 self.results[key][label + "_error"] = 'Packet Loss IndexError'
-                ping_res[label] = {'error': 'Packet Loss IndexErorr'}
                 error_found = True
                 continue
 
@@ -406,10 +421,18 @@ class Measurements:
                     , ping_res[label])[0]
             except IndexError:
                 self.results[key][label + "_error"] = 'Probe IndexError'
-                ping_res[label] = {'error': 'Probe IndexErorr'}
                 error_found = True
                 continue
-
+            
+            try:
+                ping_ip = re.findall(
+                    'PING.*\((.*)\) \d',
+                    ping_res[label]
+                )[0]
+            except IndexError:
+                self.results[key][label + "_error"] = 'Probe IndexError: Could not find IP'
+                error_found = True
+                continue
 
             ping_rtt_ms = [float(v) for v in ping_rtt_ms]
 
@@ -418,9 +441,15 @@ class Measurements:
             self.results[key][label + "_rtt_max_ms"] = ping_rtt_ms[2]
             self.results[key][label + "_rtt_avg_ms"] = ping_rtt_ms[1]
             self.results[key][label + "_rtt_mdev_ms"] = ping_rtt_ms[3]
+            if self.valid_ip(ping_ip):
+                self.results[key][label + "_ip_address"] = ping_ip
+            else:
+                log.warn("IP Address matched by regex is not valid IPv4 address. Excluding from saved results...")
 
             if not self.quiet:
                 print(f'\n --- {label} ping latency (MANDATORY) ---')
+                if self.valid_ip(ping_ip):
+                    print(f'IP Address: {ping_ip}')
                 print(f'Packet Loss: {ping_pkt_loss}%')
                 print(f'Average RTT: {ping_rtt_ms[0]} (ms)')
                 print(f'Minimum RTT: {ping_rtt_ms[1]} (ms)')
@@ -428,7 +457,9 @@ class Measurements:
                 print(f'RTT Std Dev: {ping_rtt_ms[3]} (ms)')
 
         self.results[key]["error"] = error_found
+
         return ping_res
+
 
     def last_mile_latency(self, key, run_test):
         """
@@ -692,20 +723,6 @@ class Measurements:
 
         self.results[key]['error'] = error_found
         return ping_res
-
-    # function taken from
-    # https://stackoverflow.com/questions/11264005/using-a-regex-to-match-ip-addresses
-    def valid_ip(self, address):
-        """
-        Check if a site in self.sites is an IP address
-        """
-        try:
-            host_bytes = address.split('.')
-            valid = [int(b) for b in host_bytes]
-            valid = [b for b in valid if b >=0 and b<=255]
-            return len(host_bytes) == 4 and len(valid) == 4
-        except:
-            return False
 
 
     def dns_latency(self, key, run_test):
