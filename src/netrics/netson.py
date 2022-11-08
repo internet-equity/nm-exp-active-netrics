@@ -161,7 +161,13 @@ class Measurements:
 
         self.results[key] = {}
         error_found = False
-        output, err = self.popen_exec("timeout 35 /usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
+        timeout = 35
+        try:
+             timeout = self.nma.conf['ookla']['timeout']
+        except KeyError:
+             print("WARN: Ookla timeout not set, default to 35.")
+             log.warn("Ookla timeout not set, default to 35.")
+        output, err = self.popen_exec(f"timeout {timeout} /usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
         if len(err) > 0:
              self.results[key]["error"] = f'{err}'
              print(f"ERROR: {err}")
