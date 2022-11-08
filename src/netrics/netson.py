@@ -403,6 +403,7 @@ class Measurements:
             except IndexError:
                 self.results[key][label + "_error"] = 'Packet Loss IndexError'
                 ping_res[label] = {'error': 'Packet Loss IndexErorr'}
+                log.error('Packet Loss IndexErorr: Unexpected output from ping')
                 error_found = True
                 continue
 
@@ -413,6 +414,7 @@ class Measurements:
             except IndexError:
                 self.results[key][label + "_error"] = 'Probe IndexError'
                 ping_res[label] = {'error': 'Probe IndexErorr'}
+                log.error('Probe IndexErorr: Unexpected output from ping')
                 error_found = True
                 continue
 
