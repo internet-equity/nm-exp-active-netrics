@@ -778,6 +778,8 @@ class Measurements:
         dig_delays = []
         dig_res = {}
         self.results[key] = {}
+	
+	procs = []
         
         for site in self.sites:
 
@@ -794,21 +796,37 @@ class Measurements:
                     res_label = self.res_labels[resolver]
                 except KeyError:
                     res_label = resolver
-                print(f'RUNNING: {resolver} {site}')
+		print(f'RUNNING: {res_label} {label}')
                 dig_cmd = f'/usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
-                dig_res[f'{res_label}_{label}'], err = self.popen_exec(dig_cmd)
+                proc = Popen(
+		    dig_cmd,
+		    stdout=PIPE,
+		    stderr=PIPE,
+		    text=True,
+		    shell=True
+		)
+
+		dig_res[f'{res_label}_{label}'] = proc
+	    for dst_target, proc in dig_res.items():
+		proc.wait()
+		out = proc.stdout.read().decode('utf-8')
+		err = proc.stderr.read().decode('utf-8')
+
                 if len(err) > 0:
                     print(f"ERROR: {err}")
-                    self.results[key][f'{res_label}_{label}_error'] = f'{err}'
-                    dig_res[f'{res_label}_{label}'] = { 'error': f'{err}' }
+		    self.results[key][f'{dst_target}_error'] = f'{err}'
+		    dig_res[dst_target] = { 'error' : f'{err}' }
                     log.error(err)
                     error_found = True
                     continue
                 try:
-                    dig_res_qt = re.findall('Query time: ([0-9]*) msec',dig_res[f'{res_label}_{label}'], re.MULTILINE)[0]
+		    dig_res_qt = re.findall('Query time: ([0-9]*) msec', out, re.MULTILINE)[0]
                 except IndexError as e:
                     print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
-                    continue
+                    self.results[key][f'{dst_target}_error'] = f'{e}'
+		    dig_res[dst_target] = { 'error' : f'{e}' }
+                    log.error(e)
+		    continue
                 print(f"RESULT: {dig_res_qt}")
                 self.results[key][f'{res_label}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
 
