@@ -143,6 +143,12 @@ def build_parser():
     )
 
     parser.add_argument(
+            '--no-ipquery',
+            action='store_true',
+            help='Do not perform IP query, this will not record your public IP info in the output JSON'
+    )
+
+    parser.add_argument(
             '--limit-consumption',
             default=False,
             action='store_true',
@@ -310,8 +316,9 @@ if args.check:
 log.info("Initializing.")
 test = Measurements(args, nma)
 
-""" Run IPv4v6 query"""
-output['ipquery']= test.ipquery()
+""" Run IPv4 query"""
+if not args.no_ipquery:
+    output['ipquery']= test.ipquery()
 
 """ Measure ping latency to list of websites """
 if not args.tshark:

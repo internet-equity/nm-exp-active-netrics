@@ -52,7 +52,7 @@ start_nma() {
 	    -c SPEEDTEST_TIME=${SPEEDTEST_TIME} IPERF_TIME=${IPERF_TIME} \
 	        upload=${upload} log=${log} enable_ndev=${ENABLE_NDEV} \
 		speedtest_hour=${speedtest_hour} iperf_hour=${iperf_hour} \
-		limit-consumption=${LIMIT_CONSUMPTION}
+		limit-consumption=${LIMIT_CONSUMPTION} no_ipquery=
 }
 
 stop_nma() {
