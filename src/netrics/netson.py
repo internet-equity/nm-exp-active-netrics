@@ -797,40 +797,45 @@ class Measurements:
                 print(f'RUNNING: {res_label} {label}')
                 dig_cmd = f'/home/ranyasharma/netrics-repo/nm-exp-active-netrics/commands/aarch64/bin/dig +https @{resolver} {site}'
                 proc = Popen(
-		    dig_cmd,
-		    stdout=PIPE,
-		    stderr=PIPE,
-		    text=True,
-		    shell=True
-		)
+                    dig_cmd,
+                    stdout=PIPE,
+                    stderr=PIPE,
+                    text=True,
+                    shell=True
+                )
 
                 dig_res[f'{res_label}_{label}'] = proc
-            for dst_target, proc in dig_res.items():
-                try:
-                    proc.wait()
-                    out = proc.stdout.read()
-                    err = proc.stderr.read()
-                except AttributeError as e:
-                    log.error(e)
-                    print(f'ERROR: {e}')
-                    print(f'{resolver}:{site}')
-                if len(err) > 0:
-                    print(f"ERROR: {err}")
-                    self.results[key][f'{dst_target}_error'] = f'{err}'
-                    dig_res[dst_target] = { 'error' : f'{err}' }
-                    log.error(err)
-                    error_found = True
-                    continue
-                try:
-                    dig_res_qt = re.findall('Query time: ([0-9]*) msec', out, re.MULTILINE)[0]
-                except IndexError as e:
-                    print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
-                    self.results[key][f'{dst_target}_error'] = f'{e}'
-                    dig_res[dst_target] = { 'error' : f'{e}' }
-                    log.error(e)
-                    continue
-                print(f"RESULT: {dig_res_qt}")
-                self.results[key][f'{res_label}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
+        for dst_target, proc in dig_res.items():
+            try:
+                proc.wait(timeout = 5)
+            except:
+                print("Resolver timed out")
+                print(dst_target)
+                continue
+            try:
+                out = proc.stdout.read()
+                err = proc.stderr.read()
+            except AttributeError as e:
+                log.error(e)
+                print(f'ERROR: {e}')
+                print(f'{resolver}:{site}')
+            if len(err) > 0:
+                print(f"ERROR: {err}")
+                self.results[key][f'{dst_target}_error'] = f'{err}'
+                dig_res[dst_target] = { 'error' : f'{err}' }
+                log.error(err)
+                error_found = True
+                continue
+            try:
+                dig_res_qt = re.findall('Query time: ([0-9]*) msec', out, re.MULTILINE)[0]
+            except IndexError as e:
+                print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
+                self.results[key][f'{dst_target}_error'] = f'{e}'
+                dig_res[dst_target] = { 'error' : f'{e}' }
+                log.error(e)
+                continue
+            print(f"RESULT: {dig_res_qt}")
+            self.results[key][f'{res_label}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
 
         # if not self.quiet:
         #     print(f'\n --- Encrypted DNS Delays (n = {len(dig_delays)}) ---')
