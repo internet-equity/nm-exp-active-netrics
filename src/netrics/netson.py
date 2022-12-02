@@ -805,12 +805,14 @@ class Measurements:
                 )
 
                 dig_res[f'{res_label}_{label}'] = proc
+#        print(dig_res)
         for dst_target, proc in dig_res.items():
             try:
                 proc.wait(timeout = 5)
             except:
                 print("Resolver timed out")
-                print(dst_target)
+#                print(dst_target)
+                self.results[key][f'{dst_target}_encrypted_dns_latency'] = "timeout"
                 continue
             try:
                 out = proc.stdout.read()
@@ -834,14 +836,16 @@ class Measurements:
                 dig_res[dst_target] = { 'error' : f'{e}' }
                 log.error(e)
                 continue
+ #           print(dig_res)
             print(f"RESULT: {dig_res_qt}")
-            self.results[key][f'{res_label}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
+            self.results[key][f'{dst_target}_encrypted_dns_latency'] = int(dig_res_qt)
 
         # if not self.quiet:
         #     print(f'\n --- Encrypted DNS Delays (n = {len(dig_delays)}) ---')
         #     print(f'Avg DNS Query Time: {self.results[key]["dns_query_avg_ms"]} ms')
         #     print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
 
+#        print(dig_res)
         return dig_res
 
 
