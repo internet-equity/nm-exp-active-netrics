@@ -42,17 +42,31 @@ start_nma() {
     GETTIME=$(cat /var/netrics.initd.out | grep iperf | awk '{print $2}')
     IPERF_TIME=$(( ${GETTIME} + 1 ))
     SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 ))
-    ENABLE_NDEV=-n		#enabled
+    ENABLE_NDEV=		#disabled
     LIMIT_CONSUMPTION=""	#disabled
     speedtest_hour=*/2
     iperf_hour=*/4
+    max_monthly_consumption_gb=200
+    max_monthly_tests=200
+    iperf_host=abbott.cs.uchicago.edu
+    iperf_port=33301
+    TOPIC=beta
+    GITLOG=""
+    DATAVER=1
+    DEBHASH=0
 
     . /usr/local/src/nm-exp-active-netrics/venv/bin/activate;/usr/local/src/nm-exp-active-netrics/venv/bin/python3 \
-	    /usr/local/src/nm-exp-active-netrics/bin/makecron.py \
+	    /usr/local/src/nm-exp-active-netrics/bin/makecronandtoml.py \
 	    -c SPEEDTEST_TIME=${SPEEDTEST_TIME} IPERF_TIME=${IPERF_TIME} \
 	        upload=${upload} log=${log} enable_ndev=${ENABLE_NDEV} \
 		speedtest_hour=${speedtest_hour} iperf_hour=${iperf_hour} \
-		limit-consumption=${LIMIT_CONSUMPTION} no_ipquery=
+		limit-consumption=${LIMIT_CONSUMPTION} \
+		iperf_host=${iperf_host} IPERF_PORT=${iperf_port} \
+		max_monthly_consumption_gb=${max_monthly_consumption_gb} \
+		max_monthly_tests=${max_monthly_tests} \
+		TOPIC=${TOPIC} \
+		GITLOG=${GITLOG} DATAVER=${DATAVER} DEBHASH=${DEBHASH} no_ipquery= 
+
 }
 
 stop_nma() {
