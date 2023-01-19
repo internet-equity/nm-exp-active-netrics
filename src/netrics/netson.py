@@ -218,7 +218,8 @@ class Measurements:
 
     def vca(self, key_vca, config_file):
         result = main_client.start_test(config_file)
-        print(result)
+        self.results[key_vca] = result["vca-qoe-metrics"]
+        print(self.results)
 
     def ping_latency(self, key, run_test):
         """
