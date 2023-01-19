@@ -11,7 +11,12 @@ from nmexpactive.experiment import NetMicroscopeControl
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb import InfluxDBClient
 
+
 log = logging.getLogger(__name__)
+
+sys.path.append("netrics/pplugin/netrics-vca-test/vca-automation")
+import main_client
+
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
@@ -160,6 +165,14 @@ def build_parser():
             default=None,
             action='store',
             help='Provide an alternative toml configuration file'
+    )
+
+    parser.add_argument(
+            '--plugin',
+            nargs = '+',
+            default=None,
+            action='store',
+            help='Provide list of plugin tests to run'
     )
 
     ## Non-test 
@@ -383,6 +396,15 @@ if not connectivity_failure:
     
         output['latency_under_load'] = test.oplat('oplat', True, client=server,
                                                   port=port, limit=args.limit_consumption)
+
+    if args.plugin:
+        plugins = args.plugin
+        
+        ## check which plugins have been called and run those tests
+        if "vca" in plugins:
+            config_file = "netrics/plugin/netrics-vca-test/vca-automation/config.toml"
+            test.vca('vca', config_file)
+            #main_client.start_test("netrics/plugin/netrics-vca-test/vca-automation/config.toml")
 
     
 """ Count number of devices on network """

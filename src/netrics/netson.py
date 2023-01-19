@@ -16,6 +16,13 @@ from tinydb.operations import increment
 from tinydb.operations import set as tdb_set
 from netrics.builtin.netrics_test_speedtests import test_ookla
 from netrics.builtin.netrics_test_speedtests import test_ndt7
+
+## VCA plugin
+sys.path.append('netrics/plugin/netrics-vca-test/vca-automation')
+import main_client 
+
+
+
 log = logging.getLogger(__name__)
 
 
@@ -208,6 +215,10 @@ class Measurements:
                 print("limit_consumption applied, skipping test: speedtest")
                 return None, None
         return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
+
+    def vca(self, key_vca, config_file):
+        result = main_client.start_test(config_file)
+        print(result)
 
     def ping_latency(self, key, run_test):
         """
