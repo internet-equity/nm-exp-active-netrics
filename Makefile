@@ -57,6 +57,12 @@ install: ## Copy files to the device filesystem at /usr/local/src, /usr/local/bi
 user: ## Make system user group netrics:netrics
 	./scripts/make_netrics_user_group.sh
 
+plugin-vca:
+	git submodule update --remote
+	sudo apt -y install xvfb python3-tk python3-dev scrot
+	sudo snap install chromium
+	source ./venv/bin/activate; pip install -r src/netrics/plugin/netrics-vca-test/requirements.txt 
+
 clearlogs: ## Remove nm-exp-active-netrics.log
 	rm -f /tmp/nm/nm-exp-active-netrics/log/nm-exp-active-netrics.log
 
