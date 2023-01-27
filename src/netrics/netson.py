@@ -18,9 +18,9 @@ from netrics.builtin.netrics_test_speedtests import test_ookla
 from netrics.builtin.netrics_test_speedtests import test_ndt7
 
 ## VCA plugin
-sys.path.append('netrics/plugin/netrics-vca-test/vca-automation')
-import main_client 
-
+#sys.path.append('netrics/plugin/netrics-vca-test/vca-automation')
+#import main_client 
+from netrics.plugin.netrics_vca_test.vca_automation import main_client
 
 
 log = logging.getLogger(__name__)

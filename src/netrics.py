@@ -14,8 +14,8 @@ from influxdb import InfluxDBClient
 
 log = logging.getLogger(__name__)
 
-sys.path.append("netrics/pplugin/netrics-vca-test/vca-automation")
-import main_client
+#sys.path.append("netrics/pplugin/netrics-vca-test/vca-automation")
+#import main_client
 
 
 #TODO: move this to setup.py
@@ -402,7 +402,7 @@ if not connectivity_failure:
         
         ## check which plugins have been called and run those tests
         if "vca" in plugins:
-            config_file = "netrics/plugin/netrics-vca-test/vca-automation/config.toml"
+            config_file = "src/netrics/plugin/netrics_vca_test/vca_automation/config.toml"
             test.vca('vca', config_file)
             #main_client.start_test("netrics/plugin/netrics-vca-test/vca-automation/config.toml")
 
