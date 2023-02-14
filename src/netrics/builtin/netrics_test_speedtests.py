@@ -36,7 +36,7 @@ def test_ookla(key, measurement, conf, results, quiet):
 
           else:
              results[key]["ookla_error"] = error_found 
-          return f'{err}'
+             return f'{err}'
 
     try:
         res_json = json.loads(output)
@@ -142,6 +142,7 @@ def test_ndt7(key, measurement, conf, results, quiet):
     results[key]["speedtest_ndt7_server"] = res_json['ServerFQDN']
     # results[key]["speedtest_ndt7_minrtt"] = minrtt
     results["total_bytes_consumed"] += total_bytes
+    
     if not quiet:
         print('\n --- NDT7 speed tests ---')
         print(f'Download:\t{download_speed} Mb/s')
