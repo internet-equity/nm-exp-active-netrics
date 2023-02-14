@@ -126,27 +126,29 @@ def test_ndt7(key, measurement, conf, results, quiet):
         error_found = True
         results[key]["ndt_error"] = error_found
         return f'{err}'
-
     res_json, res_text, total_bytes = parse_ndt7_output(output)
 
-    download_speed = float(res_json["Download"]["Value"])
-    upload_speed = float(res_json["Upload"]["Value"])
-    download_retrans = float(res_json["DownloadRetrans"]["Value"])
-    minrtt = float(res_json['MinRTT']['Value'])
+    download_speed = float(res_json["Download"]["Throughput"]["Value"])
+    download_latency = float(res_json["Download"]["Latency"]["Value"])
+    upload_speed = float(res_json["Upload"]["Throughput"]["Value"])
+    download_retrans = float(res_json["Download"]["Retransmission"]["Value"])
+    # not in new json
+    # minrtt = float(res_json['MinRTT']['Value'])
 
     results[key]["speedtest_ndt7_download"] = download_speed
     results[key]["speedtest_ndt7_upload"] = upload_speed
     results[key]["speedtest_ndt7_downloadretrans"] = download_retrans
-    results[key]["speedtest_ndt7_minrtt"] = minrtt
+    results[key]["speedtest_ndt7_downloadlatency"] = download_latency
     results[key]["speedtest_ndt7_server"] = res_json['ServerFQDN']
+    # results[key]["speedtest_ndt7_minrtt"] = minrtt
     results["total_bytes_consumed"] += total_bytes
-
     if not quiet:
         print('\n --- NDT7 speed tests ---')
         print(f'Download:\t{download_speed} Mb/s')
         print(f'Upload:\t\t{upload_speed} Mb/s')
         print(f'DownloadRetrans:{download_retrans} %')
-        print(f'MinRTT:\t\t{minrtt} ms')
+        print(f'Download Latency:{download_latency} ms')
+        # print(f'MinRTT:\t\t{minrtt} ms')
 
     results[key]["ndt_error"] = error_found
 
