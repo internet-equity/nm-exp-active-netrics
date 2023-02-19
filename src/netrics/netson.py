@@ -2,6 +2,18 @@
     Records selected network measurements
 """
 
+
+'''
+To refactor
+
+-oplat()
+-pinglatency
+-lastmilelatency
+-latency underload
+-dnslatency
+-tsharkethconsumotption (should be able tio get rid of this)
+'''
+
 from subprocess import Popen, PIPE
 import time
 import re
@@ -16,6 +28,7 @@ from tinydb.operations import increment
 from tinydb.operations import set as tdb_set
 from netrics.builtin.netrics_test_speedtests import test_ookla
 from netrics.builtin.netrics_test_speedtests import test_ndt7
+from netrics.builtin.netrics_test_dns_latency import test_dns_latency
 log = logging.getLogger(__name__)
 
 
@@ -560,73 +573,31 @@ class Measurements:
         self.results[key]['error'] = error_found
         return ping_res
 
-    # function taken from
-    # https://stackoverflow.com/questions/11264005/using-a-regex-to-match-ip-addresses
-    def valid_ip(self, address):
-        """
-        Check if a site in self.sites is an IP address
-        """
-        try:
-            host_bytes = address.split('.')
-            valid = [int(b) for b in host_bytes]
-            valid = [b for b in valid if b >=0 and b<=255]
-            return len(host_bytes) == 4 and len(valid) == 4
-        except:
-            return False
-
+    def speed(self, key_ookla, key_ndt7, limit_consumption):
+        """ Test runs Ookla and NDT7 Speed tests in sequence """
+        if limit_consumption:
+            if not self.bandwidth_test_stochastic_limit(measured_down = self.measured_down,
+                    max_monthly_consumption_gb = self.max_monthly_consumption_gb,
+                    max_monthly_tests = self.max_monthly_tests):
+                log.info("limit_consumption applied, skipping test: speedtest")
+                print("limit_consumption applied, skipping test: speedtest")
+                return None, None
+        return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
 
     def dns_latency(self, key, run_test):
-        """
-        Method records dig latency for each site in self.sites
-        """
+        """ Records dig latency for each site in self.sites """
         """ key: test name """
 
         if not run_test:
             return
 
-        dig_res = None
-        error_found = False
-        target = '8.8.8.8'
-
-        if 'target' in self.nma.conf['dns_latency'].keys():
-            target = self.nma.conf['dns_latency']['target']
-
-        dig_delays = []
-        dig_res = {}
-        for site in self.sites:
-            
-            if self.valid_ip(site):
-                continue
-
-            try:
-               label = self.labels[site]
-            except KeyError:
-               label = site
-            dig_cmd = f'dig @{target} {site}'
-            dig_res[label], err = self.popen_exec(dig_cmd)
-            if len(err) > 0:
-               print(f"ERROR: {err}")
-               self.results[key][f'{label}_error'] = f'{err}'
-               dir_res[label] = { 'error': f'{err}' }
-               log.error(err)
-               error_found = True
-               continue
-
-            dig_res_qt = re.findall('Query time: ([0-9]*) msec',
-                                 dig_res[label], re.MULTILINE)[0]
-            dig_delays.append(int(dig_res_qt))
-
         self.results[key] = {}
-        self.results[key]["dns_query_avg_ms"] = sum(dig_delays) / len(dig_delays)
-        self.results[key]["dns_query_max_ms"] = max(dig_delays)
-        self.results[key]["error"] = error_found
+        args = { "conf" : self.nma.conf,
+                 "sites" : self.sites,
+                 "labels" : self.labels
+                }
 
-        if not self.quiet:
-            print(f'\n --- DNS Delays (n = {len(dig_delays)}) ---')
-            print(f'Avg DNS Query Time: {self.results[key]["dns_query_avg_ms"]} ms')
-            print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
-
-        return dig_res
+        return test_dns_latency(key, self, args, self.results, self.quiet)
 
     def hops_to_target(self, key, site):
         """
