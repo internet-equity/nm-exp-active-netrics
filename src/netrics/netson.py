@@ -4,16 +4,12 @@
 
 
 from subprocess import Popen, PIPE
-import time
-import re
 import json
 import random
 import urllib.request
 import os, logging
 from pathlib import Path
-from tinydb import TinyDB, where
-from tinydb.operations import increment
-from tinydb.operations import set as tdb_set
+from tinydb import TinyDB
 from netrics.builtin.netrics_test_speedtests import test_ookla
 from netrics.builtin.netrics_test_speedtests import test_ndt7
 from netrics.builtin.netrics_test_dns_latency import test_dns_latency
@@ -24,6 +20,7 @@ from netrics.builtin.netrics_test_oplat import test_oplat
 from netrics.builtin.netrics_test_hops_to_target import test_hops_to_target
 from netrics.builtin.netrics_test_tshark import test_tshark
 from netrics.builtin.netrics_test_iperf3 import test_iperf3
+from netrics.builtin.netrics_test_connected_devices import test_connected_devices
 log = logging.getLogger(__name__)
 
 
@@ -318,7 +315,6 @@ class Measurements:
 
         return test_hops_to_target(key, self, args, self.results, self.quiet)
 
-#TO REFACTOR
     def connected_devices_arp(self, key, run_test):
         """
         Method counts the number of active devices on the network.
@@ -329,73 +325,9 @@ class Measurements:
         if not run_test:
             return
 
-        res = {}
-
-        ts = int(time.time())
-        iface = 'eth0'
-
-        if 'nmap_dev_scan' in self.nma.conf.keys():
-            if 'iface' in self.nma.conf['nmap_dev_scan']:
-                iface = self.nma.conf['nmap_dev_scan']['iface']
-
-        route_cmd = f"ip r | grep -v default | grep src | grep {iface} | head -n 1 | awk '{{print $1;}}'"
-        subnet = Popen(route_cmd, shell=True,
-                       stdout=PIPE).stdout.read().decode('utf-8').strip(" \n")
-        nmap_cmd = f'nmap -sn {subnet}'
-        Popen(nmap_cmd, shell=True, stdout=PIPE).stdout.read()
-
-        arp_cmd = (f"/usr/sbin/arp -i {iface} -n | grep : |"
-                   "grep -v '_gateway' | tr -s ' ' | "
-                   "cut -f3 -d' ' | sort | uniq")
-
-        arp_res, err = self.popen_exec(arp_cmd)
-        if len(err) > 0:
-            print(f"ERROR: {err}")
-            log.error(err)
-            return None
-
-        ## use arp_res to collect device mac address, it's disabled for now
-        res['arp'] = "[REDACTED]"
-
-        devices = set(arp_res.strip().split("\n"))
-        active_devices = [[dev, ts, 1] for dev in devices]
-
-        for device in active_devices:
-            if self.dev_db.contains(where('mac_addr') == device[0]):
-                self.dev_db.update(increment("n"),
-                                   where('mac_addr') == device[0])
-                self.dev_db.update(tdb_set('last_seen', device[1]),
-                                   where('mac_addr') == device[0])
-            else:
-                self.dev_db.insert({'mac_addr': device[0],
-                                    'last_seen': device[1],
-                                    'n': device[2]})
-
-        print(self.dev_db.all())
-        ndev_past_day = len(self.dev_db.search(
-            where('last_seen') > (ts - 86400)))
-        ndev_past_week = len(self.dev_db.search(
-            where('last_seen') > (ts - 86400*7)))
-
-        print(ndev_past_day)
-
         self.results[key] = {}
-        self.results[key]["devices_active"] = len(active_devices)
-        self.results[key]["devices_total"] = self.dev_db.count(where('n') >= 1)
-        self.results[key]["devices_1day"] = ndev_past_day
-        self.results[key]["devices_1week"] = ndev_past_week
 
-        if not self.quiet:
-            print('\n --- Number of Devices ---')
-            print(f'Number of active devices: '
-                  f'{self.results[key]["devices_active"]}')
-            print(f'Number of total devices: '
-                  f'{self.results[key]["devices_total"]}')
-            print(f'Number of devices in last 1 day:'
-                  f' {self.results[key]["devices_1day"]}')
-            print(f'Number of devices in last week:'
-                  f' {self.results[key]["devices_1week"]}')
-        return res
+        return test_connected_devices(key, self, self.dev_db, self.nma.conf, self.results, self.quiet)
 
     def iperf3_bandwidth(self, key, client, port, limit):
         """
