@@ -1,4 +1,3 @@
-import json
 from .. utils import popen_exec
 import logging
 import re
