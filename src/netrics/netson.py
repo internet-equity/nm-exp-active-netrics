@@ -3,17 +3,6 @@
 """
 
 
-'''
-To refactor
-
--oplat()
--pinglatency
--lastmilelatency
--latency underload
--dnslatency
--tsharkethconsumotption (should be able tio get rid of this)
-'''
-
 from subprocess import Popen, PIPE
 import time
 import re
