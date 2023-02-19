@@ -1,6 +1,5 @@
 from .. utils import popen_exec
 import logging
-import re 
 import json
 
 log = logging.getLogger(__name__)
