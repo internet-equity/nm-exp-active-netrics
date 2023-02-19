@@ -20,6 +20,8 @@ from netrics.builtin.netrics_test_dns_latency import test_dns_latency
 from netrics.builtin.netrics_test_last_mile_latency import test_last_mile_latency
 from netrics.builtin.netrics_test_latunderload import test_latunderload
 from netrics.builtin.netrics_test_ping_latency import test_ping_latency
+from netrics.builtin.netrics_test_oplat import test_oplat
+from netrics.builtin.netrics_test_hops_to_target import test_hops_to_target
 log = logging.getLogger(__name__)
 
 
@@ -247,104 +249,24 @@ class Measurements:
         self.results[key] = {}
 
         return test_last_mile_latency(key, self, self.nma.conf, self.results, self.quiet)
-#TO REFACTOR
+
     def oplat(self, key, run_test, client, port, limit):
 
         if not run_test: return
         if not client: return
 
-        if limit:
-            if not self.bandwidth_test_stochastic_limit(measured_down=self.measured_down,
-                                                        max_monthly_consumption_gb=self.max_monthly_consumption_gb,
-                                                        max_monthly_tests=self.max_monthly_tests):
-                log.info("limit_consumption applied, skipping test: OpLat")
-                print("limit_consumption applied, skipping test: OpLat")
-                return
-
-        if 'targets' in self.nma.conf['oplat']:
-            targets = self.nma.conf['oplat']['targets']
-        else:
-            return
-
-        res = {}
         self.results[key] = {}
+        args = { "limit" : limit,
+                 "port" : port,
+                 "client" : client,
+                 "bandwidth_test_stochastic_limit" : self.bandwidth_test_stochastic_limit,
+                 "measured_down" : self.measured_down,
+                 "max_monthly_consumption_gb" : self.max_monthly_consumption_gb,
+                 "max_monthly_tests" : self.max_monthly_tests,
+                 "conf" : self.nma.conf
+                }
 
-        error = False
-        oplat_out = {}
-        for upload in [True, False]:
-
-            ul_dl = "ul" if upload else "dl"
-
-            for dst in targets:
-                cmd = "/usr/local/src/nm-exp-active-netrics/bin/oplat " \
-                        "-s /usr/local/src/nm-exp-active-netrics/bin/iperf3.sh " \
-                        "-c {} -p {} -d {} -i 0.25 -n 10 -m 'tcp icmp' -J {}".format(
-                    client, port, dst, "" if upload else "-R")
-                oplat_out[ul_dl], err = self.popen_exec(cmd)
-                if len(err) > 0:
-                    print(f'ERROR: {err}')
-                    log.error(err)
-                    self.results[key][f'{dst}_{ul_dl}_error'] = f'{err}'
-                    oplat_out[ul_dl] = {'error': f'{err}'}
-                    error = True
-                    continue
-
-                res = json.loads(oplat_out[ul_dl])
-                if ul_dl == "ul":
-                    sum_sent = res["SumSent"]
-                    self.results[key]['avg_sum_sent'] = float(sum_sent) / 13
-                    self.results['total_bytes_consumed'] += int(sum_sent)
-                else:
-                    sum_recv = res["SumRecv"]
-                    self.results[key]['avg_sum_recv'] = float(sum_recv) / 13
-                    self.results['total_bytes_consumed'] += int(sum_recv)
-
-                tcp_rates = []
-                icmp_rates = []
-                tcp_sum = 0
-                icmp_sum = 0
-
-                tcp_loads = res["TCPinger"]["PingLoads"]
-                for probe in tcp_loads:
-                    tcp_rates.append(float(probe["Rate"]))
-
-                for rate in set(tcp_rates):
-                    tcp_sum += rate
-
-                icmp_loads = res["ICMPinger"]["PingLoads"]
-                for probe in icmp_loads:
-                    icmp_rates.append(float(probe["Rate"]))
-
-                for rate in set(icmp_rates):
-                    icmp_sum += rate
-
-                field_dst = dst.split(":")[0]
-
-                self.results[key][f'avg_rate_tcp_probes_{ul_dl}'] = tcp_sum / len(set(tcp_rates))
-                self.results[key][f'avg_rate_icmp_probes_{ul_dl}'] = icmp_sum / len(set(icmp_rates))
-                self.results[key][f'unloaded_icmp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["PacketLoss"])
-                self.results[key][f'unloaded_icmp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'unloaded_icmp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'unloaded_icmp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["UnloadedStats"]["AvgRtt"]) * 1e-6
-                self.results[key][f'loaded_icmp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["PacketLoss"])
-                self.results[key][f'loaded_icmp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'loaded_icmp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'loaded_icmp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["ICMPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
-
-                self.results[key][f'unloaded_tcp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["PacketLoss"])
-                self.results[key][f'unloaded_tcp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'unloaded_tcp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'unloaded_tcp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["UnloadedStats"]["AvgRtt"]) * 1e-6
-                self.results[key][f'loaded_tcp_{field_dst}_pkt_loss_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["PacketLoss"])
-                self.results[key][f'loaded_tcp_{field_dst}_min_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MinRtt"]) * 1e-6
-                self.results[key][f'loaded_tcp_{field_dst}_max_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["MaxRtt"]) * 1e-6
-                self.results[key][f'loaded_tcp_{field_dst}_avg_rtt_ms_{ul_dl}'] = float(res["TCPinger"]["LoadedStats"]["AvgRtt"]) * 1e-6
-
-
-                #res[ul_dl] = out
-
-        self.results[key]['error'] = error
-        return oplat_out
+        return test_oplat(key, self, args, self.results, self.quiet)
 
     def latency_under_load(self, key, run_test, client, port):
         """
@@ -377,71 +299,23 @@ class Measurements:
                 }
 
         return test_dns_latency(key, self, args, self.results, self.quiet)
-#TO REFACTOR
+
     def hops_to_target(self, key, site):
         """
-        Method counts the number of hops to the target site
+        Counts the number of hops to the target site
         """
         """ key: test name """
 
         if not site:
             return
 
-        tr_res = None
-        error_found = False
-
         self.results[key] = {}
-        targets = ['www.google.com']
+        args = { "conf" : self.nma.conf,
+                 "labels" : self.labels
+                }
 
-        if 'targets' in self.nma.conf['hops_to_target']:
-            targets = self.nma.conf['hops_to_target']['targets']
+        return test_hops_to_target(key, self, args, self.results, self.quiet)
 
-        tr_res = {}
-        for target in targets:
-            try:
-                label = self.labels[target]
-            except KeyError:
-                label = target
-
-            tr_cmd = f'traceroute -m 20 -q 5 -w 2 {target} | tail -1 | awk "{{print $1}}"'
-            tr_res[label], err = self.popen_exec(tr_cmd)
-            if len(err) > 0:
-                print(f"ERROR: {err}")
-                log.error(err)
-                self.results[key][f'{label}_error'] = f'{err}'
-                #TODO: save the output regardless?
-                #tr_res[label] = { f'{label}': tr_res[label], 'error' : f'{err}' }
-                tr_res[label] = { 'error' : f'{err}' }
-                error_found = True
-                continue
-
-            tr_res_s = tr_res
-            tr_res_s = tr_res_s[label].strip().split(" ")
-
-            hops = -1
-
-            if len(tr_res_s):
-                hops = int(tr_res_s[0])
-
-            self.results[key][f'hops_to_{label}'] = hops
-
-        self.results[key]["error"] = error_found
-
-        if not self.quiet:
-            print('\n --- Hops to Target ---')
-            for target in targets:
-              try:
-                label = self.labels[target]
-              except KeyError:
-                label = target
-              if f'{label}_error' in self.results[key]:
-                print("Hops to {}: {}".format(target,
-                                          self.results[key][f'{label}_error']))
-              else:
-                print("Hops to {}: {}".format(target,
-                                          self.results[key][f'hops_to_{label}']))
-
-        return tr_res
 #TO REFACTOR
     def connected_devices_arp(self, key, run_test):
         """
