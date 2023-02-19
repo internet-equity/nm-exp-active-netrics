@@ -211,7 +211,7 @@ class Measurements:
                 print("limit_consumption applied, skipping test: speedtest")
                 return None, None
         return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
-
+#TO REFACTOR
     def ping_latency(self, key, run_test):
         """
         Method records ping latency to self.sites
@@ -313,7 +313,7 @@ class Measurements:
         self.results[key] = {}
 
         return test_last_mile_latency(key, self, self.nma.conf, self.results, self.quiet)
-
+#TO REFACTOR
     def oplat(self, key, run_test, client, port, limit):
 
         if not run_test: return
@@ -412,7 +412,6 @@ class Measurements:
         self.results[key]['error'] = error
         return oplat_out
 
-
     def latency_under_load(self, key, run_test, client, port):
         """
         Method records ping latency under load to self.sites_load
@@ -422,85 +421,13 @@ class Measurements:
         if not run_test: return
         if not client:   return
 
-        if 'targets' in self.nma.conf['latency_under_load']:
-            targets = self.nma.conf['latency_under_load']['targets']
-        else:
-            return
-
-        ping_res = {}
         self.results[key] = {}
+        args = { "client" : client,
+                 "port" : port,
+                 "labels" : self.labels
+            }
 
-        error_found = False
-
-        for upload in [True, False]:
-
-            ul_dl = "ul" if upload else "dl"
-
-            load = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh -c {} -p {} -i 0 -t 10 {}"\
-                       .format(client, port, "" if upload else "-R" )
-
-            load += " > /dev/null & sleep 2 && echo starting ping && "
-
-            direction = ul_dl
-            ping_res[direction] = {} 
-            for site in targets:
-
-                try:
-                  label = self.labels[site]
-                except KeyError:
-                  label = site
-
-                ping_cmd = "ping -i 0.25 -c 10 -w 5 {:s}".format(site)
-                
-                start = time.time()
-                ping_res[direction][label], err = self.popen_exec(load + ping_cmd)
-                if len(err) > 0:
-                    print(f"ERROR: {err}")
-                    log.error(err)
-                    self.results[key][f'{label}_{ul_dl}_error'] = f'{err}'
-                    ping_res[direction][label] = { 'error': f'{err}' }
-                    error_found = True
-                    continue
-
-                ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                                 ping_res[direction][label], re.MULTILINE)[0])
-                
-                ping_rtt_ms = re.findall(
-                    'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                    , ping_res[direction][label])[0]
-
-                ping_rtt_ms = [float(v) for v in ping_rtt_ms]
-
-                self.results[key][f"{label}_packet_loss_pct_under_{ul_dl}"] = ping_pkt_loss
-                self.results[key][f"{label}_rtt_min_ms_under_{ul_dl}"] = ping_rtt_ms[0]
-                self.results[key][f"{label}_rtt_max_ms_under_{ul_dl}"] = ping_rtt_ms[2]
-                self.results[key][f"{label}_rtt_avg_ms_under_{ul_dl}"] = ping_rtt_ms[1]
-                self.results[key][f"{label}_rtt_mdev_ms_under_{ul_dl}"] = ping_rtt_ms[3]
-
-                if not self.quiet:
-                    print(f'\n --- {label} ping latency under load ---')
-                    print(f'Packet Loss Under Load: {ping_pkt_loss}%')
-                    print(f'Average RTT Under Load: {ping_rtt_ms[1]} (ms)')
-                    print(f'Minimum RTT Under Load: {ping_rtt_ms[0]} (ms)')
-                    print(f'Maximum RTT Under Load: {ping_rtt_ms[2]} (ms)')
-                    print(f'RTT Std Dev Under Load: {ping_rtt_ms[3]} (ms)')
-
-                if (time.time() - start) < 11:
-                    time.sleep(11 - (time.time() - start))
-
-        self.results[key]['error'] = error_found
-        return ping_res
-
-    def speed(self, key_ookla, key_ndt7, limit_consumption):
-        """ Test runs Ookla and NDT7 Speed tests in sequence """
-        if limit_consumption:
-            if not self.bandwidth_test_stochastic_limit(measured_down = self.measured_down,
-                    max_monthly_consumption_gb = self.max_monthly_consumption_gb,
-                    max_monthly_tests = self.max_monthly_tests):
-                log.info("limit_consumption applied, skipping test: speedtest")
-                print("limit_consumption applied, skipping test: speedtest")
-                return None, None
-        return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
+        return test_latunderload(key, self, args, self.nma.conf, self.results, self.quiet)
 
     def dns_latency(self, key, run_test):
         """ Records dig latency for each site in self.sites """
@@ -516,7 +443,7 @@ class Measurements:
                 }
 
         return test_dns_latency(key, self, args, self.results, self.quiet)
-
+#TO REFACTOR
     def hops_to_target(self, key, site):
         """
         Method counts the number of hops to the target site
@@ -581,7 +508,7 @@ class Measurements:
                                           self.results[key][f'hops_to_{label}']))
 
         return tr_res
-
+#TO REFACTOR
     def connected_devices_arp(self, key, run_test):
         """
         Method counts the number of active devices on the network.
@@ -659,7 +586,7 @@ class Measurements:
             print(f'Number of devices in last week:'
                   f' {self.results[key]["devices_1week"]}')
         return res
-
+#TO REFACTOR
     def iperf3_bandwidth(self, key, client, port, limit):
         """
         Method for recorded results of iperf3 bandwidth tests
@@ -775,7 +702,7 @@ class Measurements:
 
         return iperf_res
 
-
+#TO REFACTOR
     def tshark_eth_consumption(self, key, run_test, dur = 60):
         """ key: test name """
 
