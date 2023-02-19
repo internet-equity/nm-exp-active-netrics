@@ -9,7 +9,7 @@ import re
 import json
 import random
 import urllib.request
-import os, sys, logging, traceback
+import os, logging
 from pathlib import Path
 from tinydb import TinyDB, where
 from tinydb.operations import increment
@@ -19,6 +19,7 @@ from netrics.builtin.netrics_test_speedtests import test_ndt7
 from netrics.builtin.netrics_test_dns_latency import test_dns_latency
 from netrics.builtin.netrics_test_last_mile_latency import test_last_mile_latency
 from netrics.builtin.netrics_test_latunderload import test_latunderload
+from netrics.builtin.netrics_test_ping_latency import test_ping_latency
 log = logging.getLogger(__name__)
 
 
@@ -156,25 +157,6 @@ class Measurements:
            res = { 'error': self.results[key]['error'] }
         return res
 
-    def speed_ookla(self, key, run_test):
-        """ Test runs Ookla Speed test """
-        """ key: test name """
-        if not run_test:
-            return
-
-        self.results[key] = {}
-        return test_ookla(key, self, self.nma.conf, self.results, self.quiet)
-
-    def speed_ndt7(self, key, run_test):
-        """ Test runs NDT7 Speed test """
-        """ key: test name """
-
-        if not run_test:
-            return
-
-        self.results[key] = {}
-        return test_ndt7(key, self, self.nma.conf, self.results, self.quiet)
-
     def bandwidth_test_stochastic_limit(self, measured_down=5,
                                         max_monthly_consumption_gb=200,
                                         max_monthly_tests=200):
@@ -201,6 +183,25 @@ class Measurements:
         print("bandwidth_test_stochastic_limit: {0} > {1} (speed: {2})".format(monthly_tests / (24 * 30), rand, speed))
         return run_test
 
+    def speed_ookla(self, key, run_test):
+        """ Test runs Ookla Speed test """
+        """ key: test name """
+        if not run_test:
+            return
+
+        self.results[key] = {}
+        return test_ookla(key, self, self.nma.conf, self.results, self.quiet)
+
+    def speed_ndt7(self, key, run_test):
+        """ Test runs NDT7 Speed test """
+        """ key: test name """
+
+        if not run_test:
+            return
+
+        self.results[key] = {}
+        return test_ndt7(key, self, self.nma.conf, self.results, self.quiet)
+
     def speed(self, key_ookla, key_ndt7, limit_consumption):
         """ Test runs Ookla and NDT7 Speed tests in sequence """
         if limit_consumption:
@@ -211,94 +212,27 @@ class Measurements:
                 print("limit_consumption applied, skipping test: speedtest")
                 return None, None
         return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
-#TO REFACTOR
+
     def ping_latency(self, key, run_test):
         """
-        Method records ping latency to self.sites
+        Records ping latency to self.sites
         """
         """ key: test name """
 
         ###
         # WARNING: this test is mandatory, for Chicago Deployment
         ##
+
         sites = self.sites
         if not run_test:
             sites = [self.sites[0]]
 
-        ping_res = {}
-        error_found = False
-        ping_failure_count = 0
-
         self.results[key] = {}
-        for site in sites:
-            ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
-                0.25, 10, 5, site)
+        args = { "sites" : sites,
+                 "labels" : self.labels
+                }
 
-            try:
-                label = self.labels[site]
-            except KeyError:
-                label = site
-
-            ping_res[label] = {}
-
-            ping_res[label], err = self.popen_exec(ping_cmd)
-            if len(err) > 0:
-                print(f"ERROR: {err}")
-                log.error(err)
-                self.results[key][label + "_error"] = err.strip()
-                ping_res[label] = { 'error' : f'{err}' }
-                error_found = True
-
-                if "Name or service not known" in err or \
-                   "Temporary failure in name resolution" in err:
-                    ping_failure_count += 1
-
-                if ping_failure_count >= 5:
-                    log.error("Aborting additional pings: 5 failures.")
-                    break
-
-                continue
-
-            try:
-                ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                                ping_res[label], re.MULTILINE)[0])
-            except IndexError:
-                self.results[key][label + "_error"] = 'Packet Loss IndexError'
-                ping_res[label] = {'error': 'Packet Loss IndexErorr'}
-                log.error('Packet Loss IndexErorr: Unexpected output from ping')
-                error_found = True
-                continue
-
-            try:
-                ping_rtt_ms = re.findall(
-                    'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                    , ping_res[label])[0]
-            except IndexError:
-                self.results[key][label + "_error"] = 'Probe IndexError'
-                ping_res[label] = {'error': 'Probe IndexErorr'}
-                log.error('Probe IndexErorr: Unexpected output from ping')
-                error_found = True
-                continue
-
-
-            ping_rtt_ms = [float(v) for v in ping_rtt_ms]
-
-            self.results[key][label + "_packet_loss_pct"] = ping_pkt_loss
-            self.results[key][label + "_rtt_min_ms"] = ping_rtt_ms[0]
-            self.results[key][label + "_rtt_max_ms"] = ping_rtt_ms[2]
-            self.results[key][label + "_rtt_avg_ms"] = ping_rtt_ms[1]
-            self.results[key][label + "_rtt_mdev_ms"] = ping_rtt_ms[3]
-
-            if not self.quiet:
-                print(f'\n --- {label} ping latency (MANDATORY) ---')
-                print(f'Packet Loss: {ping_pkt_loss}%')
-                print(f'Average RTT: {ping_rtt_ms[0]} (ms)')
-                print(f'Minimum RTT: {ping_rtt_ms[1]} (ms)')
-                print(f'Maximum RTT: {ping_rtt_ms[2]} (ms)')
-                print(f'RTT Std Dev: {ping_rtt_ms[3]} (ms)')
-
-        self.results[key]["error"] = error_found
-        return ping_res
+        return test_ping_latency(key, self, args, self.results, self.quiet)
 
     def last_mile_latency(self, key, run_test):
         """
