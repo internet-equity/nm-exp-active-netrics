@@ -35,7 +35,7 @@ class TestOokla(unittest.TestCase):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_ookla(self.ookla_key, self.measurement, conf, results, True)
+                output = netrics.test_ookla(self.ookla_key, self.measurement, conf, results, False)
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return
@@ -89,7 +89,7 @@ class TestOokla(unittest.TestCase):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_ookla(self.ookla_key, self.measurement, conf, results, True)
+                output = netrics.test_ookla(self.ookla_key, self.measurement, conf, results, False)
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return

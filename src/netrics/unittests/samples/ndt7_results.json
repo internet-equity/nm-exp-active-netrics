@@ -1,0 +1,11 @@
+{
+    "ndt7":{
+       "speedtest_ndt7_download":595.2567225024694,
+       "speedtest_ndt7_upload":8.447985363442967,
+       "speedtest_ndt7_downloadretrans":0.13655690264872303,
+       "speedtest_ndt7_downloadlatency":5.842,
+       "speedtest_ndt7_server":"ndt-mlab3-ord04.mlab-oti.measurement-lab.org",
+       "ndt_error":false
+    },
+    "total_bytes_consumed":756069837
+ }

@@ -9,14 +9,14 @@ from netrics.builtin import netrics_test_speedtests as netrics
 from mock_measurements import Measurements
 
 #TO EDIT
-class TestOokla(unittest.TestCase):
+class TestNdt7(unittest.TestCase):
     """Class for methods of ndt7 unit tests"""
     
     def setUp(self):
         self.measurement = Measurements()
-        self.ookla_key = "ookla"
+        self.key = "ndt7"
 
-    def test_ookla_success(self):
+    def test_ndt7_success(self):
         """
         Test flow correctness if inputs given are correct
         """
@@ -24,28 +24,24 @@ class TestOokla(unittest.TestCase):
         #read config
         conf = self.read_config('nm-exp-active-netrics.toml')
 
-        #config asserts for ookla
-        self.assertIsNotNone(conf['ookla']['timeout'])
-        self.assertIsNotNone(conf['databases']['tinydb_enable'])
-
         #run test
         results = {}
-        results[self.ookla_key] = {}
+        results[self.key] = {}
         results['total_bytes_consumed'] = 0
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_ookla(self.ookla_key, self.measurement, conf, results, True)
+                output = netrics.test_ndt7(self.key, self.measurement, conf, results, False)
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return
 
+        output = json.loads(output)
         self.assertIsNotNone(results)
         self.assertIsNotNone(output)
-        output = json.loads(output)
 
         #assert output format
-        json_sample = str(Path(__file__).resolve().parent) + '/samples/ookla_output_nopacketloss.json'
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/ndt7_output.json'
         try:
             with open(json_sample, "rb") as f:
                 json_format = json.loads(f.read().decode('utf-8'))
@@ -57,7 +53,7 @@ class TestOokla(unittest.TestCase):
         self.assert_format(json_format, output)
 
         #assert result format
-        json_sample = str(Path(__file__).resolve().parent) + '/samples/ookla_result.json'
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/ndt7_results.json'
         try:
             with open(json_sample, "rb") as f:
                 json_format = json.loads(f.read().decode('utf-8'))
@@ -70,36 +66,32 @@ class TestOokla(unittest.TestCase):
 
         return
 
-    def test_ookla_error_in_json(self):
+    def test_ndt7_success_quiet(self):
         """
-        Test that output is still present if timeout error is present,
-        assuming default will timeout (maybe set to 0)
+        Test quiet mode
         """
 
         #read config
-        conf = self.read_config('nm-exp-active-netrics-no-timeout.toml')
-
-        #config asserts for ookla
-        self.assertNotIn('timeout',conf['ookla'])
+        conf = self.read_config('nm-exp-active-netrics.toml')
 
         #run test
         results = {}
-        results[self.ookla_key] = {}
+        results[self.key] = {}
         results['total_bytes_consumed'] = 0
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_ookla(self.ookla_key, self.measurement, conf, results, True)
+                output = netrics.test_ndt7(self.key, self.measurement, conf, results, True)
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return
 
-        self.assertIsNotNone(results)
-        self.assertIsNotNone(output)        
         output = json.loads(output)
+        self.assertIsNotNone(results)
+        self.assertIsNotNone(output)
 
         #assert output format
-        json_sample = str(Path(__file__).resolve().parent) + '/samples/ookla_output_nopacketloss.json'
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/ndt7_output.json'
         try:
             with open(json_sample, "rb") as f:
                 json_format = json.loads(f.read().decode('utf-8'))
@@ -110,8 +102,8 @@ class TestOokla(unittest.TestCase):
         self.assertEqual(type(output),dict)
         self.assert_format(json_format, output)
 
-        #assert result format with error present
-        json_sample = str(Path(__file__).resolve().parent) + '/samples/ookla_result_timeouterror.json'
+        #assert result format
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/ndt7_results.json'
         try:
             with open(json_sample, "rb") as f:
                 json_format = json.loads(f.read().decode('utf-8'))
@@ -120,42 +112,34 @@ class TestOokla(unittest.TestCase):
             return   
         
         self.assertEqual(type(results),dict)
-        self.assertTrue(results["ookla"]["ookla_error"])
         self.assert_format(json_format, results)
 
         return
     
-    def test_ookla_no_output(self):
+    def test_ndt7_parse_output(self):
         """
-        Test that output is not present and error is returned
+        Test output parsing of ndt7
         """
 
-        #read config
-        conf = self.read_config('nm-exp-active-netrics.toml')
-
-        #config asserts for ookla
-        self.assertIsNotNone(conf['ookla']['timeout'])
-        self.assertIsNotNone(conf['databases']['tinydb_enable'])
-        conf['ookla']['timeout'] = -1
-
+        #read output sample
+        sample = str(Path(__file__).resolve().parent) + '/samples/ndt7_output.json'
+        try:
+            with open(sample, "r") as f:
+                output_sample = f.read()
+        except Exception as e:
+            print("ERROR IN TEST SUITE: ", e)
+            return
+        
         #run test
-        results = {}
-        results[self.ookla_key] = {}
-        results['total_bytes_consumed'] = 0
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_ookla(self.ookla_key, self.measurement, conf, results, True)
+                output = netrics.parse_ndt7_output(output_sample)
         except Exception as e:
             print(e)
             return
         
-        #test that no output present and result is none
-        self.assertEqual(output,'') 
-        self.assertIsNotNone(results) 
-        self.assertEqual(type(results),dict)
-        self.assertTrue(results["ookla"]["ookla_error"])
-        self.assertIn('ookla_json_error',results["ookla"])
+        print(output)
 
         return
 

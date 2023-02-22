@@ -1,7 +1,9 @@
 ## Running Unittests
      
 * * * * * * * * * * * * *
-    
+
+Author: Fathima Maha
+
 ### To run all tests:    
 
 ```
@@ -28,14 +30,13 @@ cd src
 Get coverage of all tests for all files in builtin:   
 ```
 pip install coverage    
-coverage run --source=netrics/builtin -m unittest discover -s netrics/unittests && coverage report    
+coverage run --source=netrics/builtin -m unittest discover -s netrics/unittests -v && coverage report    
 ```     
 
 Get coverage of specific test for files in builtin:   
 ```
-coverage run --source=netrics/builtin netrics/unittests/<test_filename> && coverage report  
+coverage run --source=netrics/builtin netrics/unittests/<test_filename> -v && coverage report  
 ```     
-
    
 ### Reference:   
 
