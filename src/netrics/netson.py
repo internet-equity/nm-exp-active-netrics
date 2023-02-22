@@ -354,6 +354,7 @@ class Measurements:
         return test_iperf3(key, self, args, self.results, self.quiet)
 
     def tshark_eth_consumption(self, key, run_test, dur = 60):
+        """DEPRECIATED"""
         """ key: test name """
 
         if not run_test:
