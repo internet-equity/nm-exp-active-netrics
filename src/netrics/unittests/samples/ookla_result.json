@@ -1,0 +1,12 @@
+{
+    "ookla": {
+        "speedtest_ookla_download": 940.423888,
+        "speedtest_ookla_upload": 41.604576,
+        "speedtest_ookla_jitter": 1.698,
+        "speedtest_ookla_latency": 12.593,
+        "speedtest_ookla_server_host": "ook-chi-x1.puregig.net",
+        "speedtest_ookla_server_name": "Netprotect",
+        "speedtest_ookla_server_id": 37497
+    },
+    "total_bytes_consumed": 1161530040
+}
