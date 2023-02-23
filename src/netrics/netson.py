@@ -437,6 +437,16 @@ class Measurements:
         """
         """ key : test name """
 
+        def countOccurrences(s, ch): 
+            return sum(1 for i, letter in enumerate(s) if letter == ch)
+
+        def get_median(x): 
+            n = len(x)
+            if n % 2 == 0: # even
+                return 0.5 * (x[n//2 -1] + x[n//2])
+            else: # odd
+                return x[(n+1)//2 -1]
+
         if not run_test:
             return
 
@@ -464,8 +474,9 @@ class Measurements:
             out = out.split('\n')
             for line in out:
                 hop_stats = line.split(' ')
-                if len(hop_stats) > 5:
-                    ip_addr = hop_stats[4].strip('()')
+                if 'traceroute' not in line and countOccurrences(line, '*') < 3:
+                    ipv4_extract_pattern = "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+                    ip_addr = re.findall(ipv4_extract_pattern, line)[0]
                     try:
                         if not ipaddress.ip_address(ip_addr).is_private:
                             ping_cmd = "ping -4 -i {:.2f} -c {:d} -w {:d} {:s}".format(
@@ -497,7 +508,8 @@ class Measurements:
                                 output[site] = {'error': 'Probe IndexErorr'}
                                 error_found = True
                                 continue
-                            res = [hop_stats[6], hop_stats[9], hop_stats[12]]
+                            # res = [hop_stats[6], hop_stats[9], hop_stats[12]]
+                            res = re.findall('([0-9.]*) ms', line)
                             ping_rtt_ms = [float(v) for v in ping_rtt_ms]
 
                             self.results[key][labels[site] + "_last_mile_ping_packet_loss_pct"] = ping_pkt_loss
@@ -512,8 +524,8 @@ class Measurements:
             if res:
                 res.sort()
                 self.results[key][f'{labels[site]}_last_mile_tr_rtt_min_ms'] = float(res[0])
-                self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(res[1])
-                self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[2])
+                self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(get_median(res))
+                self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[-1])
         return output
 
     def oplat(self, key, run_test, client, port, limit):
