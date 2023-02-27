@@ -35,8 +35,28 @@ coverage run --source=../builtin -m unittest discover -v && coverage report
 Or 
 ```
 coverage run --source=../builtin -m unittest discover -v && coverage report  
+```    
+
+Example:     
+
 ```
-    
+Name                                                                                       Stmts   Miss  Cover
+--------------------------------------------------------------------------------------------------------------
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/__init__.py                             0      0   100%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_connected_devices.py      48     48     0%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_dns_latency.py            50     50     0%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_hops_to_target.py         44     44     0%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_iperf3.py                 87     87     0%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_last_mile_latency.py      68     17    75%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_latunderload.py           54     54     0%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_oplat.py                  80     80     0%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_ping_latency.py           61     13    79%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_speedtests.py            115     19    83%
+--------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                        607    412    32%
+
+```    
+
 Get coverage of specific test for files in builtin:   
 ```
 coverage run --source=../builtin <test_filename> -v -v && coverage report 
