@@ -30,12 +30,16 @@ cd src
 Get coverage of all tests for all files in builtin:   
 ```
 pip install coverage    
-coverage run --source=netrics/builtin -m unittest discover -s netrics/unittests -v && coverage report    
-```     
-
+coverage run --source=../builtin -m unittest discover -v && coverage report  
+```      
+Or 
+```
+coverage run --source=../builtin -m unittest discover -v && coverage report  
+```
+    
 Get coverage of specific test for files in builtin:   
 ```
-coverage run --source=netrics/builtin netrics/unittests/<test_filename> -v && coverage report  
+coverage run --source=../builtin <test_filename> -v -v && coverage report 
 ```     
    
 ### Reference:   

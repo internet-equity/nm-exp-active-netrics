@@ -5,13 +5,13 @@ import ipaddress
 
 log = logging.getLogger(__name__)
 
-def test_last_mile_latency(key, measurement, conf, results, quiet):
+def test_last_mile_latency(key, measurement, args, results, quiet):
     """Method records RTT to earliest node with public IP Address along path
     to 8.8.8.8 by default.
     """
 
-    sites = list(conf['last_mile_latency'].keys())
-    labels = conf['last_mile_latency']
+    sites = args["sites"]
+    labels = args["labels"]
 
     if len(sites) == 0:
         return

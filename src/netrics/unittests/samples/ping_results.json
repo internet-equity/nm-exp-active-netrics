@@ -1,0 +1,15 @@
+{
+    "ping":{
+       "google_packet_loss_pct":0.0,
+       "google_rtt_min_ms":10.446,
+       "google_rtt_max_ms":15.116,
+       "google_rtt_avg_ms":11.974,
+       "google_rtt_mdev_ms":1.184,
+       "amazon_packet_loss_pct":0.0,
+       "amazon_rtt_min_ms":10.919,
+       "amazon_rtt_max_ms":21.644,
+       "amazon_rtt_avg_ms":12.584,
+       "amazon_rtt_mdev_ms":3.044,
+       "error":false
+    }
+ }

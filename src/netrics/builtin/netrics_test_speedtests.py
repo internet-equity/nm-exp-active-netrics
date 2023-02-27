@@ -20,6 +20,7 @@ def test_ookla(key, measurement, conf, results, quiet):
 
        results_available = False
        error_found = True
+
        if len(output) > 0:
           try:
              res_json = json.loads(output)

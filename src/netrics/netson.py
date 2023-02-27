@@ -246,8 +246,11 @@ class Measurements:
             return
 
         self.results[key] = {}
+        args = { "sites" : self.sites,
+                 "labels" : self.labels
+                }
 
-        return test_last_mile_latency(key, self, self.nma.conf, self.results, self.quiet)
+        return test_last_mile_latency(key, self, args, self.results, self.quiet)
 
     def oplat(self, key, run_test, client, port, limit):
 
@@ -356,13 +359,7 @@ class Measurements:
     def tshark_eth_consumption(self, key, run_test, dur = 60):
         """DEPRECIATED"""
         """ key: test name """
-
-        if not run_test:
-            return
-
-        self.results[key] = {}
-
-        return test_tshark(key, self, self.results, self.quiet, dur)
+        return
 
     def consumption_reset(self):
        if self.nma.conf['databases']['tinydb_enable']:

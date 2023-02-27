@@ -1,0 +1,12 @@
+{
+    "last_mile_latency":{
+       "amazon_last_mile_ping_packet_loss_pct":0.0,
+       "amazon_last_mile_ping_rtt_min_ms":10.408,
+       "amazon_last_mile_ping_rtt_max_ms":16.444,
+       "amazon_last_mile_ping_rtt_avg_ms":11.866,
+       "amazon_last_mile_ping_rtt_mdev_ms":1.932,
+       "amazon_last_mile_tr_rtt_min_ms":12.121,
+       "amazon_last_mile_tr_rtt_median_ms":18.761,
+       "amazon_last_mile_tr_rtt_max_ms":19.818
+    }
+ }
