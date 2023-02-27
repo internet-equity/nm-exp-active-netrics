@@ -813,6 +813,7 @@ class Measurements:
                 print("Resolver timed out")
 #                print(dst_target)
                 self.results[key][f'{dst_target}_encrypted_dns_latency'] = "timeout"
+                proc.kill()
                 continue
             try:
                 out = proc.stdout.read()
