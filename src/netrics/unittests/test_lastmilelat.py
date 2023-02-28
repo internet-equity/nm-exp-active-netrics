@@ -44,7 +44,7 @@ class TestLastMileLatency(unittest.TestCase):
         self.assertIsNotNone(output)
 
         #assert output format
-        json_sample = str(Path(__file__).resolve().parent) + '/samples/lastmilelat_output.json'
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/lastmile_output.json'
         try:
             with open(json_sample, "rb") as f:
                 json_format = json.loads(f.read().decode('utf-8'))
@@ -56,7 +56,7 @@ class TestLastMileLatency(unittest.TestCase):
         self.assert_format(json_format, output)
 
         #assert result format
-        json_sample = str(Path(__file__).resolve().parent) + '/samples/lastmilelat_results.json'
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/lastmile_results.json'
         try:
             with open(json_sample, "rb") as f:
                 json_format = json.loads(f.read().decode('utf-8'))
@@ -94,14 +94,95 @@ class TestLastMileLatency(unittest.TestCase):
             print("ERROR IN TEST SUITE: ", e)
             return
 
-        print(results)
-        print(output)
         self.assertIsNotNone(results)
         self.assertIsNotNone(output)
         
         self.assertTrue(results['last_mile_latency']['error'])
         self.assertIn('failure', output)
 
+        return
+    
+    def test_parse_trace_output_1(self):
+        """
+        Test returning error if site is unknown
+        """
+
+        #read trace output sample
+        file = str(Path(__file__).resolve().parent) + '/test_configs/traceoutput_1'
+        try:
+            with open(file, "rb") as f:
+                out = f.read().decode('utf-8')
+        except Exception as e:
+            print(e)
+        out = out.split('\n')
+
+        conf = self.read_config('nm-exp-active-netrics.toml')
+        sites = list(conf['reference_site_dict'].keys())[:2]
+        labels = conf['reference_site_dict']
+        
+        results = {}
+        results['last_mile_latency'] = {}
+
+        #run test
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                err = netrics.parse_trace_output(out,{},sites[0],results,self.last_mile_key,labels)
+        except Exception as e:
+            print("ERROR IN TEST SUITE: ", e)
+            return
+
+        self.assertIn('google_last_mile_ping_packet_loss_pct',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_min_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_max_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_avg_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_mdev_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_tr_rtt_min_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_tr_rtt_median_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_tr_rtt_max_ms',results['last_mile_latency'])
+        self.assertIsNone(err)
+
+        return
+
+    def test_parse_trace_output_2(self):
+        """
+        Test returning error if site is unknown
+        """
+
+        #read trace output sample
+        file = str(Path(__file__).resolve().parent) + '/test_configs/traceoutput_2'
+        try:
+            with open(file, "rb") as f:
+                out = f.read().decode('utf-8')
+        except Exception as e:
+            print(e)
+        out = out.split('\n')
+
+        conf = self.read_config('nm-exp-active-netrics.toml')
+        sites = list(conf['reference_site_dict'].keys())[:2]
+        labels = conf['reference_site_dict']
+        
+        results = {}
+        results['last_mile_latency'] = {}
+
+        #run test
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                err = netrics.parse_trace_output(out,{},sites[0],results,self.last_mile_key,labels)
+        except Exception as e:
+            print("ERROR IN TEST SUITE: ", e)
+            return
+
+        self.assertIn('google_last_mile_ping_packet_loss_pct',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_min_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_max_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_avg_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_ping_rtt_mdev_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_tr_rtt_min_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_tr_rtt_median_ms',results['last_mile_latency'])
+        self.assertIn('google_last_mile_tr_rtt_max_ms',results['last_mile_latency'])
+        self.assertIsNone(err)
         return
 
     def assert_format(self, format_dict, check_dict):
@@ -126,3 +207,4 @@ class TestLastMileLatency(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
