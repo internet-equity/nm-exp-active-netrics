@@ -32,56 +32,77 @@ def test_last_mile_latency(key, measurement, args, results, quiet):
             return f'{err}'
 
         out = out.split('\n')
-        for line in out:
-            hop_stats = line.split(' ')
-            if len(hop_stats) > 5:
-                ip_addr = hop_stats[4].strip('()')
-                try:
-                    if not ipaddress.ip_address(ip_addr).is_private:
-                        ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
-                            0.25, 10, 5, ip_addr)
-                        output[site], err = popen_exec(ping_cmd)
-                        if len(err) > 0:
-                            print(f"ERROR: {err}")
-                            log.error(err)
-                            results[key][site + "_error"] = f'{err}'
-                            output[site] = { 'error' : f'{err}' }
-                            error_found = True
-                            return
+        parse_trace_output(out,output,site,results,key,labels)
 
-                        try:
-                            ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                                            output[site], re.MULTILINE)[0])
-                        except IndexError:
-                            results[key][site + "_error"] = 'Packet Loss IndexError'
-                            output[site] = {'error': 'Packet Loss IndexErorr'}
-                            error_found = True
-                            continue
+    return output
 
-                        try:
-                            ping_rtt_ms = re.findall(
-                                'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                                , output[site])[0]
-                        except IndexError:
-                            results[key][site + "_error"] = 'Probe IndexError'
-                            output[site] = {'error': 'Probe IndexErorr'}
-                            error_found = True
-                            continue
-                        res = [hop_stats[6], hop_stats[9], hop_stats[12]]
-                        ping_rtt_ms = [float(v) for v in ping_rtt_ms]
 
-                        results[key][labels[site] + "_last_mile_ping_packet_loss_pct"] = ping_pkt_loss
-                        results[key][labels[site] + "_last_mile_ping_rtt_min_ms"] = ping_rtt_ms[0]
-                        results[key][labels[site] + "_last_mile_ping_rtt_max_ms"] = ping_rtt_ms[2]
-                        results[key][labels[site] + "_last_mile_ping_rtt_avg_ms"] = ping_rtt_ms[1]
-                        results[key][labels[site] + "_last_mile_ping_rtt_mdev_ms"] = ping_rtt_ms[3]
-                        break
-                except ValueError:
-                    continue
+def parse_trace_output(out,output,site,results,key,labels):
 
-        if res:
+    for line in out:
+        if 'traceroute' not in line and countOccurrences(line, '*') < 3:
+            ipv4_extract_pattern = "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+            ip_addr = re.findall(ipv4_extract_pattern, line)[0]
+            try:
+                if not ipaddress.ip_address(ip_addr).is_private:
+                    ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+                        0.25, 10, 5, ip_addr)
+                    output[site], err = popen_exec(ping_cmd)
+                    if len(err) > 0:
+                        print(f"ERROR: {err}")
+                        log.error(err)
+                        results[key][site + "_error"] = f'{err}'
+                        output[site] = { 'error' : f'{err}' }
+                        error_found = True
+                        return
+
+                    try:
+                        ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
+                                                        output[site], re.MULTILINE)[0])
+                    except IndexError:
+                        results[key][site + "_error"] = 'Packet Loss IndexError'
+                        output[site] = {'error': 'Packet Loss IndexErorr'}
+                        error_found = True
+                        continue
+
+                    try:
+                        ping_rtt_ms = re.findall(
+                            'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
+                            , output[site])[0]
+                    except IndexError:
+                        results[key][site + "_error"] = 'Probe IndexError'
+                        output[site] = {'error': 'Probe IndexErorr'}
+                        error_found = True
+                        continue
+
+                    res = re.findall('([0-9.]*) ms', line)
+                    ping_rtt_ms = [float(v) for v in ping_rtt_ms]
+
+                    results[key][labels[site] + "_last_mile_ping_packet_loss_pct"] = ping_pkt_loss
+                    results[key][labels[site] + "_last_mile_ping_rtt_min_ms"] = ping_rtt_ms[0]
+                    results[key][labels[site] + "_last_mile_ping_rtt_max_ms"] = ping_rtt_ms[2]
+                    results[key][labels[site] + "_last_mile_ping_rtt_avg_ms"] = ping_rtt_ms[1]
+                    results[key][labels[site] + "_last_mile_ping_rtt_mdev_ms"] = ping_rtt_ms[3]
+                    break
+            except ValueError:
+                continue
+    
+    if res:
+        try:
             res.sort()
             results[key][f'{labels[site]}_last_mile_tr_rtt_min_ms'] = float(res[0])
-            results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(res[1])
-            results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[2])
-    return output
+            results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(get_median(res))
+            results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[-1])
+        except Exception as e:
+            return e
+
+
+def countOccurrences(s, ch):
+        return sum(1 for i, letter in enumerate(s) if letter == ch)
+
+def get_median(x):
+    n = len(x)
+    if n % 2 == 0: # even
+        return 0.5 * (x[n//2 -1] + x[n//2])
+    else: # odd
+        return x[(n+1)//2 -1]
