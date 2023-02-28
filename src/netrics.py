@@ -17,9 +17,9 @@ log = logging.getLogger(__name__)
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __author__ = "Kyle-MacMillan, James Saxon, Guilherme Martins,"\
-             "Marc Richardson, Nick Feamster"
+             "Marc Richardson, Michalis Kallitsis, Nick Feamster"
 
 #Used for Annotations
 class keyvalue(argparse.Action):
