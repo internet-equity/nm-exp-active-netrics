@@ -779,6 +779,8 @@ class Measurements:
         dig_res = {}
         self.results[key] = {}
         procs = []
+        popen_dict = {}
+        output = {}
         for site in self.sites:
 
             if self.valid_ip(site):
@@ -805,6 +807,7 @@ class Measurements:
                 )
 
                 dig_res[f'{res_label}_{label}'] = proc
+                popen_dict[f'{res_label}'][f'{label}'] = proc
 #        print(dig_res)
         for dst_target, proc in dig_res.items():
             try:
@@ -847,7 +850,20 @@ class Measurements:
         #     print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
 
 #        print(dig_res)
-        return dig_res
+        for site in self.sites:
+            if self.valid_ip(site):
+                continue
+            try:
+                label = self.labels[site]
+            except KeyError:
+                label = site
+            for resolver in self.resolvers:
+                try:
+                    res_label = self.res_labels[resolver]
+                except KeyError:
+                    res_label = resolver
+                output[f'{res_label}'][f'{label}'] = popen_dict[f'{res_label}'][f'{label}'].read()
+        return output
 
 
     def hops_to_target(self, key, site):
