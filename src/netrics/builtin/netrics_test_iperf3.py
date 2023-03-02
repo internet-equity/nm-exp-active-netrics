@@ -51,8 +51,9 @@ def test_iperf3(key, measurement, args, results, quiet):
 
         if conf['databases']['tinydb_enable']:
             bandwidth = speed[0][direction] * 1.05
-            if direction == 'download':
-                reverse = True
+        
+        if direction == 'download':
+            reverse = True
             
         #log.info(f"iperf using buffer_length: {length}")
         iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
@@ -60,7 +61,7 @@ def test_iperf3(key, measurement, args, results, quiet):
                     .format(client, port, bandwidth/4, 
                             f'-l {length}' if length is not None else '',
                             '-t 5 -R -i 1' if reverse else "-t 20 -i 0")
-        # print(iperf_cmd)
+
         for attempt_num in range(1, 5):
             (output, err) = popen_exec(iperf_cmd)
             if 'try again later' in err:
@@ -78,7 +79,7 @@ def test_iperf3(key, measurement, args, results, quiet):
             log.error(err)
             error_found = True
             continue
-
+        
         try:
             iperf_res[direction] = output
             json_res = json.loads(output)
