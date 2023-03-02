@@ -59,33 +59,30 @@ class TestIperf(unittest.TestCase):
 
         self.assertIsNotNone(results)
         self.assertIsNotNone(output)
-        print(results)
-        print(output)
 
+        #assert output format
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/iperf_output.json'
+        try:
+            with open(json_sample, "rb") as f:
+                json_format = json.loads(f.read().decode('utf-8'))
+        except Exception as e:
+            print("ERROR IN TEST SUITE: ", e)
+            return   
         
-        # #assert output format
-        # json_sample = str(Path(__file__).resolve().parent) + '/samples/hops_output.json'
-        # try:
-        #     with open(json_sample, "rb") as f:
-        #         json_format = json.loads(f.read().decode('utf-8'))
-        # except Exception as e:
-        #     print("ERROR IN TEST SUITE: ", e)
-        #     return   
-        
-        # self.assertEqual(type(output),dict)
-        # self.assert_format(json_format, output)
+        self.assertEqual(type(output),dict)
+        self.assert_format(json_format, output)
 
-        # #assert result format
-        # json_sample = str(Path(__file__).resolve().parent) + '/samples/hops_results.json'
-        # try:
-        #     with open(json_sample, "rb") as f:
-        #         json_format = json.loads(f.read().decode('utf-8'))
-        # except Exception as e:
-        #     print("ERROR IN TEST SUITE: ", e)
-        #     return   
+        #assert result format
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/iperf_results.json'
+        try:
+            with open(json_sample, "rb") as f:
+                json_format = json.loads(f.read().decode('utf-8'))
+        except Exception as e:
+            print("ERROR IN TEST SUITE: ", e)
+            return   
         
-        # self.assertEqual(type(results),dict)
-        # self.assert_format(json_format, results)
+        self.assertEqual(type(results),dict)
+        self.assert_format(json_format, results)
 
         return
 
