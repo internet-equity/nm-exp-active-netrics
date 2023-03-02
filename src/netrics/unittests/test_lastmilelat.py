@@ -9,7 +9,7 @@ from netrics.builtin import netrics_test_last_mile_latency as netrics
 from mock_measurements import Measurements
 
 class TestLastMileLatency(unittest.TestCase):
-    """Class for methods of ookla unit tests"""
+    """Class for methods of Last Mile Latency unit tests"""
     
     def setUp(self):
         self.measurement = Measurements()

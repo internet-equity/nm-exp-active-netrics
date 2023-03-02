@@ -10,7 +10,7 @@ from mock_measurements import Measurements
 
 
 class TestPing(unittest.TestCase):
-    """Class for methods of ookla unit tests"""
+    """Class for methods of ping latency unit tests"""
     
     def setUp(self):
         self.measurement = Measurements()

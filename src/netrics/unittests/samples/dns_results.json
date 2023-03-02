@@ -1,0 +1,7 @@
+{
+    "dns_latency":{
+       "dns_query_avg_ms":51.0,
+       "dns_query_max_ms":71,
+       "error":false
+    }
+ }
