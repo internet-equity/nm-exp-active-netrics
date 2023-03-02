@@ -33,13 +33,12 @@ def test_iperf3(key, measurement, args, results, quiet):
 
     iperf_res = {}
     error_found = False
-    
-    if conf['databases']['tinydb_enable']:
-        speed = speed_db.all()
+    speed = speed_db.all()
 
     measured_bw = {'upload': 0, 'download': 0}
     measured_jitter = {'upload': 0, 'download': 0}
-    
+
+
     length = None ##default
     if 'buffer_length' in conf['iperf'].keys():
         length = conf['iperf']['buffer_length']
@@ -49,13 +48,11 @@ def test_iperf3(key, measurement, args, results, quiet):
 
         bandwidth = 0
 
-        if conf['databases']['tinydb_enable']:
-            bandwidth = speed[0][direction] * 1.05
-        
+        bandwidth = speed[0][direction] * 1.05
+
         if direction == 'download':
             reverse = True
             
-        #log.info(f"iperf using buffer_length: {length}")
         iperf_cmd = "/usr/local/src/nm-exp-active-netrics/bin/iperf3.sh" \
                     " -c {} -p {} -u -P 4 -b {:.2f}M {} {} --json"\
                     .format(client, port, bandwidth/4, 
@@ -72,6 +69,7 @@ def test_iperf3(key, measurement, args, results, quiet):
                     log.error(f'{attempt_num} / 4: {err}: Will *not* try test again.')
             else:
                 break
+
         if len(err) > 0:            
             print(f"ERROR: {err}")
             results[key][f'iperf_{direction}_error'] = f'{err}'
@@ -79,7 +77,7 @@ def test_iperf3(key, measurement, args, results, quiet):
             log.error(err)
             error_found = True
             continue
-        
+
         try:
             iperf_res[direction] = output
             json_res = json.loads(output)
@@ -123,8 +121,7 @@ def test_iperf3(key, measurement, args, results, quiet):
             print(f'{direction} jitter: {measured_jitter[direction]} ms')
 
     results[key]['error'] = error_found
-    if conf['databases']['tinydb_enable']:
-        update_max_speed(measured_bw['download'],
+    update_max_speed(measured_bw['download'],
                                 measured_bw['upload'])
 
     return iperf_res

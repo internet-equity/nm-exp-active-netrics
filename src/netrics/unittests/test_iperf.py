@@ -1,4 +1,5 @@
 import toml
+from tinydb import TinyDB
 import unittest
 from pathlib import Path
 import sys
@@ -8,6 +9,7 @@ sys.path.insert(0, '/home/ubuntu/nm-exp-active-netrics/src')
 from netrics.builtin import netrics_test_iperf3 as netrics
 from mock_measurements import Measurements
 
+speeddb = TinyDB(Path(str(Path(__file__).resolve().parent)+'/samples/speedtest.json'))
 
 class TestIperf(unittest.TestCase):
     """Class for methods of iperf unit tests"""
@@ -27,12 +29,9 @@ class TestIperf(unittest.TestCase):
     
         #read config
         conf = self.read_config('nm-exp-active-netrics.toml')
-        target = conf['iperf']['targets'][0]
-        server = target.split(':')[0]
-        port   = target.split(':')[1]
         conf['databases']['tinydb_enable'] = False
         args = {
-            "speed_db" : None,
+            "speed_db" : speeddb,
             'limit' : False,
             "client" : "abbott.cs.uchicago.edu",
             "port" : "33301",

@@ -18,7 +18,6 @@ from netrics.builtin.netrics_test_latunderload import test_latunderload
 from netrics.builtin.netrics_test_ping_latency import test_ping_latency
 from netrics.builtin.netrics_test_oplat import test_oplat
 from netrics.builtin.netrics_test_hops_to_target import test_hops_to_target
-from netrics.builtin.netrics_test_tshark import test_tshark
 from netrics.builtin.netrics_test_iperf3 import test_iperf3
 from netrics.builtin.netrics_test_connected_devices import test_connected_devices
 log = logging.getLogger(__name__)
@@ -338,7 +337,7 @@ class Measurements:
         """
         """ key: test name """
 
-        if not client:
+        if not client and not self.nma.conf['databases']['tinydb_enable']:
             return
         
         self.results[key] = {}
