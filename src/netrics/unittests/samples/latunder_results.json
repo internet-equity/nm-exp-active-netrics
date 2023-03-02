@@ -1,0 +1,16 @@
+{
+    "lat_under_load":{
+       "google_packet_loss_pct_under_ul":0.0,
+       "google_rtt_min_ms_under_ul":12.828,
+       "google_rtt_max_ms_under_ul":116.427,
+       "google_rtt_avg_ms_under_ul":48.602,
+       "google_rtt_mdev_ms_under_ul":37.485,
+       "google_packet_loss_pct_under_dl":0.0,
+       "google_rtt_min_ms_under_dl":12.895,
+       "google_rtt_max_ms_under_dl":161.375,
+       "google_rtt_avg_ms_under_dl":31.64,
+       "google_rtt_mdev_ms_under_dl":43.332,
+       "error":false
+    },
+    "total_bytes_consumed":0
+ }

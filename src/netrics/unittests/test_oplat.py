@@ -16,7 +16,7 @@ class TestOplat(unittest.TestCase):
         self.measurement = Measurements()
         self.key = "oplat"
 
-    def test_dns_success(self):
+    def test_oplat_success(self):
         """
         Test flow correctness if inputs given are correct
         """

@@ -16,7 +16,7 @@ class TestTargetHops(unittest.TestCase):
         self.measurement = Measurements()
         self.key = "hops_to_target"
 
-    def test_dns_success(self):
+    def test_hops_success(self):
         """
         Test flow correctness if inputs given are correct
         """
