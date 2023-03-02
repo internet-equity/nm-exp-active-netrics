@@ -43,17 +43,17 @@ Example:
 Name                                                                                       Stmts   Miss  Cover
 --------------------------------------------------------------------------------------------------------------
 /home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/__init__.py                             0      0   100%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_connected_devices.py      48     48     0%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_dns_latency.py            50     50     0%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_hops_to_target.py         44     44     0%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_iperf3.py                 87     87     0%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_last_mile_latency.py      68     17    75%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_latunderload.py           54     54     0%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_oplat.py                  80     80     0%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_connected_devices.py      48      4    92%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_dns_latency.py            50     11    78%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_hops_to_target.py         44     11    75%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_iperf3.py                 87     23    74%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_last_mile_latency.py      80     22    72%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_latunderload.py           54      9    83%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_oplat.py                  80     46    42%
 /home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_ping_latency.py           61     13    79%
-/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_speedtests.py            115     19    83%
+/home/ubuntu/nm-exp-active-netrics/src/netrics/builtin/netrics_test_speedtests.py            115     11    90%
 --------------------------------------------------------------------------------------------------------------
-TOTAL                                                                                        607    412    32%
+TOTAL                                                                                        619    150    76%
 
 ```    
 

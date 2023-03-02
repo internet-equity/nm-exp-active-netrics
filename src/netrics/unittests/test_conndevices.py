@@ -8,7 +8,7 @@ import sys
 import warnings
 import json
 sys.path.insert(0, '/home/ubuntu/nm-exp-active-netrics/src')
-from netrics.builtin import netrics_test_latunderload as netrics
+from netrics.builtin import netrics_test_connected_devices as netrics
 from mock_measurements import Measurements
 
 devdb = TinyDB(Path(str(Path(__file__).resolve().parent)+'/samples/devdb.json'))
@@ -35,40 +35,27 @@ class TestConnDevices(unittest.TestCase):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_latunderload(self.key, self.measurement, devdb, conf, results, False)
+                output = netrics.test_connected_devices(self.key, self.measurement, devdb, conf, results, False)
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return
 
         self.assertIsNotNone(results)
         self.assertIsNotNone(output)
-        print(results)
-        print(output)
-
-
-        # #assert output format
-        # json_sample = str(Path(__file__).resolve().parent) + '/samples/latunder_output.json'
-        # try:
-        #     with open(json_sample, "rb") as f:
-        #         json_format = json.loads(f.read().decode('utf-8'))
-        # except Exception as e:
-        #     print("ERROR IN TEST SUITE: ", e)
-        #     return   
         
-        # self.assertEqual(type(output),dict)
-        # self.assert_format(json_format, output)
+        self.assertEqual(type(output),dict)
 
-        # #assert result format
-        # json_sample = str(Path(__file__).resolve().parent) + '/samples/latunder_results.json'
-        # try:
-        #     with open(json_sample, "rb") as f:
-        #         json_format = json.loads(f.read().decode('utf-8'))
-        # except Exception as e:
-        #     print("ERROR IN TEST SUITE: ", e)
-        #     return   
+        #assert result format
+        json_sample = str(Path(__file__).resolve().parent) + '/samples/conndevices_results.json'
+        try:
+            with open(json_sample, "rb") as f:
+                json_format = json.loads(f.read().decode('utf-8'))
+        except Exception as e:
+            print("ERROR IN TEST SUITE: ", e)
+            return   
         
-        # self.assertEqual(type(results),dict)
-        # self.assert_format(json_format, results)
+        self.assertEqual(type(results),dict)
+        self.assert_format(json_format, results)
 
         return
 
