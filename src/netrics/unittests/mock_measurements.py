@@ -7,3 +7,7 @@ class Measurements:
     
     def update_max_speed(self, measured_down=None, measured_up=None):
         return
+    
+
+    def bandwidth_test_stochastic_limit(self):
+        return True
