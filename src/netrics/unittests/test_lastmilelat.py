@@ -46,7 +46,7 @@ class TestLastMileLatency(unittest.TestCase):
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return   
-        
+
         self.assertEqual(type(output),dict)
         self.assert_format(json_format, output)
 
@@ -71,6 +71,8 @@ class TestLastMileLatency(unittest.TestCase):
 
         #read config
         conf = self.read_config('nm-exp-active-netrics.toml')
+    
+        conf['last_mile_latency'] = {"ABCD":"ABCD"}
 
         #run test
         results = {}
@@ -85,7 +87,7 @@ class TestLastMileLatency(unittest.TestCase):
 
         self.assertIsNotNone(results)
         self.assertIsNotNone(output)
-        
+
         self.assertTrue(results['last_mile_latency']['error'])
         self.assertIn('failure', output)
 
