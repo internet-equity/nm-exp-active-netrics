@@ -9,7 +9,7 @@ import warnings
 import json
 sys.path.insert(0, '/home/ubuntu/nm-exp-active-netrics/src')
 from netrics.builtin import netrics_test_connected_devices as netrics
-from mock_measurements import Measurements
+from netrics.unittests.mock_measurements import Measurements
 
 devdb = TinyDB(Path(str(Path(__file__).resolve().parent)+'/samples/devdb.json'))
 

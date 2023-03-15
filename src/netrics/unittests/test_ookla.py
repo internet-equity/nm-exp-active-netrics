@@ -6,7 +6,7 @@ import warnings
 import json
 sys.path.insert(0, '/home/ubuntu/nm-exp-active-netrics/src')
 from netrics.builtin import netrics_test_speedtests as netrics
-from mock_measurements import Measurements
+from netrics.unittests.mock_measurements import Measurements
 
 class TestOokla(unittest.TestCase):
     """Class for methods of ookla unit tests"""

@@ -7,13 +7,15 @@ Author: Fathima Maha
 ### To run all tests:    
 
 ```
+cd nm-exp-active-netrics/src/netrics
 python3 -m unittest discover unittests -v
 ```       
     
 ### To run individual tests:   
 
 ```  
-python3 -m unittest <test_filename> -v  
+cd nm-exp-active-netrics/src/netrics
+python3 -m unittest <test_filename with .py> -v  
 ````       
 
 ### Unit test options:
@@ -29,12 +31,14 @@ cd src
    
 Get coverage of all tests for all files in builtin:   
 ```
-pip install coverage    
+pip install coverage  
+cd nm-exp-active-netrics/src/netrics/unittests  
 coverage run --source=../builtin -m unittest discover -v && coverage report  
 ```      
 Or 
 ```
-coverage run --source=../builtin -m unittest discover -v && coverage report  
+cd nm-exp-active-netrics/src/netrics/unittests 
+coverage run --source=../builtin -m unittest discover -v && coverage xml  
 ```    
 
 Example:     
@@ -59,6 +63,7 @@ TOTAL                                                                           
 
 Get coverage of specific test for files in builtin:   
 ```
+cd nm-exp-active-netrics/src/netrics/unittests 
 coverage run --source=../builtin <test_filename> -v -v && coverage report 
 ```     
    

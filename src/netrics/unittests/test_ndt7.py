@@ -6,7 +6,7 @@ import warnings
 import json
 sys.path.insert(0, '/home/ubuntu/nm-exp-active-netrics/src')
 from netrics.builtin import netrics_test_speedtests as netrics
-from mock_measurements import Measurements
+from netrics.unittests.mock_measurements import Measurements
 
 class TestNdt7(unittest.TestCase):
     """Class for methods of ndt7 unit tests"""

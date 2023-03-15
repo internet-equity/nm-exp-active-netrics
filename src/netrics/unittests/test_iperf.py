@@ -7,7 +7,7 @@ import warnings
 import json
 sys.path.insert(0, '/home/ubuntu/nm-exp-active-netrics/src')
 from netrics.builtin import netrics_test_iperf3 as netrics
-from mock_measurements import Measurements
+from netrics.unittests.mock_measurements import Measurements
 
 speeddb = TinyDB(Path(str(Path(__file__).resolve().parent)+'/samples/speedtest.json'))
 
