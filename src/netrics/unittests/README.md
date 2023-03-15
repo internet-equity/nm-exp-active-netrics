@@ -6,8 +6,8 @@ Author: Fathima Maha
 
 > **Note**:
 > Before running tests there might be a need to change    
-> the permissions of the nm-exp-active-netrics/ folder   
-> to 777 if not already set so that tests can read write results.  
+> the permissions of the nm-exp-active-netrics/src/netrics/unittests/ folder   
+> to 777 if not already set so that tests can read/write results.  
 > sudo chmod -R 777 nm-exp-active-netrics/src/netrics/unittests/
 
 
