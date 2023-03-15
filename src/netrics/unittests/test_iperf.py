@@ -5,7 +5,8 @@ from pathlib import Path
 import sys
 import warnings
 import json
-sys.path.insert(0, '/home/ubuntu/nm-exp-active-netrics/src')
+import os
+sys.path.insert(1, os.path.realpath(os.path.pardir))
 from netrics.builtin import netrics_test_iperf3 as netrics
 from netrics.unittests.mock_measurements import Measurements
 
