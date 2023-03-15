@@ -245,11 +245,8 @@ class Measurements:
             return
 
         self.results[key] = {}
-        args = { "sites" : self.sites,
-                 "labels" : self.labels
-                }
 
-        return test_last_mile_latency(key, self, args, self.results, self.quiet)
+        return test_last_mile_latency(key, self, self.nma.conf, self.results, self.quiet)
 
     def oplat(self, key, run_test, client, port, limit):
 

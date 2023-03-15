@@ -22,12 +22,7 @@ class TestLastMileLatency(unittest.TestCase):
 
         #read config
         conf = self.read_config('nm-exp-active-netrics.toml')
-        sites = list(conf['reference_site_dict'].keys())[:2]
-        labels = conf['reference_site_dict']
-        args = {
-            "sites" : sites,
-            "labels" : labels
-        }
+
 
         #run test
         results = {}
@@ -35,7 +30,7 @@ class TestLastMileLatency(unittest.TestCase):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_last_mile_latency(self.last_mile_key, self.measurement, args, results, False)
+                output = netrics.test_last_mile_latency(self.last_mile_key, self.measurement, conf, results, False)
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return
@@ -76,12 +71,6 @@ class TestLastMileLatency(unittest.TestCase):
 
         #read config
         conf = self.read_config('nm-exp-active-netrics.toml')
-        sites = ["ABCD","ABCD","ABCD","ABCD","ABCD"]
-        labels = conf['reference_site_dict']
-        args = {
-            "sites" : sites,
-            "labels" : labels
-        }
 
         #run test
         results = {}
@@ -89,7 +78,7 @@ class TestLastMileLatency(unittest.TestCase):
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                output = netrics.test_last_mile_latency(self.last_mile_key, self.measurement, args, results, False)
+                output = netrics.test_last_mile_latency(self.last_mile_key, self.measurement, conf, results, False)
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return
