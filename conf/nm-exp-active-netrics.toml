@@ -52,6 +52,7 @@ netrics="""
     "77.67.119.129" = "Paris"
     "195.89.146.193" = "Stockholm"
     "190.98.158.1" = "Sao_Paulo"
+    "whois.radb.net" = "whois_radb"
 
 [limit_consumption]
     measured_down = 5
