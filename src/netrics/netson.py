@@ -797,7 +797,7 @@ class Measurements:
                 except KeyError:
                     res_label = resolver
                 print(f'RUNNING: {res_label} {label}')
-                dig_cmd = f'/home/ranyasharma/netrics-repo/nm-exp-active-netrics/commands/aarch64/bin/dig +https @{resolver} {site}'
+                dig_cmd = f'/usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
                 proc = Popen(
                     dig_cmd,
                     stdout=PIPE,

@@ -13,11 +13,12 @@ help:
 	@echo "2. make ndt"
 	@echo "3. make oplat"
 	@echo "4. sudo make iperf"
-	@echo "5. make speedtest"
-	@echo "6. sudo make deps"
-	@echo "7. sudo make venv"
-	@echo "8. sudo make install"
-	@echo "9. make build"
+	@echo "5. sudo make dig (optional)"
+	@echo "6. make speedtest"
+	@echo "7. sudo make deps"
+	@echo "8. sudo make venv"
+	@echo "9. sudo make install"
+	@echo "10. make build"
 
 iperf: ## Install iperf3 command from source, use host arch (no cross compile) 
 	./scripts/make_iperf.sh
