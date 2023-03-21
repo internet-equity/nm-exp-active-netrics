@@ -3,6 +3,7 @@
 """
 
 from subprocess import Popen, PIPE
+import signal
 import time
 import re
 import json
@@ -803,11 +804,12 @@ class Measurements:
                     stdout=PIPE,
                     stderr=PIPE,
                     text=True,
-                    shell=True
+                    shell=True,
+                    preexec_fn=os.setsid
                 )
 
                 dig_res[f'{res_label}_{label}'] = proc
-                popen_dict[f'{res_label}'][f'{label}'] = proc
+                #popen_dict[f'{res_label}'][f'{label}'] = proc
 #        print(dig_res)
         for dst_target, proc in dig_res.items():
             try:
@@ -816,7 +818,8 @@ class Measurements:
                 print("Resolver timed out")
 #                print(dst_target)
                 self.results[key][f'{dst_target}_encrypted_dns_latency'] = "timeout"
-                proc.kill()
+                #proc.kill()
+                os.killpg(os.getpgid(proc.pid), signal.SIGTERM) 
                 continue
             try:
                 out = proc.stdout.read()
@@ -850,20 +853,20 @@ class Measurements:
         #     print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
 
 #        print(dig_res)
-        for site in self.sites:
-            if self.valid_ip(site):
-                continue
-            try:
-                label = self.labels[site]
-            except KeyError:
-                label = site
-            for resolver in self.resolvers:
-                try:
-                    res_label = self.res_labels[resolver]
-                except KeyError:
-                    res_label = resolver
-                output[f'{res_label}'][f'{label}'] = popen_dict[f'{res_label}'][f'{label}'].read()
-        return output
+     #    for site in self.sites:
+     #       if self.valid_ip(site):
+     #           continue
+     #       try:
+     #           label = self.labels[site]
+     #       except KeyError:
+     #           label = site
+     #       for resolver in self.resolvers:
+     #           try:
+     #               res_label = self.res_labels[resolver]
+     #           except KeyError:
+     #               res_label = resolver
+     #           output[f'{res_label}'][f'{label}'] = popen_dict[f'{res_label}'][f'{label}'].read()
+        return ""
 
 
     def hops_to_target(self, key, site):
