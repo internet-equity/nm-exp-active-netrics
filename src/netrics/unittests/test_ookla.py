@@ -66,11 +66,12 @@ class TestOokla(unittest.TestCase):
             return   
         
         self.assertEqual(type(results),dict)
+        self.assertFalse(results["ookla"]["ookla_error"])
         self.assert_format(json_format, results)
 
         return
 
-    def test_ookla_error_in_json(self):
+    def test_ookla_no_timeout(self):
         """
         Test that output is still present if timeout error is present,
         assuming default will timeout (maybe set to 0)
@@ -93,7 +94,7 @@ class TestOokla(unittest.TestCase):
         except Exception as e:
             print("ERROR IN TEST SUITE: ", e)
             return
-
+    
         self.assertIsNotNone(results)
         self.assertIsNotNone(output)        
         output = json.loads(output)
@@ -120,7 +121,7 @@ class TestOokla(unittest.TestCase):
             return   
         
         self.assertEqual(type(results),dict)
-        self.assertTrue(results["ookla"]["ookla_error"])
+        self.assertFalse(results["ookla"]["ookla_error"])
         self.assert_format(json_format, results)
 
         return

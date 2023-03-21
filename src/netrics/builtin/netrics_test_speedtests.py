@@ -45,8 +45,9 @@ def test_ookla(key, measurement, conf, results, quiet):
         results[key]["ookla_json_error"] = f'{err}'
         error_found = True
         results[key]["ookla_error"] = error_found
-        log.exception('Ookla JSON failed to load. Aborting test.')
+        log.error('Ookla JSON failed to load. Aborting test.')
         return output
+    
     download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
     upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
     jitter_ookla = res_json['ping']['jitter']

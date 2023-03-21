@@ -22,7 +22,7 @@ python3 -m unittest discover unittests -v
 
 ```  
 cd nm-exp-active-netrics/src/netrics
-python3 -m unittest <test_filename with .py> -v  
+python3 -m unittest unittests/<test_filename with .py> -v  
 ````       
 
 ### Unit test options:
@@ -39,13 +39,13 @@ cd src
 Get coverage of all tests for all files in builtin:   
 ```
 pip install coverage  
-cd nm-exp-active-netrics/src/netrics/unittests  
-coverage run --source=../builtin -m unittest discover -v && coverage report  
+cd nm-exp-active-netrics/src/netrics  
+coverage run --source=./builtin -m unittest discover -v && coverage report  
 ```      
 Or 
 ```
-cd nm-exp-active-netrics/src/netrics/unittests 
-coverage run --source=../builtin -m unittest discover -v && coverage xml  
+cd nm-exp-active-netrics/src/netrics 
+coverage run --source=./builtin -m unittest discover -v && coverage xml  
 ```    
 
 Example:     
