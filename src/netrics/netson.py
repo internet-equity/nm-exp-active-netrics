@@ -3,7 +3,6 @@
 """
 
 from subprocess import Popen, PIPE
-import signal
 import time
 import re
 import json
@@ -15,7 +14,8 @@ from pathlib import Path
 from tinydb import TinyDB, where
 from tinydb.operations import increment
 from tinydb.operations import set as tdb_set
-
+from netrics.builtin.netrics_test_speedtests import test_ookla
+from netrics.builtin.netrics_test_speedtests import test_ndt7
 log = logging.getLogger(__name__)
 
 
@@ -32,9 +32,7 @@ class Measurements:
 
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
-#        self.resolvers = self.nma.conf['dns_latency']['encrypted_dns_targets']
-        self.resolvers = list(self.nma.conf['resolver_dict'].keys())
-        self.res_labels = self.nma.conf['resolver_dict']
+        self.resolvers = self.nma.conf['dns_latency']['encrypted_dns_targets']
         self.measured_down = 5
         self.max_monthly_consumption_gb = 200
         self.max_monthly_tests = 200
@@ -85,6 +83,10 @@ class Measurements:
         if not self.quiet:
             print("\n --- NETWORK MEASUREMENTS ---")
 
+    def popen_exec_pipe(self, cmd):
+        pipe = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        return pipe
+ 
     def popen_exec(self, cmd):
         pipe = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         out = pipe.stdout.read().decode('utf-8')
@@ -158,114 +160,11 @@ class Measurements:
     def speed_ookla(self, key, run_test):
         """ Test runs Ookla Speed test """
         """ key: test name """
-
         if not run_test:
             return
 
         self.results[key] = {}
-        error_found = False
-        output, err = self.popen_exec("timeout 35 /usr/local/src/nm-exp-active-netrics/bin/speedtest --accept-license -p no -f json -u kbps")
-        if len(err) > 0:
-             self.results[key]["error"] = f'{err}'
-             print(f"ERROR: {err}")
-             log.error(err)
-
-             results_available = False
-             error_found = True
-             if len(output) > 0:
-                 try:
-                    res_json = json.loads(output)
-                    if "download"  in res_json and \
-                       "bandwidth" in res_json["download"]:
-                       results_available = True
-                 except ValueError:
-                    log.warn("Unable to parse output")
-
-             if results_available and \
-                "Timeout occurred in connect" in err:
-
-                log.warn("Saving speedtest despite connect timeout error.")
-
-             else:
-                self.results[key]["ookla_error"] = error_found 
-                return f'{err}'
-
-        try:
-            res_json = json.loads(output)
-        except Exception as err:
-            self.results[key]["ookla_json_error"] = f'{err}'
-            error_found = True
-            self.results[key]["ookla_error"] = error_found
-            log.exception('Ookla JSON failed to load. Aborting test.')
-            return output
-        download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
-        upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
-        jitter_ookla = res_json['ping']['jitter']
-        latency_ookla = res_json['ping']['latency']
-
-        # Calculating data transferred 
-        ul_bw_used = int(res_json['upload']['bytes']) 
-        dl_bw_used = int(res_json['download']['bytes']) 
-        self.results['total_bytes_consumed'] += ul_bw_used + dl_bw_used
-
-        pktloss_ookla = None
-        if 'packetLoss' in res_json.keys():
-            pktloss_ookla = res_json['packetLoss']
-        if self.nma.conf['databases']['tinydb_enable']:
-            self.update_max_speed(float(download_ookla), float(upload_ookla))
-
-        self.results[key]["speedtest_ookla_download"] = float(download_ookla)
-        self.results[key]["speedtest_ookla_upload"] = float(upload_ookla)
-        self.results[key]["speedtest_ookla_jitter"] = float(jitter_ookla)
-        self.results[key]["speedtest_ookla_latency"] = float(latency_ookla)
-
-        self.results[key]["speedtest_ookla_server_host"] = res_json["server"]["host"]
-        self.results[key]["speedtest_ookla_server_name"] = res_json["server"]["name"]
-        self.results[key]["speedtest_ookla_server_id"]   = res_json["server"]["id"] 
-
-        if pktloss_ookla is not None:
-            self.results[key]["speedtest_ookla_pktloss2"] = float(pktloss_ookla)
-
-        if not self.quiet:
-            print('\n --- Ookla speed tests ---')
-            print(f'Download:\t{download_ookla} Mb/s')
-            print(f'Upload:\t\t{upload_ookla} Mb/s')
-            print(f'Latency:\t{latency_ookla} ms')
-            print(f'Jitter:\t\t{jitter_ookla} ms')
-            
-            if pktloss_ookla is not None:
-                print(f'PktLoss:\t{pktloss_ookla}%')
-            else:
-                print(f'PktLoss:\tnot returned by test.')
-        
-        self.results[key]["ookla_error"] = error_found
-
-        return output #res_json
-
-    def parse_ndt7_output(self, output):
-        """Parse output of non-quiet ndt7-client JSON"""
-
-        res_json = {}
-        dl_bytes = 0
-        ul_bytes = 0
-        res_text = ''
-
-        for obj in output.split("\n")[:-1]:
-            r = json.loads(obj)
-            if r.get("Value", 0):
-                num_bytes = r["Value"]["AppInfo"]["NumBytes"]
-                if r["Value"]["Test"] == "download":
-                    dl_bytes = num_bytes
-                else:
-                    ul_bytes = num_bytes
-            else:
-                res_json = r
-                res_text = obj
-
-        total_bytes = dl_bytes + ul_bytes
-
-        return (res_json, res_text, total_bytes)
-
+        return test_ookla(key, self, self.nma.conf, self.results, self.quiet)
 
     def speed_ndt7(self, key, run_test):
         """ Test runs NDT7 Speed test """
@@ -275,40 +174,7 @@ class Measurements:
             return
 
         self.results[key] = {}
-        error_found = False
-        output, err = self.popen_exec("/usr/local/src/nm-exp-active-netrics/bin/ndt7-client -scheme ws -format 'json' | grep -i 'numbytes\|FQDN'")
-        if len(err) > 0:
-             self.results[key]["error"] = f'{err}'
-             print(f"ERROR: {err}")
-             log.error(err)
-             error_found = True
-             self.results[key]["ndt_error"] = error_found
-             return f'{err}'
-
-        res_json, res_text, total_bytes = self.parse_ndt7_output(output)
-
-        download_speed = float(res_json["Download"]["Value"])
-        upload_speed = float(res_json["Upload"]["Value"])
-        download_retrans = float(res_json["DownloadRetrans"]["Value"])
-        minrtt = float(res_json['MinRTT']['Value'])
-
-        self.results[key]["speedtest_ndt7_download"] = download_speed
-        self.results[key]["speedtest_ndt7_upload"] = upload_speed
-        self.results[key]["speedtest_ndt7_downloadretrans"] = download_retrans
-        self.results[key]["speedtest_ndt7_minrtt"] = minrtt
-        self.results[key]["speedtest_ndt7_server"] = res_json['ServerFQDN']
-        self.results["total_bytes_consumed"] += total_bytes
-        
-        if not self.quiet:
-            print('\n --- NDT7 speed tests ---')
-            print(f'Download:\t{download_speed} Mb/s')
-            print(f'Upload:\t\t{upload_speed} Mb/s')
-            print(f'DownloadRetrans:{download_retrans} %')
-            print(f'MinRTT:\t\t{minrtt} ms')
- 
-        self.results[key]["ndt_error"] = error_found
-
-        return res_text #res_json
+        return test_ndt7(key, self, self.nma.conf, self.results, self.quiet)
 
     def bandwidth_test_stochastic_limit(self, measured_down=5,
                                         max_monthly_consumption_gb=200,
@@ -400,6 +266,7 @@ class Measurements:
             except IndexError:
                 self.results[key][label + "_error"] = 'Packet Loss IndexError'
                 ping_res[label] = {'error': 'Packet Loss IndexErorr'}
+                log.error('Packet Loss IndexErorr: Unexpected output from ping')
                 error_found = True
                 continue
 
@@ -410,6 +277,7 @@ class Measurements:
             except IndexError:
                 self.results[key][label + "_error"] = 'Probe IndexError'
                 ping_res[label] = {'error': 'Probe IndexErorr'}
+                log.error('Probe IndexErorr: Unexpected output from ping')
                 error_found = True
                 continue
 
@@ -440,6 +308,16 @@ class Measurements:
         """
         """ key : test name """
 
+        def countOccurrences(s, ch):
+            return sum(1 for i, letter in enumerate(s) if letter == ch)
+
+        def get_median(x):
+            n = len(x)
+            if n % 2 == 0: # even
+                return 0.5 * (x[n//2 -1] + x[n//2])
+            else: # odd
+                return x[(n+1)//2 -1]
+
         if not run_test:
             return
 
@@ -467,8 +345,9 @@ class Measurements:
             out = out.split('\n')
             for line in out:
                 hop_stats = line.split(' ')
-                if len(hop_stats) > 5:
-                    ip_addr = hop_stats[4].strip('()')
+                if 'traceroute' not in line and countOccurrences(line, '*') < 3:
+                    ipv4_extract_pattern = "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+                    ip_addr = re.findall(ipv4_extract_pattern, line)[0]
                     try:
                         if not ipaddress.ip_address(ip_addr).is_private:
                             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
@@ -500,7 +379,7 @@ class Measurements:
                                 output[site] = {'error': 'Probe IndexErorr'}
                                 error_found = True
                                 continue
-                            res = [hop_stats[6], hop_stats[9], hop_stats[12]]
+                            res = re.findall('([0-9.]*) ms', line)
                             ping_rtt_ms = [float(v) for v in ping_rtt_ms]
 
                             self.results[key][labels[site] + "_last_mile_ping_packet_loss_pct"] = ping_pkt_loss
@@ -515,8 +394,8 @@ class Measurements:
             if res:
                 res.sort()
                 self.results[key][f'{labels[site]}_last_mile_tr_rtt_min_ms'] = float(res[0])
-                self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(res[1])
-                self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[2])
+                self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(get_median(res))
+                self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[-1])
         return output
 
     def oplat(self, key, run_test, client, port, limit):
@@ -738,7 +617,7 @@ class Measurements:
                label = self.labels[site]
             except KeyError:
                label = site
-            dig_cmd = f'/usr/local/src/nm-exp-active-netrics/bin/dig @{target} {site}'
+            dig_cmd = f'dig @{target} {site}'
             dig_res[label], err = self.popen_exec(dig_cmd)
             if len(err) > 0:
                print(f"ERROR: {err}")
@@ -778,12 +657,10 @@ class Measurements:
 
         dig_delays = []
         dig_res = {}
+        dig_res_pipe = {}
         self.results[key] = {}
-        procs = []
-        popen_dict = {}
-        output = {}
+        
         for site in self.sites:
-
             if self.valid_ip(site):
                 continue
 
@@ -793,80 +670,42 @@ class Measurements:
                 label = site
 
             for resolver in self.resolvers:
-                try:
-                    res_label = self.res_labels[resolver]
-                except KeyError:
-                    res_label = resolver
-                print(f'RUNNING: {res_label} {label}')
-                dig_cmd = f'/usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
-                proc = Popen(
-                    dig_cmd,
-                    stdout=PIPE,
-                    stderr=PIPE,
-                    text=True,
-                    shell=True,
-                    preexec_fn=os.setsid
-                )
+                print(f'RUNNING: {resolver} {site}')
+                dig_cmd = f'timeout 5 /usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
+                dig_res_pipe[f'{resolver}_{label}'] = self.popen_exec_pipe(dig_cmd)
 
-                dig_res[f'{res_label}_{label}'] = proc
-                #popen_dict[f'{res_label}'][f'{label}'] = proc
-#        print(dig_res)
-        for dst_target, proc in dig_res.items():
-            try:
-                proc.wait(timeout = 5)
-            except:
-                print("Resolver timed out")
-#                print(dst_target)
-                self.results[key][f'{dst_target}_encrypted_dns_latency'] = "timeout"
-                #proc.kill()
-                os.killpg(os.getpgid(proc.pid), signal.SIGTERM) 
+        for site in self.sites:
+            if self.valid_ip(site):
                 continue
+
             try:
-                out = proc.stdout.read()
-                err = proc.stderr.read()
-            except AttributeError as e:
-                log.error(e)
-                print(f'ERROR: {e}')
-                print(f'{resolver}:{site}')
-            if len(err) > 0:
-                print(f"ERROR: {err}")
-                self.results[key][f'{dst_target}_error'] = f'{err}'
-                dig_res[dst_target] = { 'error' : f'{err}' }
-                log.error(err)
-                error_found = True
-                continue
-            try:
-                dig_res_qt = re.findall('Query time: ([0-9]*) msec', out, re.MULTILINE)[0]
-            except IndexError as e:
-                print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
-                self.results[key][f'{dst_target}_error'] = f'{e}'
-                dig_res[dst_target] = { 'error' : f'{e}' }
-                log.error(e)
-                continue
- #           print(dig_res)
-            print(f"RESULT: {dig_res_qt}")
-            self.results[key][f'{dst_target}_encrypted_dns_latency'] = int(dig_res_qt)
+                label = self.labels[site]
+            except KeyError:
+                label = site
+
+            for resolver in self.resolvers:
+                out = dig_res_pipe[f'{resolver}_{label}'].stdout.read().decode('utf-8')
+                err = dig_res_pipe[f'{resolver}_{label}'].stderr.read().decode('utf-8')
+                if len(err) > 0:
+                    print(f"ERROR: {err}")
+                    self.results[key][f'{resolver}_{label}_error'] = f'{err}'
+                    dig_res[f'{resolver}_{label}'] = { 'error': f'{err}' }
+                    log.error(err)
+                    error_found = True
+                    continue
+                dig_res[f'{resolver}_{label}'] = out
+                try:
+                    dig_res_qt = re.findall('Query time: ([0-9]*) msec',dig_res[f'{resolver}_{label}'], re.MULTILINE)[0]
+                    self.results[key][f'{resolver}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
+                except IndexError as e:
+                    print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
+                    continue
 
         # if not self.quiet:
         #     print(f'\n --- Encrypted DNS Delays (n = {len(dig_delays)}) ---')
         #     print(f'Avg DNS Query Time: {self.results[key]["dns_query_avg_ms"]} ms')
         #     print(f'Max DNS Query Time: {self.results[key]["dns_query_max_ms"]} ms')
-
-#        print(dig_res)
-     #    for site in self.sites:
-     #       if self.valid_ip(site):
-     #           continue
-     #       try:
-     #           label = self.labels[site]
-     #       except KeyError:
-     #           label = site
-     #       for resolver in self.resolvers:
-     #           try:
-     #               res_label = self.res_labels[resolver]
-     #           except KeyError:
-     #               res_label = resolver
-     #           output[f'{res_label}'][f'{label}'] = popen_dict[f'{res_label}'][f'{label}'].read()
-        return ""
+        return dig_res
 
 
     def hops_to_target(self, key, site):
