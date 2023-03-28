@@ -31,7 +31,9 @@ class Measurements:
         self.quiet = args.quiet
 
         self.sites = list(self.nma.conf['reference_site_dict'].keys())
+        self.enc_sites = list(self.nma.conf['encrypted_dns_reference_site_dict'].keys())
         self.labels = self.nma.conf['reference_site_dict']
+        self.enc_labels = self.nma.conf['encrypted_dns_reference_site_dict']
         self.resolvers = self.nma.conf['dns_latency']['encrypted_dns_targets']
         self.measured_down = 5
         self.max_monthly_consumption_gb = 200
@@ -608,7 +610,7 @@ class Measurements:
 
         dig_delays = []
         dig_res = {}
-        for site in self.sites:
+        for site in self.enc_sites:
             
             if self.valid_ip(site):
                 continue
@@ -660,7 +662,7 @@ class Measurements:
         dig_res_pipe = {}
         self.results[key] = {}
         
-        for site in self.sites:
+        for site in self.enc_sites:
             if self.valid_ip(site):
                 continue
 
@@ -674,12 +676,12 @@ class Measurements:
                 dig_cmd = f'timeout 5 /usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
                 dig_res_pipe[f'{resolver}_{label}'] = self.popen_exec_pipe(dig_cmd)
 
-        for site in self.sites:
+        for site in self.enc_sites:
             if self.valid_ip(site):
                 continue
 
             try:
-                label = self.labels[site]
+                label = self.enc_labels[site]
             except KeyError:
                 label = site
 
