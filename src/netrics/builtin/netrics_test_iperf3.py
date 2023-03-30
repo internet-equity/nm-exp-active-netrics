@@ -12,24 +12,11 @@ def test_iperf3(key, measurement, args, results, quiet):
     Method to record results of iperf3 bandwidth tests
     """
 
-    limit = args["limit"]
-    bandwidth_test_stochastic_limit = args["bandwidth_test_stochastic_limit"]
-    measured_down = args["measured_down"]
-    max_monthly_consumption_gb = args["max_monthly_consumption_gb"]
-    max_monthly_tests = args["max_monthly_tests"]
     conf = args["conf"]
     client = args["client"]
     port = args["port"]
     speed_db = args["speed_db"]
     update_max_speed = args["update_max_speed"]
-
-    if limit:
-        if not bandwidth_test_stochastic_limit(measured_down = measured_down,
-                max_monthly_consumption_gb = max_monthly_consumption_gb,
-                max_monthly_tests = max_monthly_tests):
-            log.info("limit_consumption applied, skipping test: iperf")
-            print("limit_consumption applied, skipping test: iperf")
-            return
 
     iperf_res = {}
     error_found = False
