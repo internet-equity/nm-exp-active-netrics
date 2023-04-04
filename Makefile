@@ -48,6 +48,9 @@ venv: ## Make virtual enviroment and activate it
 	./scripts/make_venv.sh
 	ln -s /usr/local/src/nm-exp-active-netrics/venv ./venv
 
+vca: ## Make vca 
+	./scripts/make_vca.sh
+
 build: ## Build .deb package for the current arch
 	cd package/deb/; ./build.sh; cp nm-exp-active-netrics*.deb ~/
 
