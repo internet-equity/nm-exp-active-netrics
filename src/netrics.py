@@ -421,7 +421,7 @@ if not connectivity_failure:
                 module = importlib.import_module(module_name)
             except Exception as err:
                 msg = f"Error importing {test_name}.py: {str(err)}"
-                print(msg)
+                print(msg) 
                 log.info(msg)
 
             try:
