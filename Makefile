@@ -48,9 +48,6 @@ venv: ## Make virtual enviroment and activate it
 	./scripts/make_venv.sh
 	ln -s /usr/local/src/nm-exp-active-netrics/venv ./venv
 
-vca: ## Make vca 
-	./scripts/make_vca.sh
-
 build: ## Build .deb package for the current arch
 	cd package/deb/; ./build.sh; cp nm-exp-active-netrics*.deb ~/
 
@@ -61,11 +58,10 @@ user: ## Make system user group netrics:netrics
 	./scripts/make_netrics_user_group.sh
 
 plugin-vca:
-	git submodule init
-	git submodule update --remote
-	sudo apt -y install xvfb python3-tk python3-dev scrot xdg-utils 
-	sudo snap install chromium
-	source ./venv/bin/activate; pip install -r src/netrics/plugin/netrics-vca-test/requirements.txt 
+	./scripts/make_vca.sh
+
+plugin-vca-deps:
+	./scripts/make_vca_deps.sh
 
 clearlogs: ## Remove nm-exp-active-netrics.log
 	rm -f /tmp/nm/nm-exp-active-netrics/log/nm-exp-active-netrics.log
