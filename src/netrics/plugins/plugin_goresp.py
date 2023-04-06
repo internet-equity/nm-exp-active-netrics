@@ -8,9 +8,7 @@ from tinydb.operations import set as tdb_set
 
 log = logging.getLogger(__name__)
 
-def test_goresp(key, measurement, dev_db, conf, results, quiet):
+def test_goresp(key, conf, results, quiet=False):
 
-
-    res = {}
-
-    return res
+    #TODO
+    pass

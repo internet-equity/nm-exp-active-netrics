@@ -4,6 +4,9 @@ sys.path.append("venv/lib/python3.8/site-packages/")
 sys.path.append("venv/lib64/python3.8/site-packages/")
 import argparse
 import logging
+import glob
+import importlib
+
 from datetime import datetime
 from netrics.netson import Measurements
 from nmexpactive.experiment import NetMicroscopeControl
@@ -132,6 +135,12 @@ def build_parser():
             '-i', '--iperf',
             action='store_true',
             help='Measure up/down UDP throughout using standard iperf3',
+    )
+
+    parser.add_argument(
+            '-P', '--plugins',
+            action='store_true',
+            help='Runs plugin tests',
     )
 
     parser.add_argument(
@@ -383,7 +392,48 @@ if not connectivity_failure:
     
         output['latency_under_load'] = test.oplat('oplat', True, client=server,
                                                   port=port, limit=args.limit_consumption)
+    
+    """ Glob for plugins and run plugin tests"""
+    if args.plugins:
 
+        search_key = f"{str(os.getcwd())}/src/netrics/plugins/plugin_*.py"
+        print(f"\nGlobbing: {search_key}")
+
+        for file in glob.glob(search_key):
+            
+            try:
+                file_name = file[file.rfind('/')+1:file.rfind('.py')]
+            except Exception as err:
+                msg = f"Error parsing test name: {str(err)}"
+                print(msg)
+                log.info(msg)
+                continue
+        
+            msg = f"\nFound test file: {file_name}"
+            print(msg)
+            log.info(msg)
+
+            test_name = file_name[file_name.rfind("_")+1:]
+            function_name = f"test_{test_name}"
+
+            try:
+                module_name = f"netrics.plugins.{file_name}"
+                module = importlib.import_module(module_name)
+            except Exception as err:
+                msg = f"Error importing {test_name}.py: {str(err)}"
+                print(msg)
+                log.info(msg)
+
+            try:
+                my_function = getattr(module, function_name) 
+                test.results[test_name] = {}
+                res = my_function(test_name, nma.conf, test.results)    
+                output[test_name] = res
+
+            except Exception as err:
+               msg = f"Error while calling function: {str(err)}"
+               print(msg) 
+               log.info(msg)
     
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp('connected_devices_arp', args.ndev)
