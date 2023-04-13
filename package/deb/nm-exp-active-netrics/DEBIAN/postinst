@@ -32,3 +32,5 @@ update-rc.d nm-exp-active-netrics defaults
 /etc/init.d/nm-exp-active-netrics restart
 chown netrics:netrics /var/nm/ -R
 /usr/local/bin/netrics -C
+
+chmod +x /usr/bin/dumpcap
