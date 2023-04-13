@@ -241,6 +241,16 @@ class Measurements:
         """
         """ key : test name """
 
+        def countOccurrences(s, ch):
+            return sum(1 for i, letter in enumerate(s) if letter == ch)
+
+        def get_median(x):
+            n = len(x)
+            if n % 2 == 0: # even
+                return 0.5 * (x[n//2 -1] + x[n//2])
+            else: # odd
+                return x[(n+1)//2 -1]
+
         if not run_test:
             return
 
