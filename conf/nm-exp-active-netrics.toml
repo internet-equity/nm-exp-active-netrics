@@ -80,3 +80,7 @@ netrics="""
 
 [ookla]
     timeout = 80
+
+[httping]
+    c = 2
+    targets = ["www.google.com","www.wikipedia.org"]
