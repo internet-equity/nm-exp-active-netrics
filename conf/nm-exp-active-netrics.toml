@@ -23,7 +23,7 @@ netrics="""
 {SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {no_ipquery} {upload} >>{log} 2>&1 
 {IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {no_ipquery} {upload} >{log} 2>&1
 0 0 1 * * netrics env USER=$LOGNAME /usr/local/bin/netrics -R >>{log} 2>&1
-{SPEEDTEST_TIME+1}, {SPEEDTEST_TIME+31} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics --plugin vca {no_ipquery} {upload} >{log} 2>&1 
+{VCA_TIME}, {VCA_TIME_2} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics --plugin vca {no_ipquery} {upload} >{log} 2>&1 
 """
 
 [databases]
