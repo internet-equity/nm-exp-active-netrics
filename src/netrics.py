@@ -348,6 +348,9 @@ connectivity_status  = [stat for stat in connectivity_status if stat is not None
 # print(connectivity_status, any(connectivity_status))
 connectivity_failure = connectivity_status and not any(connectivity_status)
 
+
+additional_files_map = {}
+
 if not connectivity_failure:
 
     """ Measure last mile latency """
@@ -361,7 +364,7 @@ if not connectivity_failure:
 
     """ Run ookla speed test """
     output['ookla'] = test.speed_ookla('ookla', args.ookla)
-    
+
     """ Run ndt7 speed test """
     output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
 
@@ -403,8 +406,9 @@ if not connectivity_failure:
         ## check which plugins have been called and run those tests
         if "vca" in plugins:
             config_file = "src/netrics/plugin/netrics_vca_test/vca_automation/config.toml"
-            test.vca('vca', config_file)
-            #main_client.start_test("netrics/plugin/netrics-vca-test/vca-automation/config.toml")
+            output['vca_qoe'] =  test.vca('vca', config_file)
+            if 'vca' in output['vca_qoe'] and 'extra-files' in output['vca_qoe']['vca']:
+                additional_files_map['vca_qoe'] = output['vca_qoe']['vca']['extra-files']
 
     
 """ Count number of devices on network """
@@ -433,11 +437,13 @@ else:
   log.info(msg)
 
 timenow = datetime.now()
+
 nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'],
         extended = nma.conf['extended'] if 'extended' in nma.conf.keys() else None,
         annotation = args.annotate)
-nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 
+nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
+nma.save_additional_files(additional_files_map, timenow, topic=nma.conf['topic'])
 
 if args.upload and not connectivity_failure:
 

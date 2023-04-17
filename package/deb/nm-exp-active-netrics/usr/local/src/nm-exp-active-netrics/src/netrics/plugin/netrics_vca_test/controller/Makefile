@@ -1,0 +1,3 @@
+server:
+	node app.js
+
