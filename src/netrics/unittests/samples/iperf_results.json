@@ -1,0 +1,15 @@
+{
+    "iperf":{
+       "iperf_udp_upload":52.0591676811789,
+       "iperf_udp_upload_jitter_ms":0.644257802739285,
+       "iperf_udp_download_i0":932.1359939809658,
+       "iperf_udp_download_i1":921.2689344046212,
+       "iperf_udp_download_i2":956.7047612223581,
+       "iperf_udp_download_i3":956.6864093902111,
+       "iperf_udp_download_i4":952.0384734019685,
+       "iperf_udp_download":943.7668822454467,
+       "iperf_udp_download_jitter_ms":0.07903925595426406,
+       "error":false
+    },
+    "total_bytes_consumed":2498197240
+ }

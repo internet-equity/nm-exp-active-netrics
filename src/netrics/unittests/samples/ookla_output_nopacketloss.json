@@ -1,0 +1,54 @@
+{
+    "type":"result",
+    "timestamp":"2023-03-21T02:43:49Z",
+    "ping":{
+       "jitter":15.972,
+       "latency":31.429,
+       "low":16.758,
+       "high":49.323
+    },
+    "download":{
+       "bandwidth":117944505,
+       "bytes":1109180130,
+       "elapsed":9507,
+       "latency":{
+          "iqm":161.588,
+          "low":23.226,
+          "high":1160.802,
+          "jitter":53.167
+       }
+    },
+    "upload":{
+       "bandwidth":5112502,
+       "bytes":49463680,
+       "elapsed":9805,
+       "latency":{
+          "iqm":17.105,
+          "low":9.102,
+          "high":65.791,
+          "jitter":2.718
+       }
+    },
+    "isp":"Comcast Cable",
+    "interface":{
+       "internalIp":"10.0.0.50",
+       "name":"eth0",
+       "macAddr":"DC:A6:32:E5:63:86",
+       "isVpn":false,
+       "externalIp":"73.9.17.47"
+    },
+    "server":{
+       "id":46119,
+       "host":"ch1.speedtest.gslnetworks.com",
+       "port":8080,
+       "name":"GSL Networks",
+       "location":"Chicago, IL",
+       "country":"United States",
+       "ip":"160.202.165.65"
+    },
+    "result":{
+       "id":"7549d4fc-2d39-4d6a-a780-8077bcd15d10",
+       "url":"https://www.speedtest.net/result/c/7549d4fc-2d39-4d6a-a780-8077bcd15d10",
+       "persisted":true
+    }
+ }

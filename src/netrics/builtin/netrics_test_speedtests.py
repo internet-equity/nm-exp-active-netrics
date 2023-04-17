@@ -20,6 +20,7 @@ def test_ookla(key, measurement, conf, results, quiet):
 
        results_available = False
        error_found = True
+
        if len(output) > 0:
           try:
              res_json = json.loads(output)
@@ -36,7 +37,7 @@ def test_ookla(key, measurement, conf, results, quiet):
 
           else:
              results[key]["ookla_error"] = error_found 
-          return f'{err}'
+             return f'{err}'
 
     try:
         res_json = json.loads(output)
@@ -44,8 +45,9 @@ def test_ookla(key, measurement, conf, results, quiet):
         results[key]["ookla_json_error"] = f'{err}'
         error_found = True
         results[key]["ookla_error"] = error_found
-        log.exception('Ookla JSON failed to load. Aborting test.')
+        log.error('Ookla JSON failed to load. Aborting test.')
         return output
+    
     download_ookla = res_json["download"]['bandwidth'] * 8 / 1e6
     upload_ookla = res_json["upload"]['bandwidth'] * 8 / 1e6
     jitter_ookla = res_json['ping']['jitter']
@@ -142,6 +144,7 @@ def test_ndt7(key, measurement, conf, results, quiet):
     results[key]["speedtest_ndt7_server"] = res_json['ServerFQDN']
     # results[key]["speedtest_ndt7_minrtt"] = minrtt
     results["total_bytes_consumed"] += total_bytes
+    
     if not quiet:
         print('\n --- NDT7 speed tests ---')
         print(f'Download:\t{download_speed} Mb/s')
