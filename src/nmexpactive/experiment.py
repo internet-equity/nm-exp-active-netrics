@@ -330,12 +330,13 @@ class NetMicroscopeControl:
             files = additional_files_map[measurement] 
             d = "{0}_{1}_extra.zip".format(s, measurement)
             output = p / d
-            with ZipFile(output, 'w') as zipF:
+            temp_output = f"/tmp/{d}" 
+            with ZipFile(temp_output, 'w') as zipF:
                 for file_ in files:
                     if not os.path.exists(file_):
                         continue
                     zipF.write(file_, compress_type=ZIP_DEFLATED)
-
+            os.system(f"mv {temp_output} {output}")
 
 
 
