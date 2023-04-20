@@ -20,6 +20,13 @@ from netrics.builtin.netrics_test_oplat import test_oplat
 from netrics.builtin.netrics_test_hops_to_target import test_hops_to_target
 from netrics.builtin.netrics_test_iperf3 import test_iperf3
 from netrics.builtin.netrics_test_connected_devices import test_connected_devices
+
+## VCA plugin
+#sys.path.append('netrics/plugin/netrics-vca-test/vca-automation')
+#import main_client 
+from netrics.plugin.netrics_vca_test.vca_automation import main_client
+
+
 log = logging.getLogger(__name__)
 
 
@@ -51,6 +58,7 @@ class Measurements:
             if 'max_monthly_tests' in self.nma.conf['limit_consumption']:
                 if self.nma.conf['limit_consumption']['max_monthly_tests'] is not None:
                     self.max_monthly_tests = int(self.nma.conf['limit_consumption']['max_monthly_tests'])
+
 
         if self.nma.conf['databases']['tinydb_enable']:
             try:
@@ -213,6 +221,11 @@ class Measurements:
                 return None, None
         return self.speed_ookla(key_ookla, True), self.speed_ndt7(key_ndt7, True)
 
+    def vca(self, key_vca, config_file):
+        result = main_client.start_test(config_file)
+        self.results[key_vca] = result["vca-qoe-metrics"]
+        return self.results
+
     def ping_latency(self, key, run_test):
         """
         Records ping latency to self.sites
@@ -231,7 +244,6 @@ class Measurements:
         args = { "sites" : sites,
                  "labels" : self.labels
                 }
-
         return test_ping_latency(key, self, args, self.results, self.quiet)
 
     def last_mile_latency(self, key, run_test):

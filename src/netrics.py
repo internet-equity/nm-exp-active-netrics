@@ -11,7 +11,12 @@ from nmexpactive.experiment import NetMicroscopeControl
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb import InfluxDBClient
 
+
 log = logging.getLogger(__name__)
+
+#sys.path.append("netrics/pplugin/netrics-vca-test/vca-automation")
+#import main_client
+
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
@@ -160,6 +165,14 @@ def build_parser():
             default=None,
             action='store',
             help='Provide an alternative toml configuration file'
+    )
+
+    parser.add_argument(
+            '--plugin',
+            nargs = '+',
+            default=None,
+            action='store',
+            help='Provide list of plugin tests to run'
     )
 
     ## Non-test 
@@ -335,6 +348,9 @@ connectivity_status  = [stat for stat in connectivity_status if stat is not None
 # print(connectivity_status, any(connectivity_status))
 connectivity_failure = connectivity_status and not any(connectivity_status)
 
+
+additional_files_map = {}
+
 if not connectivity_failure:
 
     """ Measure last mile latency """
@@ -348,7 +364,7 @@ if not connectivity_failure:
 
     """ Run ookla speed test """
     output['ookla'] = test.speed_ookla('ookla', args.ookla)
-    
+
     """ Run ndt7 speed test """
     output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
 
@@ -384,6 +400,16 @@ if not connectivity_failure:
         output['latency_under_load'] = test.oplat('oplat', True, client=server,
                                                   port=port, limit=args.limit_consumption)
 
+    if args.plugin:
+        plugins = args.plugin
+        
+        ## check which plugins have been called and run those tests
+        if "vca" in plugins:
+            config_file = "src/netrics/plugin/netrics_vca_test/vca_automation/config.toml"
+            output['vca_qoe'] =  test.vca('vca', config_file)
+            if 'vca' in output['vca_qoe'] and 'extra-files' in output['vca_qoe']['vca']:
+                additional_files_map['vca_qoe'] = output['vca_qoe']['vca']['extra-files']
+
     
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp('connected_devices_arp', args.ndev)
@@ -411,11 +437,13 @@ else:
   log.info(msg)
 
 timenow = datetime.now()
+
 nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'],
         extended = nma.conf['extended'] if 'extended' in nma.conf.keys() else None,
         annotation = args.annotate)
-nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 
+nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
+nma.save_additional_files(additional_files_map, timenow, topic=nma.conf['topic'])
 
 if args.upload and not connectivity_failure:
 

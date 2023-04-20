@@ -12,7 +12,7 @@ import urllib.request
 import pickle
 from subprocess import Popen, PIPE
 import getpass
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 
 project = "netrics"
@@ -287,7 +287,7 @@ class NetMicroscopeControl:
                 self.save_zip_dict(s, cmd, k, zf, outdict[i],  ("" if key == "" else key + "-") + i)
             else:
                 data = outdict[i]
-                if len(data) > 0:
+                if len(str(data)) > 0:
                     zf.writestr("{0}-{1}-{2}-{3}.out".format(s, cmd, k, ("" if key == "" else key + "-") + i), data
                         if isinstance(data, bytes) else "{}".format(data).encode())
 
@@ -318,4 +318,25 @@ class NetMicroscopeControl:
         data = in_memory.read()
         with open(output,'wb') as out:
            out.write(data)
+    
+    def save_additional_files(self, additional_files_map, timenow, topic = "default"):
+        p = UPLOAD_PENDING / topic / "zip"
+        a = UPLOAD_ARCHIVE / topic / "zip"
+        Path(p).mkdir(parents=True, exist_ok=True)
+        Path(a).mkdir(parents=True, exist_ok=True)
+        s = timenow.strftime("nm_data_%Y%m%d_%H%M%S")
+        
+        for measurement in additional_files_map:
+            files = additional_files_map[measurement] 
+            d = "{0}_{1}_extra.zip".format(s, measurement)
+            output = p / d
+            temp_output = f"/tmp/{d}" 
+            with ZipFile(temp_output, 'w') as zipF:
+                for file_ in files:
+                    if not os.path.exists(file_):
+                        continue
+                    zipF.write(file_, compress_type=ZIP_DEFLATED)
+            os.system(f"mv {temp_output} {output}")
+
+
 
