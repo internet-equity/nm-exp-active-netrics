@@ -10,10 +10,11 @@ else
     adduser --system --home /home/netrics --disabled-password --disabled-login --ingroup netrics netrics
 fi
 
-usermod -a -G wireshark netrics
-
 echo "INFO: Please enable non-root users to run tshark wireshark. Eg.:"
 echo "INFO: \"$ yes | DEBIAN_FRONTEND=teletype dpkg-reconfigure wireshark-common\""
+
+echo "y" | DEBIAN_FRONTEND=teletype dpkg-reconfigure wireshark-common
+usermod -a -G wireshark netrics
 
 ### uncomment here to stash archive/pending
 ## if [ -d /var/nm/ ];then
