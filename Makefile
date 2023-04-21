@@ -31,6 +31,9 @@ oplat: ## Install oplat command for host arch
 speedtest: ## Install speedtest command for host arch
 	./scripts/make_speedtest.sh
 
+httping: ## Install httping command
+	./scripts/make_httping.sh
+
 deps: ## Install dependencies via apt-get install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 	python3 get-pip.py
