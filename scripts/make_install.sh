@@ -68,3 +68,8 @@ fi
 
 chown netrics:netrics /etc/nm-exp-active-netrics/.env.netrics
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
+
+if [ -f /etc/init.d/nm-exp-active-netrics ];then
+	/etc/init.d/nm-exp-active-netrics restart
+fi
+

@@ -139,8 +139,9 @@ def build_parser():
 
     parser.add_argument(
             '-P', '--plugins',
-            action='store_true',
-            help='Runs plugin tests',
+            default=False,
+            type=str,
+            help='Runs plugin tests from a given list eg. ./netrics -P=httping,goresp,vca ',
     )
 
     parser.add_argument(
@@ -396,8 +397,14 @@ if not connectivity_failure:
     """ Glob for plugins and run plugin tests"""
     if args.plugins:
 
+        vargs = vars(parser.parse_args())
+        if "plugins" in vargs.keys():
+            allowed_plugins = ["plugin_" + s.strip() for s in vargs["plugins"].split(",")]
+    
+        print(f"INFO: Allowed plugins: {allowed_plugins}")
+
         search_key = f"{str(os.getcwd())}/src/netrics/plugins/plugin_*.py"
-        print(f"\nGlobbing: {search_key}")
+        print(f"\nINFO: Globbing: {search_key}")
 
         for file in glob.glob(search_key):
             
@@ -408,8 +415,11 @@ if not connectivity_failure:
                 print(msg)
                 log.info(msg)
                 continue
-        
-            msg = f"\nFound test file: {file_name}"
+       
+            if file_name not in allowed_plugins:
+                print(f"\nINFO: skipping plugin available ({file_name}).")
+                continue
+            msg = f"\nINFO: Running: {file_name}"
             print(msg)
             log.info(msg)
 
