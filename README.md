@@ -66,3 +66,5 @@ INSTALL_ID=<b>myid</b> <---- use your lastname here so you can filter out grafan
 ### 1.2 Install (managed, via nm-mgmt-cms-*.deb)
 
 TBD
+
+[Install](https://www.youtube.com/watch?v=WVhyWWEiqVY)
