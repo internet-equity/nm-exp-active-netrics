@@ -1,4 +1,4 @@
-# [Netrics](https://chicago-cdac.github.io/nm-exp-active-netrics)
+# Netrics
 
 Netrics - Active Measurement of Network Performance
 
@@ -8,7 +8,11 @@ Netrics - Active Measurement of Network Performance
 <b>For Whom</b>: internet users, network engineers and the general internet research community.<br>
 <b>Why</b>: to troubleshoot impaired computer networks, to understand how the internet is evolving, and to support decisions on internet infrastructure capacity planning.
 
-![Netrics Dashboard](https://github.com/internet-equity/nm-exp-active-netrics/blob/main/docs/images/dashboard.png?raw=true)
+![Netrics Dashboard](https://user-images.githubusercontent.com/2147779/234374283-e7270619-49a2-40b9-ba0e-e1e50c81d5f2.png)
+<p align="center">
+    Figure 1. one of the reasons for constantly monitoring your internet performance: it varies over time.
+</p>
+
 
 ### 1.1 Software
 
@@ -22,11 +26,14 @@ Netrics runs on dedicated SBC's (Single Board Computers). It's well tested on Ra
 |![Attached](https://github.com/internet-equity/nm-exp-active-netrics/blob/main/docs/images/attached3.png?raw=true)|
 |:---:|
 <p align="center">
-    Figure 1. a Raspberry Pi connected to the modem's Ethernet port.
+    Figure 2. a Raspberry Pi running Netrics connected to a modem via Gigabit Ethernet port.
 </p>
 
-### 1.3 Data Structure
-Here we describe the general structure of the output data of the Netrics that is written in the "pending" directory.
+### 1.3 Data and Data Structure
+
+Different than Ookla and Cloudflare/Mlab, Netrics is designed to collect hyperlocalized data from a region or a city and by doing that your're likely to expose pattens and outliers in the data that can be used to shed a light into the inequities on how the internet infrastructure in being developed. To learn more about the findings of what this software can unlock please visit the [Internet Equity Initiative](https://internetequity.uchicago.edu/) and [Netrics Data](https://github.com/internet-equity/netrics-data).
+
+Next we describe the general structure of the output data of the Netrics that is written in the "pending" directory.
 <details>
   <summary>Output JSON (Meta Data)</summary>
   
@@ -49,8 +56,7 @@ Here we describe the general structure of the output data of the Netrics that is
   ```
 </details>
 
-As you can see, the output JSON contains 2 main dictonaries **Meta** and **Measuments**. Meta contains *Time*, a UTC timestamp and *ID* of the device. <b>Important: ID is a placeholder, the backend is responsible to determine the device ID and to move the files from "pending" to "archive" directory when the data files are safely transferred to the data storage (more to this below).
-
+As you can see, the output JSON contains 2 main dictonaries **Meta** and **Measuments**. Meta contains *Time*, a UTC timestamp and *ID* of the device. <b>Important: ID is a placeholder, the backend is responsible to determine the device ID and to move the files from "pending" to "archive" directory when the data files are safely transferred to the data storage (more to this below).</b>
 
 
 ### 1.4 Source Code, Configuration and Data locations
@@ -67,37 +73,8 @@ Configuration can be found at:<br>
 
 ## 2. Install
 
-Please use the _unmanaged_ installation with direct influxdb data ingestion if you're a developer or researcher planning to contribute with code, testing and building of NetMicroscope/Netrics Open Source software. For all other cases, please use the _managed_ installation method.
-
-### 2.1 Install (umanaged, direct influxfb data ingestion)
-
-1. Checkout the latest pre-releases and releases at [link](https://github.com/chicago-cdac/nm-exp-active-netrics/releases).
-2. Copy link and login into your Jetson Nano device, download .deb file:<br>
-`wget https://github.com/chicago-cdac/nm-exp-active-netrics/releases/download/v0.1.10-arm64/nm-exp-active-netrics-v0.1.10-arm64.deb`
-3. run `sudo apt install ./nm-exp-active-netrics-v0.1.10-arm64.deb`<br>
-(To reinstall run):<br>`sudo apt remove --purge nm-exp-active-netrics`<br>`sudo apt install --reinstall ./nm-exp-active-netrics-v0.1.10-arm64.deb`, and if necessary run:<br>`sudo rm -Rf /usr/local/src/nm-exp-active-netrics`
-4. edit your `/etc/nm-exp-active-netrics/nm-exp-active-netrics.toml` file to include <b>[iperf]</b> target servers:
-```
-...
-[iperf]
-
-   targets = ["server:33001"]
-...
-```
-5. Create .env.netrics file with server credentials <b>`sudo vim /etc/nm-exp-active-netrics/.env.netrics`</b>:
-<pre>
-INFLUXDB_SERVER=
-INFLUXDB_PORT=
-INFLUXDB_USERNAME=
-INFLUXDB_PASSWORD=
-INFLUXDB_DATABASE=
-INSTALL_ID=<b>myid</b> <---- use your lastname here so you can filter out grafana/influxdb queries.
-</pre>
-6. Restart netrics: <b>`sudo /etc/init.d/nm-exp-active-netrics restart`</b>
-7. Check health with `netrics -C` and logs with `netrics -L`
-
-### 1.2 Install (managed, via nm-mgmt-cms-*.deb)
-
-TBD
-
 [Install](https://www.youtube.com/watch?v=WVhyWWEiqVY)
+	
+## 3. Next-Generation Netrics
+
+Please visit [Netrics V2](https://github.com/internet-equity/netrics) as it will become the continuation of this software.
