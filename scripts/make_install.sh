@@ -36,6 +36,7 @@ fi
 
 # /etc/nm-exp-active-netrics/nm-exp-active-netrics.toml
 mkdir -p /etc/nm-exp-active-netrics
+cp nm-exp-active-netrics/conf/nm-exp-active-netrics.toml /etc/nm-exp-active-netrics/nm-exp-active-netrics.toml.template
 cp nm-exp-active-netrics/conf/nm-exp-active-netrics.toml /etc/nm-exp-active-netrics/
 
 # logrotate.d
@@ -66,3 +67,8 @@ fi
 
 chown netrics:netrics /etc/nm-exp-active-netrics/.env.netrics
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
+
+if [ -f /etc/init.d/nm-exp-active-netrics ];then
+	/etc/init.d/nm-exp-active-netrics restart
+fi
+

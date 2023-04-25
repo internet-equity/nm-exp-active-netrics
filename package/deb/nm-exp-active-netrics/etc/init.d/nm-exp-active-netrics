@@ -1,0 +1,118 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          nm-exp-active-netrics
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: NetMicroscope Netrics Active Experment
+# Description:       enable NetMicroscope Netrics Active measurements
+### END INIT INFO
+NMPATH=/usr/local/src/nm-exp-active-netrics/
+
+mkdir -p /var/nm/nm-exp-active-netrics/log/
+
+owner=$(stat --format '%U' /var/nm)
+if [ "$owner" != "netrics" ];then
+  chown netrics:netrics /var/nm/ -R
+fi
+
+log=/var/nm/nm-exp-active-netrics/log/log.txt
+
+if [ ! -d "${NMPATH}" ];then
+   echo "ERROR: Installation of nm-exp-active-netrics in incomplete. Exiting..."
+   exit 1
+fi
+
+if [ ! -f "/usr/local/bin/netrics" ];then
+   echo "ERROR: Binaries of nm-exp-active-netrics are not in PATH. Exiting..."
+   exit 1
+fi
+
+
+start_nma() {
+    upload=""
+    if [ -f /etc/nm-exp-active-netrics/.env.netrics ];then
+	    upload="-u"
+	    echo "INFO: /etc/nm-exp-active-netrics/.env.netrics present, using -u (upload flag)"
+    fi
+    echo "Installing nm-exp-active-netrics in crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
+
+    /usr/local/bin/netrics -G > /var/netrics.initd.out
+    GETTIME=$(cat /var/netrics.initd.out | grep iperf | awk '{print $2}')
+    IPERF_TIME=$(( ${GETTIME} + 1 ))
+    SPEEDTEST_TIME=$(( ${IPERF_TIME} + 10 ))
+    ENABLE_NDEV=		#disabled
+    LIMIT_CONSUMPTION=""	#disabled
+    speedtest_hour=*/2
+    iperf_hour=*/4
+    max_monthly_consumption_gb=200
+    max_monthly_tests=200
+    iperf_host=abbott.cs.uchicago.edu
+    iperf_port=33301
+    TOPIC=beta
+    GITLOG=""
+    DATAVER=1
+    DEBHASH=0
+
+    . /usr/local/src/nm-exp-active-netrics/venv/bin/activate;/usr/local/src/nm-exp-active-netrics/venv/bin/python3 \
+	    /usr/local/src/nm-exp-active-netrics/bin/makecronandtoml.py \
+	    -c SPEEDTEST_TIME=${SPEEDTEST_TIME} IPERF_TIME=${IPERF_TIME} \
+	        upload=${upload} log=${log} enable_ndev=${ENABLE_NDEV} \
+		speedtest_hour=${speedtest_hour} iperf_hour=${iperf_hour} \
+		limit-consumption=${LIMIT_CONSUMPTION} \
+		iperf_host=${iperf_host} IPERF_PORT=${iperf_port} \
+		max_monthly_consumption_gb=${max_monthly_consumption_gb} \
+		max_monthly_tests=${max_monthly_tests} \
+		TOPIC=${TOPIC} \
+		GITLOG=${GITLOG} DATAVER=${DATAVER} DEBHASH=${DEBHASH} no_ipquery= 
+
+}
+
+stop_nma() {
+    echo "Removing nm-exp-active-netrics from crontab (/etc/cron.d/cron-nm-exp-active-netrics)..."
+    rm -f /etc/cron.d/cron-nm-exp-active-netrics
+}
+
+status_nma() {
+    if [ -f /etc/cron.d/cron-nm-exp-active-netrics ]; then
+	    echo "Status: Running"
+    else
+	    echo "Status: Stopped"
+    fi
+    /usr/local/bin/netrics -C
+    /usr/local/bin/netrics -L
+}
+
+restart_nma() {
+	#backup edited cron
+	cachedir=/var/
+	if [ -f /etc/cron.d/cron-nm-exp-active-netrics ]; then
+		if [ -d /var/nm/nm-exp-active-netrics/cache/ ]; then
+			cachedir=/var/nm/nm-exp-active-netrics/cache/
+		fi
+		mv /etc/cron.d/cron-nm-exp-active-netrics $cachedir
+		chown netrics:netrics $cachedir/cron-nm-exp-active-netrics
+	fi
+	stop_nma;start_nma
+}
+
+case "$1" in
+  start)
+	    start_nma
+    ;;
+  stop)
+	    stop_nma
+    ;;
+  restart)
+	    restart_nma
+    ;;
+  status)
+	    status_nma
+    ;;
+  *)
+    echo "Usage: /etc/init.d/nm-exp-active-netrics {start|stop|restart|status}"
+    exit 0
+    ;;
+esac
+exit 0

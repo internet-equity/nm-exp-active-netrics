@@ -4,6 +4,9 @@ sys.path.append("venv/lib/python3.8/site-packages/")
 sys.path.append("venv/lib64/python3.8/site-packages/")
 import argparse
 import logging
+import glob
+import importlib
+
 from datetime import datetime
 from netrics.netson import Measurements
 from nmexpactive.experiment import NetMicroscopeControl
@@ -140,6 +143,13 @@ def build_parser():
     )
 
     parser.add_argument(
+            '-P', '--plugins',
+            default=False,
+            type=str,
+            help='Runs plugin tests from a given list eg. ./netrics -P=httping,goresp,vca ',
+    )
+
+    parser.add_argument(
             '--tshark',
             #default=[False, False],    #conf moved to toml
             #nargs = 2,                 #conf moved to toml
@@ -167,13 +177,6 @@ def build_parser():
             help='Provide an alternative toml configuration file'
     )
 
-    parser.add_argument(
-            '--plugin',
-            nargs = '+',
-            default=None,
-            action='store',
-            help='Provide list of plugin tests to run'
-    )
 
     ## Non-test 
     parser.add_argument(
@@ -399,10 +402,40 @@ if not connectivity_failure:
     
         output['latency_under_load'] = test.oplat('oplat', True, client=server,
                                                   port=port, limit=args.limit_consumption)
+    
+    """ Glob for plugins and run plugin tests"""
+    if args.plugins:
 
-    if args.plugin:
-        plugins = args.plugin
-        
+        vargs = vars(parser.parse_args())
+        if "plugins" in vargs.keys():
+            allowed_plugins = ["plugin_" + s.strip() for s in vargs["plugins"].split(",")]
+    
+        print(f"INFO: Allowed plugins: {allowed_plugins}")
+
+        search_key = f"{str(os.getcwd())}/src/netrics/plugins/plugin_*.py"
+        print(f"\nINFO: Globbing: {search_key}")
+
+        for file in glob.glob(search_key):
+            
+            try:
+                file_name = file[file.rfind('/')+1:file.rfind('.py')]
+            except Exception as err:
+                msg = f"Error parsing test name: {str(err)}"
+                print(msg)
+                log.info(msg)
+                continue
+       
+            if file_name not in allowed_plugins:
+                print(f"\nINFO: skipping plugin available ({file_name}).")
+                continue
+            msg = f"\nINFO: Running: {file_name}"
+            print(msg)
+            log.info(msg)
+
+            test_name = file_name[file_name.rfind("_")+1:]
+            function_name = f"test_{test_name}"
+
+       
         ## check which plugins have been called and run those tests
         if "vca" in plugins:
             config_file = "src/netrics/plugin/netrics_vca_test/vca_automation/config.toml"
@@ -410,6 +443,16 @@ if not connectivity_failure:
             if 'vca' in output['vca_qoe'] and 'extra-files' in output['vca_qoe']['vca']:
                 additional_files_map['vca_qoe'] = output['vca_qoe']['vca']['extra-files']
 
+            try:
+                my_function = getattr(module, function_name) 
+                test.results[test_name] = {}
+                res = my_function(test_name, nma.conf, test.results)    
+                output[test_name] = res
+
+            except Exception as err:
+               msg = f"Error while calling function: {str(err)}"
+               print(msg) 
+               log.info(msg)
     
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp('connected_devices_arp', args.ndev)
