@@ -1,7 +1,0 @@
-/var/nm/nm-exp-active-netrics/log/nm-exp-active-netrics.log {
-	daily
-	missingok
-	rotate 7
-	compress
-	notifempty
-}
