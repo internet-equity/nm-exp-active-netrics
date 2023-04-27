@@ -87,5 +87,5 @@ netrics="""
     targets = ["www.google.com","www.wikipedia.org"]
 
 [vca]
-    [vca.default]
+    [vca.basic]
         config_file="src/netrics/plugins/netrics_vca_test/vca_automation/config.toml"
