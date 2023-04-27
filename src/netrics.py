@@ -434,22 +434,24 @@ if not connectivity_failure:
 
             test_name = file_name[file_name.rfind("_")+1:]
             function_name = f"test_{test_name}"
-
-       
-        ## check which plugins have been called and run those tests
-        if "vca" in plugins:
-            config_file = "src/netrics/plugin/netrics_vca_test/vca_automation/config.toml"
-            output['vca_qoe'] =  test.vca('vca', config_file)
-            if 'vca' in output['vca_qoe'] and 'extra-files' in output['vca_qoe']['vca']:
-                additional_files_map['vca_qoe'] = output['vca_qoe']['vca']['extra-files']
+          
+            try:
+                module_name = f"netrics.plugins.{file_name}"
+                module = importlib.import_module(module_name)
+            except Exception as err:
+                msg = f"Error importing {test_name}.py: {str(err)}"
+                print(msg) 
+                log.info(msg)
 
             try:
                 my_function = getattr(module, function_name) 
                 test.results[test_name] = {}
                 res = my_function(test_name, nma.conf, test.results)    
                 output[test_name] = res
+                if  'extra-files' in res[test_name]:
+                    additional_files_map[test_name] = res[test_name]['extra-files']
 
-            except Exception as err:
+            except ValueError:# Exception as err:
                msg = f"Error while calling function: {str(err)}"
                print(msg) 
                log.info(msg)
@@ -489,7 +491,6 @@ nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 nma.save_additional_files(additional_files_map, timenow, topic=nma.conf['topic'])
 
 if args.upload and not connectivity_failure:
-
   upload(test.results, test.results)
 
 
