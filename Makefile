@@ -60,6 +60,12 @@ install: ## Copy files to the device filesystem at /usr/local/src, /usr/local/bi
 user: ## Make system user group netrics:netrics
 	./scripts/make_netrics_user_group.sh
 
+plugin-vca:
+	./scripts/make_vca.sh
+
+plugin-vca-deps:
+	./scripts/make_vca_deps.sh
+
 clearlogs: ## Remove nm-exp-active-netrics.log
 	rm -f /tmp/nm/nm-exp-active-netrics/log/nm-exp-active-netrics.log
 

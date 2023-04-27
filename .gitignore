@@ -6,6 +6,18 @@ __pycache__/
 # C extensions
 *.so
 
+# 
+*screenshot*.png
+*nohup.out
+*stdout
+
+# Deb files
+package/deb/nm-exp-active-netrics*.deb
+package/deb/etc
+package/deb/usr
+
+
+
 # Distribution / packaging
 .Python
 build/
