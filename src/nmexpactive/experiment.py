@@ -338,7 +338,7 @@ class NetMicroscopeControl:
                     zipF.write(file_, compress_type=ZIP_DEFLATED)
                     ## remove the file
                     os.system("rm %s" % file_)
-            print(f"output at {output}/{d}")
+            print(f"output at {output}")
             os.system(f"mv {temp_output} {output}")
 
 
