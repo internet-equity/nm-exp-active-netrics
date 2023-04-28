@@ -18,7 +18,7 @@ then
 	. ./venv/bin/activate
 fi
 
-VCA_PATH="src/netrics/plugin/netrics_vca_test"
+VCA_PATH="src/netrics/plugins/netrics_vca_test"
 requirements="$VCA_PATH/requirements.txt"
 pip3 install -r $requirements
 
