@@ -34,6 +34,9 @@ speedtest: ## Install speedtest command for host arch
 httping: ## Install httping command
 	./scripts/make_httping.sh
 
+goresp: ## Install goresponsiveness command
+	./scripts/make_goresp.sh
+
 deps: ## Install dependencies via apt-get install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 	python3 get-pip.py

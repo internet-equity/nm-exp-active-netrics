@@ -1,6 +1,7 @@
 from .. utils import popen_exec
 import logging
 import re
+import os
 from subprocess import Popen, PIPE
 
 log = logging.getLogger(__name__)
@@ -24,7 +25,8 @@ def test_goresp(key, conf, results, quiet=False):
         label = labels[site]
         port = site[site.find(":")+1:]
         site = site[:site.find(":")]
-        goresp_cmd = f"/home/ubuntu/goresponsiveness/networkQuality --config {site} -port {port}"
+        
+        goresp_cmd = f"/usr/local/src/nm-exp-active-netrics/bin/networkQuality --config {site} -port {port}"
         goresp_res[label], err = popen_exec(goresp_cmd)
         
         if len(err) > 0:            
