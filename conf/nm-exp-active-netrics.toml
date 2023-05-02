@@ -2,7 +2,7 @@ title = "nm-exp-active-netrics"
 description = "Configuration file for NetMicroscope - Netrics active measurements"
 topic = "{TOPIC}"
 
-deployment_json_url = "https://chicago-cdac.github.io/nm-exp-active-netrics/conf/netrics.json"
+deployment_json_url = "https://raw.githubusercontent.com/internet-equity/nm-exp-active-netrics/main/docs/conf/netrics.json"
 # Uncomment to set a particular deployment, leave it unset and netrics will choose a 
 # deployment randomly 
 
