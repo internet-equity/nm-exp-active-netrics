@@ -241,6 +241,16 @@ class Measurements:
         """
         """ key : test name """
 
+        def countOccurrences(s, ch):
+            return sum(1 for i, letter in enumerate(s) if letter == ch)
+
+        def get_median(x):
+            n = len(x)
+            if n % 2 == 0: # even
+                return 0.5 * (x[n//2 -1] + x[n//2])
+            else: # odd
+                return x[(n+1)//2 -1]
+
         if not run_test:
             return
 
@@ -336,20 +346,23 @@ class Measurements:
 
         if not client and not self.nma.conf['databases']['tinydb_enable']:
             return
-        
+
+        if limit:
+            if not self.bandwidth_test_stochastic_limit(measured_down = self.measured_down,
+                    max_monthly_consumption_gb = self.max_monthly_consumption_gb,
+                    max_monthly_tests = self.max_monthly_tests):
+                log.info("limit_consumption applied, skipping test: iperf")
+                print("limit_consumption applied, skipping test: iperf")
+                return 
+
         self.results[key] = {}
-        args = { "limit" : limit,
-                 "port" : port,
+        args = { "port" : port,
                  "client" : client,
-                 "bandwidth_test_stochastic_limit" : self.bandwidth_test_stochastic_limit,
                  "update_max_speed" : self.update_max_speed,
-                 "measured_down" : self.measured_down,
-                 "max_monthly_consumption_gb" : self.max_monthly_consumption_gb,
-                 "max_monthly_tests" : self.max_monthly_tests,
                  "speed_db" : self.speed_db,
                  "conf" : self.nma.conf
                 }
-    
+
         return test_iperf3(key, self, args, self.results, self.quiet)
 
     def tshark_eth_consumption(self, key, run_test, dur = 60):
