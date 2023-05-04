@@ -1,6 +1,6 @@
 title = "nm-exp-active-netrics"
 description = "Configuration file for NetMicroscope - Netrics active measurements"
-topic = "beta"
+topic = "{TOPIC}"
 
 deployment_json_url = "https://raw.githubusercontent.com/internet-equity/nm-exp-active-netrics/main/docs/conf/netrics.json"
 # Uncomment to set a particular deployment, leave it unset and netrics will choose a 
@@ -13,15 +13,15 @@ deployment_json_url = "https://raw.githubusercontent.com/internet-equity/nm-exp-
 # are being generated.
 
 [extended]
-gitlog = "generated config"
-dataver = "1"
-debhash = "abcd"
+gitlog = "{GITLOG}"
+dataver = "{DATAVER}"
+debhash = "{DEBHASH}"
 
 [cron]
 netrics="""
-*/5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -d -t -b {enable_ndev} {upload} >>{log} 2>&1 
-30 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {upload} >>{log} 2>&1 
-40 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {upload} >{log} 2>&1
+*/5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -d -t -b {enable_ndev} {no_ipquery} {upload} >>{log} 2>&1 
+{SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {no_ipquery} {upload} >>{log} 2>&1 
+{IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {no_ipquery} {upload} >{log} 2>&1
 0 0 1 * * netrics env USER=$LOGNAME /usr/local/bin/netrics -R >>{log} 2>&1
 """
 
@@ -53,15 +53,15 @@ netrics="""
 
 [limit_consumption]
     measured_down = 5
-    max_monthly_consumption_gb = '200'
-    max_monthly_tests = '200'
+    max_monthly_consumption_gb = '{max_monthly_consumption_gb}'
+    max_monthly_tests = '{max_monthly_tests}'
 
 [latency_under_load]
     targets = ["www.google.com"]
 
 [iperf]
     #buffer_length = 10000
-    targets = ["abbott.cs.uchicago.edu:33301"]
+    targets = ["{iperf_host}:{IPERF_PORT}"]
 
 [dns_latency]
     target = "8.8.8.8"

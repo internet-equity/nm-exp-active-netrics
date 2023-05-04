@@ -1,14 +1,13 @@
 #!/bin/bash
 
 PROC=$(uname -p)
-#PROC='aarch64'
 
 NMAPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/../
 
-if [[ "$PROC" != 'aarch64' && "$PROC" != 'armhf' && "$PROC" != 'arm64' ]];then
-  echo "ERROR: processor ${PROC} not supported, try a dedicated device (aarch64, armhf, arm64)."
-  exit 1
-fi
+#if [[ "$PROC" != 'aarch64' && "$PROC" != 'armhf' && "$PROC" != 'arm64' ]];then
+#  echo "ERROR: processor ${PROC} not supported, try a dedicated device (aarch64, armhf, arm64)."
+#  exit 1
+#fi
 
 if [[ $EUID -ne 0 ]]; then
    echo "ERROR: This script must be run as root" 
@@ -68,3 +67,8 @@ fi
 
 chown netrics:netrics /etc/nm-exp-active-netrics/.env.netrics
 chown netrics:netrics /usr/local/src/nm-exp-active-netrics/ -R
+
+if [ -f /etc/init.d/nm-exp-active-netrics ];then
+	/etc/init.d/nm-exp-active-netrics restart
+fi
+

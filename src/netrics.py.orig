@@ -177,6 +177,13 @@ def build_parser():
             help='Provide an alternative toml configuration file'
     )
 
+    parser.add_argument(
+            '--plugin',
+            nargs = '+',
+            default=None,
+            action='store',
+            help='Provide list of plugin tests to run'
+    )
 
     ## Non-test 
     parser.add_argument(
@@ -434,7 +441,19 @@ if not connectivity_failure:
 
             test_name = file_name[file_name.rfind("_")+1:]
             function_name = f"test_{test_name}"
-          
+
+<<<<<<< HEAD
+    if args.plugin:
+        plugins = args.plugin
+        
+        ## check which plugins have been called and run those tests
+        if "vca" in plugins:
+            config_file = "src/netrics/plugin/netrics_vca_test/vca_automation/config.toml"
+            output['vca_qoe'] =  test.vca('vca', config_file)
+            if 'vca' in output['vca_qoe'] and 'extra-files' in output['vca_qoe']['vca']:
+                additional_files_map['vca_qoe'] = output['vca_qoe']['vca']['extra-files']
+
+=======
             try:
                 module_name = f"netrics.plugins.{file_name}"
                 module = importlib.import_module(module_name)
@@ -448,13 +467,12 @@ if not connectivity_failure:
                 test.results[test_name] = {}
                 res = my_function(test_name, nma.conf, test.results)    
                 output[test_name] = res
-                if  'extra-files' in res[test_name]:
-                    additional_files_map[test_name] = res[test_name]['extra-files']
 
-            except ValueError:# Exception as err:
+            except Exception as err:
                msg = f"Error while calling function: {str(err)}"
                print(msg) 
                log.info(msg)
+>>>>>>> main
     
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp('connected_devices_arp', args.ndev)
@@ -491,6 +509,7 @@ nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 nma.save_additional_files(additional_files_map, timenow, topic=nma.conf['topic'])
 
 if args.upload and not connectivity_failure:
+
   upload(test.results, test.results)
 
 
