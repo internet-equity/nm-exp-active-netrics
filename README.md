@@ -145,9 +145,9 @@ Tests can also be added as python script to be run as a plugin in the `nm-exp-ac
 The general format to add a plugin test file is to have a function formatted as,   
 
 ``` python
-def test_<test_name>(<json key name>: str, <toml config>: dict, <result json>: dict, quite: bool) -> str:
+def test_<test_name>(<json key name>: str, <toml config>: dict, <result json>: dict, quite: bool) -> dict:
     #test logic
-    return <raw output from the test>
+    return <dict with raw output from the test>
 ```
 
 ## 5. Unit Testing
