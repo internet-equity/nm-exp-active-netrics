@@ -31,7 +31,7 @@ def test_goresp(key, conf, results, quiet=False):
         
         if len(err) > 0:            
             print(f"ERROR: {err}")
-            results[key][label][f'error'] = f'{err}'
+            results[key][f'{label}_error'] = f'{err}'
             log.error(err)
             continue
             
@@ -40,10 +40,10 @@ def test_goresp(key, conf, results, quiet=False):
             rpm_mean = re.search(r"RPM:\s+(\d+)\s+\(Double-Sided 10% Trimmed Mean\)", goresp_res[label]).group(1)
             download_speed = re.search(r"Download:\s+([\d.]+)\s+Mbps", goresp_res[label]).group(1)
             upload_speed = re.search(r"Upload:\s+([\d.]+)\s+Mbps", goresp_res[label]).group(1)
-        except Exception as e:
+        except Exception as err:
             err = "Metrics not found in so responsiveness output"
             print(f"ERROR: {err}")
-            results[key][label][f'error'] = f'{err}'
+            results[key][f'{label}_error'] = f'{err}'
             log.error(err)            
             continue
 
