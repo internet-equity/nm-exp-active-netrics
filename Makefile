@@ -9,15 +9,19 @@ help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 	@echo
 	@echo "Steps:"
-	@echo "1. sudo make user"
-	@echo "2. make ndt"
-	@echo "3. make oplat"
-	@echo "4. sudo make iperf"
-	@echo "5. make speedtest"
-	@echo "6. sudo make deps"
-	@echo "7. sudo make venv"
-	@echo "8. sudo make install"
-	@echo "9. make build"
+	@echo "1.  sudo make user"
+	@echo "2.  make ndt"
+	@echo "3.  make oplat"
+	@echo "4.  sudo make iperf"
+	@echo "5.  make speedtest"
+	@echo "6.  sudo make deps"
+	@echo "7.  sudo make venv"
+	@echo "8.  make plugin-httping (plugin, optional)"
+	@echo "9.  make plugin-goresp (plugin, optional)"
+	@echo "10. make plugin-vca (plugin, optional)"
+	@echo "11. sudo make plugin-vca-deps (plugin, optional)"
+	@echo "12. sudo make install"
+	@echo "13. make build"
 
 iperf: ## Install iperf3 command from source, use host arch (no cross compile) 
 	./scripts/make_iperf.sh
@@ -31,10 +35,10 @@ oplat: ## Install oplat command for host arch
 speedtest: ## Install speedtest command for host arch
 	./scripts/make_speedtest.sh
 
-httping: ## Install httping command
+plugin-httping: ## Install httping command
 	./scripts/make_httping.sh
 
-goresp: ## Install goresponsiveness command
+plugin-goresp: ## Install goresponsiveness command
 	./scripts/make_goresp.sh
 
 deps: ## Install dependencies via apt-get install
