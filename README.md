@@ -140,7 +140,7 @@ The plugins tests integrated with Netrics and their configurations are as shown:
 
 If you would like to add your own tests, there is a detailed  guide in [Active Metrics Development Guide](https://github.com/internet-equity/nm-exp-active-netrics/blob/main/docs/active_metrics_dev_guide.md). 
 
-Tests can also be added as plugin in the `nm-exp-active-netrics/src/netrics/plugins/` folder as `plugin_<plugin name>`.
+Tests can also be added as python script to be run as a plugin in the `nm-exp-active-netrics/src/netrics/plugins/` folder named as `plugin_<plugin name>.py`.
 
 The general format to add a plugin test file is to have a function formatted as,   
 
