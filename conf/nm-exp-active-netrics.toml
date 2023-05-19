@@ -51,6 +51,7 @@ netrics="""
     "77.67.119.129" = "Paris"
     "195.89.146.193" = "Stockholm"
     "190.98.158.1" = "Sao_Paulo"
+    "abbott.cs.uchicago.edu:4043" = "abbott"
 
 [limit_consumption]
     measured_down = 5
@@ -85,6 +86,9 @@ netrics="""
 [httping]
     c = 2
     targets = ["www.google.com","www.wikipedia.org"]
+
+[goresp]
+    targets = ["abbott.cs.uchicago.edu:4043"]
 
 [vca]
     [vca.basic]
