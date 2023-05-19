@@ -448,7 +448,7 @@ if not connectivity_failure:
                 test.results[test_name] = {}
                 res = my_function(test_name, nma.conf, test.results)    
                 output[test_name] = res
-                if  'extra-files' in res[test_name]:
+                if  'extra-files' in res:
                     additional_files_map[test_name] = res[test_name]['extra-files']
 
             except ValueError:# Exception as err:
