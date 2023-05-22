@@ -89,4 +89,4 @@ netrics="""
 [vca]
     [vca.basic]
         config_file="src/netrics/plugins/netrics_vca_test/vca_automation/config.toml"
-	vcas="teams,webex"
+	vcas="teams"
