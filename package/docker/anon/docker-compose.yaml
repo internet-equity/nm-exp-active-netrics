@@ -1,0 +1,26 @@
+version: '2'
+volumes:
+   netrics-etc:
+   netrics-data:
+services:
+   netrics:
+      container_name: netrics-anon-v0
+      build:
+        context: ./netrics/
+        dockerfile: Dockerfile.template
+      volumes:
+         - 'netrics-etc:/etc/nm-exp-active-netrics/'
+         - 'netrics-data:/var/nm/'
+      privileged: true
+      network_mode: host
+   collect:
+      container_name: collect-anon-v0
+      build: 
+        context: ./collect/
+        dockerfile: Dockerfile.template
+      volumes:
+         - 'netrics-etc:/etc/nm-exp-active-netrics/'
+         - 'netrics-data:/var/nm/'
+      #environment:
+      privileged: true
+      network_mode: host

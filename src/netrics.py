@@ -4,6 +4,9 @@ sys.path.append("venv/lib/python3.8/site-packages/")
 sys.path.append("venv/lib64/python3.8/site-packages/")
 import argparse
 import logging
+import glob
+import importlib
+
 from datetime import datetime
 from netrics.netson import Measurements
 from nmexpactive.experiment import NetMicroscopeControl
@@ -11,7 +14,12 @@ from nmexpactive.experiment import NetMicroscopeControl
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb import InfluxDBClient
 
+
 log = logging.getLogger(__name__)
+
+#sys.path.append("netrics/pplugin/netrics-vca-test/vca-automation")
+#import main_client
+
 
 #TODO: move this to setup.py
 __name__ = "nm-exp-active-netrics"
@@ -135,11 +143,24 @@ def build_parser():
     )
 
     parser.add_argument(
+            '-P', '--plugins',
+            default=False,
+            type=str,
+            help='Runs plugin tests from a given list eg. ./netrics -P=httping,goresp,vca ',
+    )
+
+    parser.add_argument(
             '--tshark',
             #default=[False, False],    #conf moved to toml
             #nargs = 2,                 #conf moved to toml
             action='store_true',
             help='Measure on-going consumption using tshark (Passive HW setup required)'
+    )
+
+    parser.add_argument(
+            '--no-ipquery',
+            action='store_true',
+            help='Do not perform IP query, this will not record your public IP info in the output JSON'
     )
 
     parser.add_argument(
@@ -155,6 +176,7 @@ def build_parser():
             action='store',
             help='Provide an alternative toml configuration file'
     )
+
 
     ## Non-test 
     parser.add_argument(
@@ -317,8 +339,9 @@ if args.check:
 log.info("Initializing.")
 test = Measurements(args, nma)
 
-""" Run IPv4v6 query"""
-output['ipquery']= test.ipquery()
+""" Run IPv4 query"""
+if not args.no_ipquery:
+    output['ipquery']= test.ipquery()
 
 """ Measure ping latency to list of websites """
 if not args.tshark:
@@ -335,6 +358,9 @@ connectivity_status  = [stat for stat in connectivity_status if stat is not None
 # print(connectivity_status, any(connectivity_status))
 connectivity_failure = connectivity_status and not any(connectivity_status)
 
+
+additional_files_map = {}
+
 if not connectivity_failure:
 
     """ Measure last mile latency """
@@ -348,7 +374,7 @@ if not connectivity_failure:
 
     """ Run ookla speed test """
     output['ookla'] = test.speed_ookla('ookla', args.ookla)
-    
+
     """ Run ndt7 speed test """
     output['ndt7'] = test.speed_ndt7('ndt7', args.ndt7)
 
@@ -386,7 +412,59 @@ if not connectivity_failure:
     
         output['latency_under_load'] = test.oplat('oplat', True, client=server,
                                                   port=port, limit=args.limit_consumption)
+    
+    """ Glob for plugins and run plugin tests"""
+    if args.plugins:
 
+        vargs = vars(parser.parse_args())
+        if "plugins" in vargs.keys():
+            allowed_plugins = ["plugin_" + s.strip() for s in vargs["plugins"].split(",")]
+    
+        print(f"INFO: Allowed plugins: {allowed_plugins}")
+
+        search_key = f"{str(os.getcwd())}/src/netrics/plugins/plugin_*.py"
+        print(f"\nINFO: Globbing: {search_key}")
+
+        for file in glob.glob(search_key):
+            
+            try:
+                file_name = file[file.rfind('/')+1:file.rfind('.py')]
+            except Exception as err:
+                msg = f"Error parsing test name: {str(err)}"
+                print(msg)
+                log.info(msg)
+                continue
+       
+            if file_name not in allowed_plugins:
+                print(f"\nINFO: skipping plugin available ({file_name}).")
+                continue
+            msg = f"\nINFO: Running: {file_name}"
+            print(msg)
+            log.info(msg)
+
+            test_name = file_name[file_name.rfind("_")+1:]
+            function_name = f"test_{test_name}"
+          
+            try:
+                module_name = f"netrics.plugins.{file_name}"
+                module = importlib.import_module(module_name)
+            except Exception as err:
+                msg = f"Error importing {test_name}.py: {str(err)}"
+                print(msg) 
+                log.info(msg)
+
+            try:
+                my_function = getattr(module, function_name) 
+                test.results[test_name] = {}
+                res = my_function(test_name, nma.conf, test.results)    
+                output[test_name] = res
+                if  'extra-files' in res:
+                    additional_files_map[test_name] = res[test_name]['extra-files']
+
+            except ValueError:# Exception as err:
+               msg = f"Error while calling function: {str(err)}"
+               print(msg) 
+               log.info(msg)
     
 """ Count number of devices on network """
 output['connected_devices_arp'] = test.connected_devices_arp('connected_devices_arp', args.ndev)
@@ -414,14 +492,15 @@ else:
   log.info(msg)
 
 timenow = datetime.now()
+
 nma.save_json(test.results, 'netrics_results', timenow, topic=nma.conf['topic'],
         extended = nma.conf['extended'] if 'extended' in nma.conf.keys() else None,
         annotation = args.annotate)
-nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
 
+nma.save_zip(output, 'netrics_output', timenow, topic=nma.conf['topic'])
+nma.save_additional_files(additional_files_map, timenow, topic=nma.conf['topic'])
 
 if args.upload and not connectivity_failure:
-
   upload(test.results, test.results)
 
 

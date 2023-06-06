@@ -9,6 +9,7 @@ help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 	@echo
 	@echo "Steps:"
+<<<<<<< HEAD
 	@echo "1. sudo make user"
 	@echo "2. make ndt"
 	@echo "3. make oplat"
@@ -19,6 +20,21 @@ help:
 	@echo "8. sudo make venv"
 	@echo "9. sudo make install"
 	@echo "10. make build"
+=======
+	@echo "1.  sudo make user"
+	@echo "2.  make ndt"
+	@echo "3.  make oplat"
+	@echo "4.  sudo make iperf"
+	@echo "5.  make speedtest"
+	@echo "6.  sudo make deps"
+	@echo "7.  sudo make venv"
+	@echo "8.  make plugin-httping (plugin, optional)"
+	@echo "9.  make plugin-goresp (plugin, optional)"
+	@echo "10. make plugin-vca (plugin, optional)"
+	@echo "11. sudo make plugin-vca-deps (plugin, optional)"
+	@echo "12. sudo make install"
+	@echo "13. make build"
+>>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 
 iperf: ## Install iperf3 command from source, use host arch (no cross compile) 
 	./scripts/make_iperf.sh
@@ -32,8 +48,16 @@ oplat: ## Install oplat command for host arch
 speedtest: ## Install speedtest command for host arch
 	./scripts/make_speedtest.sh
 
+<<<<<<< HEAD
 dig: ## Install dig command from source, use host arch (no cross compile) 
 	./scripts/make_dig.sh
+=======
+plugin-httping: ## Install httping command
+	./scripts/make_httping.sh
+
+plugin-goresp: ## Install goresponsiveness command
+	./scripts/make_goresp.sh
+>>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 
 deps: ## Install dependencies via apt-get install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -60,6 +84,12 @@ install: ## Copy files to the device filesystem at /usr/local/src, /usr/local/bi
 
 user: ## Make system user group netrics:netrics
 	./scripts/make_netrics_user_group.sh
+
+plugin-vca:
+	./scripts/make_vca.sh
+
+plugin-vca-deps:
+	./scripts/make_vca_deps.sh
 
 clearlogs: ## Remove nm-exp-active-netrics.log
 	rm -f /tmp/nm/nm-exp-active-netrics/log/nm-exp-active-netrics.log

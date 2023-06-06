@@ -1,0 +1,14 @@
+{
+    "ookla":{
+       "speedtest_ookla_download":943.55604,
+       "speedtest_ookla_upload":40.900016,
+       "speedtest_ookla_jitter":15.972,
+       "speedtest_ookla_latency":31.429,
+       "speedtest_ookla_server_host":"ch1.speedtest.gslnetworks.com",
+       "speedtest_ookla_server_name":"GSL Networks",
+       "speedtest_ookla_server_id":46119,
+       "speedtest_ookla_pktloss2":0.0,
+       "ookla_error":false
+    },
+    "total_bytes_consumed":1158643810
+ }
