@@ -9,13 +9,11 @@ import random
 import urllib.request
 import os, logging
 from pathlib import Path
-<<<<<<< HEAD
 from tinydb import TinyDB, where
 from tinydb.operations import increment
 from tinydb.operations import set as tdb_set
 from netrics.builtin.netrics_test_speedtests import test_ookla
 from netrics.builtin.netrics_test_speedtests import test_ndt7
-=======
 from tinydb import TinyDB
 from netrics.builtin.netrics_test_speedtests import test_ookla
 from netrics.builtin.netrics_test_speedtests import test_ndt7
@@ -29,7 +27,6 @@ from netrics.builtin.netrics_test_iperf3 import test_iperf3
 from netrics.builtin.netrics_test_connected_devices import test_connected_devices
 
 
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 log = logging.getLogger(__name__)
 
 
@@ -174,7 +171,6 @@ class Measurements:
            res = { 'error': self.results[key]['error'] }
         return res
 
-<<<<<<< HEAD
     def speed_ookla(self, key, run_test):
         """ Test runs Ookla Speed test """
         """ key: test name """
@@ -194,8 +190,6 @@ class Measurements:
         self.results[key] = {}
         return test_ndt7(key, self, self.nma.conf, self.results, self.quiet)
 
-=======
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
     def bandwidth_test_stochastic_limit(self, measured_down=5,
                                         max_monthly_consumption_gb=200,
                                         max_monthly_tests=200):
@@ -268,7 +262,6 @@ class Measurements:
             sites = [self.sites[0]]
 
         self.results[key] = {}
-<<<<<<< HEAD
         for site in sites:
             ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
                 0.25, 10, 5, site)
@@ -338,12 +331,10 @@ class Measurements:
 
         self.results[key]["error"] = error_found
         return ping_res
-=======
         args = { "sites" : sites,
                  "labels" : self.labels
                 }
         return test_ping_latency(key, self, args, self.results, self.quiet)
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 
     def last_mile_latency(self, key, run_test):
         """
@@ -354,19 +345,6 @@ class Measurements:
 
         def countOccurrences(s, ch):
             return sum(1 for i, letter in enumerate(s) if letter == ch)
-<<<<<<< HEAD
-
-        def get_median(x):
-            n = len(x)
-            if n % 2 == 0: # even
-                return 0.5 * (x[n//2 -1] + x[n//2])
-            else: # odd
-                return x[(n+1)//2 -1]
-
-        if not run_test:
-            return
-=======
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 
         def get_median(x):
             n = len(x)
@@ -378,7 +356,16 @@ class Measurements:
         if not run_test:
             return
 
-<<<<<<< HEAD
+        def get_median(x):
+            n = len(x)
+            if n % 2 == 0: # even
+                return 0.5 * (x[n//2 -1] + x[n//2])
+            else: # odd
+                return x[(n+1)//2 -1]
+
+        if not run_test:
+            return
+
         output = {}
         res = None
         for site in sites:
@@ -449,11 +436,9 @@ class Measurements:
                 self.results[key][f'{labels[site]}_last_mile_tr_rtt_median_ms'] = float(get_median(res))
                 self.results[key][f'{labels[site]}_last_mile_tr_rtt_max_ms'] = float(res[-1])
         return output
-=======
         self.results[key] = {}
 
         return test_last_mile_latency(key, self, self.nma.conf, self.results, self.quiet)
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 
     def oplat(self, key, run_test, client, port, limit):
 
@@ -497,7 +482,6 @@ class Measurements:
         if not run_test:
             return
 
-<<<<<<< HEAD
         dig_res = None
         error_found = False
         target = '8.8.8.8'
@@ -530,8 +514,6 @@ class Measurements:
                                  dig_res[label], re.MULTILINE)[0]
             dig_delays.append(int(dig_res_qt))
 
-=======
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
         self.results[key] = {}
         args = { "conf" : self.nma.conf,
                  "sites" : self.sites,

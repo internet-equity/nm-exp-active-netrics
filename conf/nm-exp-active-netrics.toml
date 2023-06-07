@@ -1,10 +1,6 @@
 title = "nm-exp-active-netrics"
 description = "Configuration file for NetMicroscope - Netrics active measurements"
-<<<<<<< HEAD
-topic = "testing"
-=======
 topic = "{TOPIC}"
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 
 deployment_json_url = "https://raw.githubusercontent.com/internet-equity/nm-exp-active-netrics/main/docs/conf/netrics.json"
 # Uncomment to set a particular deployment, leave it unset and netrics will choose a 
@@ -23,15 +19,9 @@ debhash = "9609d1609830a849f53903ae7cc31611a7baee63"
 
 [cron]
 netrics="""
-<<<<<<< HEAD
-*/5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -d -t -b -e {enable_ndev} {upload} >>{log} 2>&1 
-{SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {upload} >>{log} 2>&1 
-{IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i -e {limit-consumption} {upload} >{log} 2>&1
-=======
 */5 * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -p -d -t -b {enable_ndev} {no_ipquery} {upload} >>{log} 2>&1 
 {SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {no_ipquery} {upload} >>{log} 2>&1 
 {IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {no_ipquery} {upload} >{log} 2>&1
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
 0 0 1 * * netrics env USER=$LOGNAME /usr/local/bin/netrics -R >>{log} 2>&1
 {VCA_TIME},{VCA_TIME_2} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -P vca {no_ipquery} {upload} >{log} 2>&1 
 """
@@ -98,8 +88,6 @@ netrics="""
 
 [ookla]
     timeout = 80
-<<<<<<< HEAD
-=======
 
 [httping]
     c = 2
@@ -111,4 +99,3 @@ netrics="""
 [vca]
     [vca.basic]
         config_file="src/netrics/plugins/netrics_vca_test/vca_automation/config.toml"
->>>>>>> 24798a86d38ef5f14a5f721c90002ba5c0ff2c0d
