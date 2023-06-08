@@ -4,7 +4,7 @@ volumes:
    netrics-data:
 services:
    netrics:
-      container_name: netrics-anon-v0
+      container_name: netrics-mngd-v0
       build:
         context: ./netrics/
         dockerfile: Dockerfile.template
@@ -14,13 +14,20 @@ services:
       privileged: true
       network_mode: host
    collect:
-      container_name: collect-anon-v0
+      container_name: collect-mngd-v0
       build: 
         context: ./collect/
         dockerfile: Dockerfile.template
       volumes:
          - 'netrics-etc:/etc/nm-exp-active-netrics/'
          - 'netrics-data:/var/nm/'
-      #environment:
       privileged: true
       network_mode: host
+   config:
+      container_name: config-mngd-v0
+      build:
+        context: ./config/
+        dockerfile: Dockerfile.template
+      volumes:
+         - 'netrics-etc:/etc/nm-exp-active-netrics/'
+

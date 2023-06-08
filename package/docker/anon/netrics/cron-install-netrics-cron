@@ -1,0 +1,1 @@
+*/5 * * * * root /install-netrics-cron.sh
