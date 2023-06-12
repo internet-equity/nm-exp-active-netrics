@@ -22,9 +22,14 @@ def test_goresp(key, conf, results, quiet=False):
 
     for site in sites:
 
-        label = labels[site]
         port = site[site.find(":")+1:]
         site = site[:site.find(":")]
+        
+        label = "default"
+        try:
+           label = labels[site]
+        except KeyError as ke:
+           log.info(f"No label for goresp {site}, using 'default'.")
         
         goresp_cmd = f"/usr/local/src/nm-exp-active-netrics/bin/networkQuality --config {site} -port {port}"
         goresp_res[label], err = popen_exec(goresp_cmd)
