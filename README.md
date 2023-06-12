@@ -73,6 +73,8 @@ The local data (SBC storage) is located at:<br>
 Configuration can be found at:<br>
 `/etc/nm-exp-active-netrics/*`
 
+For more details about Netrics configuration please visit [Netrics-Config](https://github.com/internet-equity/netrics-config).
+
 ## 2. Install
 
 [Install](https://www.youtube.com/watch?v=WVhyWWEiqVY)
