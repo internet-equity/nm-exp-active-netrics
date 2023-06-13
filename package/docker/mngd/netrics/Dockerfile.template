@@ -2,8 +2,7 @@
 FROM balenalib/%%BALENA_MACHINE_NAME%%-ubuntu:focal
 RUN apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates \
     sudo apt-utils cron net-tools traceroute iputils-ping dnsutils nmap logrotate python3 python3-pip \
-    iproute2 snapd python3-opencv xvfb python3-tk scrot xclip xdg-utils xdg-utils chromium-browser
-RUN yes | DEBIAN_FRONTEND=teletype apt install  -y tshark
+    iproute2 snapd python3-opencv xvfb python3-tk scrot xclip xdg-utils xdg-utils chromium-browser httping
 RUN addgroup --gid 1001 netrics && \
     adduser --uid 1001 --gid 1001 \
       --disabled-password --gecos "" \
