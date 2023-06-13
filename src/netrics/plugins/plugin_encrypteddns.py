@@ -1,4 +1,4 @@
-from .. utils import popen_exec
+from .. utils import popen_exec_pipe
 import logging
 import re
 import os
@@ -13,8 +13,8 @@ def test_encrypteddns(key, conf, results, quiet = False):
     try:
         enc_sites = list(conf['encrypted_dns_reference_site_dict'].keys())
         enc_labels = conf['encrypted_dns_reference_site_dict']
+        resolvers = conf['dns_latency']['encrypted_dns_targets']
     except Exception as err:
-        print("config file not configured correctly for go responsiveness: ",err)
         results[key][f'error'] = f'{err}'
         log.error(err)
         return
@@ -25,7 +25,7 @@ def test_encrypteddns(key, conf, results, quiet = False):
     results[key] = {}
 
     for site in enc_sites:
-        if site.valid_ip():
+        if valid_ip(site):
             continue
         try:
             label = enc_labels[site]
@@ -34,9 +34,9 @@ def test_encrypteddns(key, conf, results, quiet = False):
         for resolver in resolvers:
             print(f'RUNNING: {resolver} {site}')
             dig_cmd = f'timeout 5 /usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
-            dig_res_pipe[f'{resolver}_{label}'] = self.popen_exec_pipe(dig_cmd)
-     for site in enc_sites:
-         if site.valid_ip():
+            dig_res_pipe[f'{resolver}_{label}'] = popen_exec_pipe(dig_cmd)
+    for site in enc_sites:
+         if valid_ip(site):
              continue
          try:
              label = enc_labels[site]
