@@ -18,10 +18,11 @@ help:
 	@echo "7.  sudo make venv"
 	@echo "8.  make plugin-httping (plugin, optional)"
 	@echo "9.  make plugin-goresp (plugin, optional)"
-	@echo "10. make plugin-vca (plugin, optional)"
-	@echo "11. sudo make plugin-vca-deps (plugin, optional)"
-	@echo "12. sudo make install"
-	@echo "13. make build"
+	@echo "10. sudo make plugin-dnsenc (plugin, optional)"
+	@echo "11. make plugin-vca (plugin, optional)"
+	@echo "12. sudo make plugin-vca-deps (plugin, optional)"
+	@echo "13. sudo make install"
+	@echo "14. make build"
 
 iperf: ## Install iperf3 command from source, use host arch (no cross compile) 
 	./scripts/make_iperf.sh
@@ -40,6 +41,9 @@ plugin-httping: ## Install httping command
 
 plugin-goresp: ## Install goresponsiveness command
 	./scripts/make_goresp.sh
+
+plugin-dnsenc: ## Install dig command from source, use host arch (no cross compile) 
+	./scripts/make_dig.sh
 
 deps: ## Install dependencies via apt-get install
 	curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py

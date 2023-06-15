@@ -23,6 +23,7 @@ netrics="""
 {SPEEDTEST_TIME} {speedtest_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -s -l {limit-consumption} {no_ipquery} {upload} >>{log} 2>&1 
 {IPERF_TIME} {iperf_hour} * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -i {limit-consumption} {no_ipquery} {upload} >{log} 2>&1
 0 0 1 * * netrics env USER=$LOGNAME /usr/local/bin/netrics -R >>{log} 2>&1
+{VCA_TIME},{VCA_TIME_2} * * * * netrics env USER=$LOGNAME /usr/local/bin/netrics -P vca {no_ipquery} {upload} >{log} 2>&1 
 """
 
 [databases]
@@ -49,7 +50,11 @@ netrics="""
     "41.231.21.1" = "Tunis"
     "77.67.119.129" = "Paris"
     "195.89.146.193" = "Stockholm"
-    "190.98.158.1" = "Sao_Paulo"
+
+[encrypted_dns_reference_site_dict]
+    "www.google.com" = "google"
+    "www.amazon.com" = "amazon"
+    "www.wikipedia.org" = "wikipedia"
 
 [limit_consumption]
     measured_down = 5
@@ -65,6 +70,7 @@ netrics="""
 
 [dns_latency]
     target = "8.8.8.8"
+    encrypted_dns_targets = ["freedns.controld.com", "anycast.dns.nextdns.io", "doh.crypto.sx", "us1.dnswarden.com", "unicast.uncensoreddns.org", "security.cloudflare-dns.co", "doh.ffmuc.net", "jp.tiar.app", "dns.therifleman.name", "doh.pub", "dns10.quad9.net", "dns.adguard.com", "a.passcloud.xyz", "doh.mullvad.net", "dns12.quad9.net", "dns-unfiltered.adguard.com", "doh-ch.blahdns.com", "dnsse-noads.alekberg.net", "nextdns-ultralow", "fr1.dnswarden.co", "dns.cloudflare.com", "doh.appliedprivacy.net", "dns.alidns.com", "helios.plan9-dns.com", "us1.dnswarden.com", "dnsse.alekberg.net", "doh-fi.blahdns.com", "dns1.ryan-palmer.com", "doh.cleanbrowsing.org", "dns.digitale-gesellschaft.ch", "dns11.quad9.ne", "sg1.dnswarden.com", "dns.circl.lu", "chewbacca.meganerd.nl", "ordns.he.net", "dns12.quad9.net", "dns11.quad9.net", "anycast.uncensoreddns.org", "doh.libredns.gr", "dns.brahma.world", "dns.switch.ch", "dns-doh-no-safe-search.dnsforfamily.com", "doh.chi.ahadns.net", "ibksturm.synology.me", "kronos.plan9-dns.com", "dns-family.adguard.com", "family.puredns.org", "freedns.controld.com", "dnsforge.de", "doh.cleanbrowsing.org", "dns-doh.dnsforfamily.com", "public.dns.iij.jp", "fr1.dnswarden.com", "family.cloudflare-dns.com", "doh.pl.ahadns.net", "doh.cleanbrowsing.org", "dns.google", "freedns.controld.com", "v.dnscrypt.uk", "doh.dnscrypt.uk", "doh.safesurfer.io", "dnsnl.alekberg.net", "fr1.dnswarden.com", "freedns.controld.com", "dns.digitale-gesellschaft.ch", "doh.la.ahadns.net", "doh.tiar.app", "dns.dnshome.d", "doh.sb", "doh-2.seby.io", "doh.tiarap.org", "dns.twnic.tw", "ind1.dnswarden.com", "doh.ny.ahadns.net", "dns.njal.la", "doh.libredns.gr", "pluton.plan9-dns.com", "dns10.quad9.net", "us1.dnswarden.com", "dnsnl-noads.alekberg.net", "jp.tiarap.org", "doh.opendns.com", "doh.seby.io", "dns.quad9.net", "dns.digitalsize.net", "sg1.dnswarden.com", "ind1.dnswarden.com", "puredns.org", "doh.bortzmeyer.fr", "dns9.quad9.net", "doh.in.ahadns.net", "adfree.usableprivacy.net", "dohtrial.att.net", "doh.nl.ahadns.net", "doh-de.blahdns.com", "doh-jp.blahdns.com", "ind1.dnswarden.com", "adblock.doh.mullvad.net", "freedns.controld.com", "jp.tiarap.org", "ibksturm.synology.me", "odoh-target-noads.alekberg.net", "odoh.cloudflare-dns.com", "odoh-target-se.alekberg.net", "odoh-target-noads-se.alekberg.net", "odoh-target.alekberg.net", "jp.tiar.app", "odoh.crypto.sx", "doh.tiarap.org", "doh.tiar.app"]
 
 [hops_to_target]
     targets = ["www.google.com"]
@@ -80,3 +86,14 @@ netrics="""
 
 [ookla]
     timeout = 80
+
+[httping]
+    c = 2
+    targets = ["www.google.com","www.wikipedia.org"]
+
+[goresp]
+    targets = ["abbott.cs.uchicago.edu:4043"]
+
+[vca]
+    [vca.basic]
+        config_file="src/netrics/plugins/netrics_vca_test/vca_automation/config.toml"
