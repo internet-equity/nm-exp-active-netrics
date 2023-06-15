@@ -34,6 +34,7 @@ def test_encrypteddns(key, conf, results, quiet = False):
         for resolver in resolvers:
             print(f'RUNNING: {resolver} {site}')
             dig_cmd = f'timeout 5 /usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
+            print(dig_cmd)
             dig_res_pipe[f'{resolver}_{label}'] = popen_exec_pipe(dig_cmd)
     for site in enc_sites:
          if valid_ip(site):

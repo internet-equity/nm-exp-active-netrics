@@ -18,7 +18,7 @@ help:
 	@echo "7.  sudo make venv"
 	@echo "8.  make plugin-httping (plugin, optional)"
 	@echo "9.  make plugin-goresp (plugin, optional)"
-	@echo "10. make plugin-dnsenc (plugin, optional)"
+	@echo "10. sudo make plugin-dnsenc (plugin, optional)"
 	@echo "11. make plugin-vca (plugin, optional)"
 	@echo "12. sudo make plugin-vca-deps (plugin, optional)"
 	@echo "13. sudo make install"
