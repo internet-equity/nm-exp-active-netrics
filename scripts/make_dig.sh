@@ -50,4 +50,15 @@ cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/dns/.libs/libdns-$VER.so $NMAPA
 cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/isccfg/.libs/libisccfg-$VER.so $NMAPATH/commands/$PROC/lib
 cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/irs/.libs/libirs-$VER.so $NMAPATH/commands/$PROC/lib
 cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/bind9/.libs/libbind9-$VER.so $NMAPATH/commands/$PROC/lib
+cp $NMAPATH/commands/src/dig/$PROC/bind-$VER/lib/ns/.libs/libns-$VER.so $NMAPATH/commands/$PROC/lib
 
+cat <<EOF >$NMAPATH/bin/dig.sh
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/src/nm-exp-active-netrics/lib
+/usr/local/src/nm-exp-active-netrics/bin/dig \$@
+EOF
+
+chmod a+rwx $NMAPATH/bin/dig.sh
+
+cp $NMAPATH/bin/dig.sh $NMAPATH/commands/$PROC/bin
