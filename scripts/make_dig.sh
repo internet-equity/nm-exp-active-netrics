@@ -62,3 +62,5 @@ EOF
 chmod a+rwx $NMAPATH/bin/dig.sh
 
 cp $NMAPATH/bin/dig.sh $NMAPATH/commands/$PROC/bin
+
+chmod a+rwx $NMAPATH/commands/$PROC/bin/dig.sh
