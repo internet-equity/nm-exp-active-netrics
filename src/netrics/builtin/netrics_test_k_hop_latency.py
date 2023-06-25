@@ -38,82 +38,80 @@ def test_k_hop_latency(key, measurement, conf, results, quiet):
 
 
 def parse_trace_output(out,output,site,results,key,labels):
-    
+    print(out) 
     tr_out = {'index': [], 'hostname': [], 'ip_addr': []}
-
     for line in out:
         if 'traceroute' not in line and countOccurrences(line, '*') < 3:
             ipv4_extract_pattern = "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-            hostname_extract_pattern = "\w+(?:\.\w+)*$"
-            decimal_extract_pattern = "^?\d+(\.\d+)?$"
+            hostname_extract_pattern = "[a-zA-Z0-9.-_]+"
+            decimal_extract_pattern = "^\d*\.?\d*$" 
             
             line_split = [x.strip() for x in line.split()]
+            if len(line_split) == 0:
+                continue
 
             tr_out['index'].append(int(line_split[0]))
             tr_out['hostname'].append([])
             tr_out['ip_addr'].append([])
             
             for substr in line_split[1:]:
+                for ch in ['(', ')']:
+                    substr = substr.replace(ch, '')
                 if re.match(ipv4_extract_pattern, substr):
-                    tr_out['ip_addr'][-1] += substr
-                elif re.match(hostname_extract_pattern, substr):
-                    tr_out['hostname'][-1] += substr
-                elif re.match(decimal_extract_pattern, substr) or substr == 'ms':
+                    tr_out['ip_addr'][-1] += [substr]
+                elif re.match(hostname_extract_pattern, substr) and not (re.match(decimal_extract_pattern, substr) or substr in ['ms', '*']):
+                    tr_out['hostname'][-1] += [substr]
+                elif re.match(decimal_extract_pattern, substr) or substr in ['ms', '*']:
                     continue
-                elif substr == '*':
-                    tr_out['hostname'][-1] += 'missing'
-                    tr_out['ip_addr'][-1] += 'missing'
     for rep in range(5):
         for count, ip_addr_list in enumerate(tr_out['ip_addr']):
-            if count == 10:
+            if count == 15:
+                print('breaking')
                 break
             try:
                 for i, ip_addr in enumerate(ip_addr_list):
                     if ip_addr == 'missing':
                         continue
-                    if not ipaddress.ip_address(ip_addr).is_private:
-                        ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
-                            0.25, 1, 5, ip_addr)
-                        output[site], err = popen_exec(ping_cmd)
-                        if len(err) > 0:
-                            print(f"ERROR: {err}")
-                            log.error(err)
-                            results[key][site + "_error"] = f'{err}'
-                            output[site] = { 'error' : f'{err}' }
-                            error_found = True
-                            return
+                    ping_cmd = "ping -i {:.2f} -c {:d} -w {:d} {:s}".format(
+                        0.25, 1, 5, ip_addr)
+                    output[site], err = popen_exec(ping_cmd)
+                    if len(err) > 0:
+                        print(f"ERROR: {err}")
+                        log.error(err)
+                        results[key][site + "_error"] = f'{err}'
+                        output[site] = { 'error' : f'{err}' }
+                        error_found = True
+                        return
 
-                        try:
-                            ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
-                                                            output[site], re.MULTILINE)[0])
-                        except IndexError:
-                            results[key][site + "_error"] = 'Packet Loss IndexError'
-                            output[site] = {'error': 'Packet Loss IndexErorr'}
-                            error_found = True
-                            continue
+                    try:
+                        ping_pkt_loss = float(re.findall(', ([0-9.]*)% packet loss',
+                                                        output[site], re.MULTILINE)[0])
+                    except IndexError:
+                        results[key][site + "_error"] = 'Packet Loss IndexError'
+                        output[site] = {'error': 'Packet Loss IndexErorr'}
+                        error_found = True
+                        continue
 
-                        try:
-                            ping_rtt_ms = re.findall(
-                                'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
-                                , output[site])[0]
-                        except IndexError:
-                            results[key][site + "_error"] = 'Probe IndexError'
-                            output[site] = {'error': 'Probe IndexErorr'}
-                            error_found = True
-                            continue
+                    try:
+                        ping_rtt_ms = re.findall(
+                            'rtt [a-z/]* = ([0-9.]*)/([0-9.]*)/([0-9.]*)/([0-9.]*) ms'
+                            , output[site])[0]
+                    except IndexError:
+                        results[key][site + "_error"] = 'Probe IndexError'
+                        output[site] = {'error': 'Probe IndexErorr'}
+                        error_found = True
+                        continue
 
-                        res = re.findall('([0-9.]*) ms', line)
-                        ping_rtt_ms = [float(v) for v in ping_rtt_ms]
-                        
-                        results[key][ip_addr + f"_{rep}_k_hop_latency_index"] = tr_out['index']
-                        results[key][ip_addr + f"_{rep}_k_hop_latency_hostname"] = tr_out['hostname'][count][i]
-                        results[key][ip_addr + f"_{rep}_k_hop_latency_packet_loss_pct"] = ping_pkt_loss
-                        results[key][ip_addr + f"_{rep}_k_hop_latency_ping_rtt_min_ms"] = ping_rtt_ms[0]
-                        results[key][ip_addr + f"_{rep}_k_hop_latency_ping_rtt_max_ms"] = ping_rtt_ms[2]
-                        results[key][ip_addr + f"_{rep}_k_hop_latency_ping_rtt_avg_ms"] = ping_rtt_ms[1]
-                        results[key][ip_addr + f"_{rep}_k_hop_latency_ping_rtt_mdev_ms"] = ping_rtt_ms[3] 
-                        break
-            except ValueError:
+                    res = re.findall('([0-9.]*) ms', line)
+                    ping_rtt_ms = [float(v) for v in ping_rtt_ms]
+                    
+                    results[key][ip_addr + f"_k_hop_latency_rep_{rep}_index"] = tr_out['index'][count]
+                    results[key][ip_addr + f"_k_hop_latency_rep_{rep}_hostname"] = tr_out['hostname'][count][i] if len(tr_out['hostname'][count]) > 0 else ""
+                    results[key][ip_addr + f"_k_hop_latency_rep_{rep}_packet_loss_pct"] = ping_pkt_loss
+                    results[key][ip_addr + f"_k_hop_latency_rep_{rep}_ping_rtt_ms"] = ping_rtt_ms[0]
+                    break
+            except ValueError as e:
+                print(e)
                 continue
             
 def countOccurrences(s, ch):
