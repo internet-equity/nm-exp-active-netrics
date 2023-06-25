@@ -14,6 +14,7 @@ from netrics.builtin.netrics_test_speedtests import test_ookla
 from netrics.builtin.netrics_test_speedtests import test_ndt7
 from netrics.builtin.netrics_test_dns_latency import test_dns_latency
 from netrics.builtin.netrics_test_last_mile_latency import test_last_mile_latency
+from netrics.builtin.netrics_test_k_hop_latency import test_k_hop_latency
 from netrics.builtin.netrics_test_latunderload import test_latunderload
 from netrics.builtin.netrics_test_ping_latency import test_ping_latency
 from netrics.builtin.netrics_test_oplat import test_oplat
@@ -260,6 +261,16 @@ class Measurements:
         self.results[key] = {}
 
         return test_last_mile_latency(key, self, self.nma.conf, self.results, self.quiet)
+    
+    def k_hop_latency(self, key, run_test):
+        if not run_test:
+            return
+
+        self.results[key] = {}
+
+        return test_k_hop_latency(key, self, self.nma.conf, self.results, self.quiet)
+
+
 
     def oplat(self, key, run_test, client, port, limit):
 

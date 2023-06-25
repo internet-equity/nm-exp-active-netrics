@@ -176,7 +176,13 @@ def build_parser():
             action='store',
             help='Provide an alternative toml configuration file'
     )
-
+    
+    parser.add_argument(
+            '--k_hop_latency',
+            default=False,
+            action='store_true',
+            help='Measure latency upto k hops'
+    )
 
     ## Non-test 
     parser.add_argument(
@@ -358,6 +364,9 @@ if not connectivity_failure:
 
     """ Measure last mile latency """
     output['last_mile_rtt'] = test.last_mile_latency('last_mile_rtt', args.last_mile_rtt)
+    
+    """ Measure k-hop latency """
+    output['k_hop_latency'] = test.k_hop_latency('k_hop_latency', args.k_hop_latency)
 
     """ Measure DNS latency """
     output['dns_latency'] = test.dns_latency('dns_latency', args.dns)
