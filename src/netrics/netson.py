@@ -551,7 +551,9 @@ class Measurements:
             for resolver in self.resolvers:
                 print(f'RUNNING: {resolver} {site}')
                 dig_cmd = f'timeout 5 /usr/local/src/nm-exp-active-netrics/bin/dig +https @{resolver} {site}'
+                ping_cmd = f'ping -c 5 {resolver}'
                 dig_res_pipe[f'{resolver}_{label}'] = self.popen_exec_pipe(dig_cmd)
+                dig_res_pipe[f'ping_{resolver}_{label}'] = self.popen_exec_pip(ping_cmd)
 
         for site in self.enc_sites:
             if self.valid_ip(site):
@@ -564,18 +566,24 @@ class Measurements:
 
             for resolver in self.resolvers:
                 out = dig_res_pipe[f'{resolver}_{label}'].stdout.read().decode('utf-8')
+                ping_out = dig_res_pipe[f'ping_{resolver}_{label}'].stdout.read().decode('utf-8')
                 err = dig_res_pipe[f'{resolver}_{label}'].stderr.read().decode('utf-8')
                 if len(err) > 0:
                     print(f"ERROR: {err}")
                     self.results[key][f'{resolver}_{label}_error'] = f'{err}'
+                    self.results[key][f'ping_{resolver}_{label}'] = f'{err}'
                     dig_res[f'{resolver}_{label}'] = { 'error': f'{err}' }
+                    dig_res[f'ping_{resolver}_{label}'] = { 'error': f'{err}' }
                     log.error(err)
                     error_found = True
                     continue
                 dig_res[f'{resolver}_{label}'] = out
+                dig_res[f'ping_{resolver}_{label}'] = ping_out
                 try:
                     dig_res_qt = re.findall('Query time: ([0-9]*) msec',dig_res[f'{resolver}_{label}'], re.MULTILINE)[0]
+                    ping_time = re.findall('rtt min/avg/max/mdev = ([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*) ms', ping[f'ping_{resolver}_{label}'], re.MULTILINE)[0]
                     self.results[key][f'{resolver}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
+                    self.results[key][f'ping_{resolver}_{label}_encrypted_dns_latency'] = int(ping_time)
                 except IndexError as e:
                     print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
                     continue
