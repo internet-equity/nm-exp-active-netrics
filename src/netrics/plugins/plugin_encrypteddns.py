@@ -35,7 +35,7 @@ def test_encrypteddns(key, conf, results, quiet = False):
             print(f'RUNNING: {resolver} {site}')
             dig_cmd = f'timeout 5 /usr/local/src/nm-exp-active-netrics/bin/dig.sh +https @{resolver} {site}'
             print(dig_cmd)
-            ping_cmd = f'timeout 60 ping -c 5 {resolver}'
+            ping_cmd = f'ping -c 5 {resolver}'
             dig_res_pipe[f'{resolver}_{label}'] = popen_exec_pipe(dig_cmd)
             dig_res_pipe[f'ping_{resolver}_{label}'] = popen_exec_pip(ping_cmd)
     for site in enc_sites:
