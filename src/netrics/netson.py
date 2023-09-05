@@ -568,12 +568,16 @@ class Measurements:
                 out = dig_res_pipe[f'{resolver}_{label}'].stdout.read().decode('utf-8')
                 ping_out = dig_res_pipe[f'ping_{resolver}_{label}'].stdout.read().decode('utf-8')
                 err = dig_res_pipe[f'{resolver}_{label}'].stderr.read().decode('utf-8')
+                ping_err = dig_res_pipe[f'ping_{resolver}_{label}'].stderr.read().decode('utf-8')
+                if len(ping_err) > 0:
+                    print(f"PING ERROR: {ping_err}")
+                    self.results[key][f'ping_{resolver}_{label}'] = f'{ping_err}'
+                    dig_res[f'ping_{resolver}_{label}'] = { 'error': f'{ping_err}' }
+                    continue
                 if len(err) > 0:
                     print(f"ERROR: {err}")
                     self.results[key][f'{resolver}_{label}_error'] = f'{err}'
-                    self.results[key][f'ping_{resolver}_{label}'] = f'{err}'
                     dig_res[f'{resolver}_{label}'] = { 'error': f'{err}' }
-                    dig_res[f'ping_{resolver}_{label}'] = { 'error': f'{err}' }
                     log.error(err)
                     error_found = True
                     continue
