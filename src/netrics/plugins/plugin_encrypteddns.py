@@ -63,7 +63,7 @@ def test_encrypteddns(key, conf, results, quiet = False):
              try:
                 dig_res_qt = re.findall('Query time: ([0-9]*) msec',dig_res[f'{resolver}_{label}'], re.MULTILINE)[0]
                 ping_time = dig_res[f'ping_{resolver}_{label}']
-                results[key][f'{resolver}_{label}_encrypted_dns_latency'] = dig_res_qt
+                results[key][f'{resolver}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
                 results[key][f'ping_{resolver}_{label}_encrypted_dns_latency'] = ping_time
              except IndexError as e:
                  print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
