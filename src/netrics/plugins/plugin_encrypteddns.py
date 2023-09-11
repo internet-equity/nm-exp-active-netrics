@@ -5,6 +5,7 @@ import os
 from subprocess import Popen, PIPE
 import json
 from .. utils import valid_ip
+from ping3 import ping
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +36,10 @@ def test_encrypteddns(key, conf, results, quiet = False):
             print(f'RUNNING: {resolver} {site}')
             dig_cmd = f'timeout 5 /usr/local/src/nm-exp-active-netrics/bin/dig.sh +https @{resolver} {site}'
             print(dig_cmd)
+            ping_cmd = ping(resolver, unit = 'ms')
+            print(ping_cmd)
             dig_res_pipe[f'{resolver}_{label}'] = popen_exec_pipe(dig_cmd)
+            dig_res_pipe[f'ping_{resolver}_{label}'] = ping_cmd
     for site in enc_sites:
          if valid_ip(site):
              continue
@@ -45,6 +49,7 @@ def test_encrypteddns(key, conf, results, quiet = False):
              label = site
          for resolver in resolvers:
              out = dig_res_pipe[f'{resolver}_{label}'].stdout.read().decode('utf-8')
+             ping_out = dig_res_pipe[f'ping_{resolver}_{label}']
              err = dig_res_pipe[f'{resolver}_{label}'].stderr.read().decode('utf-8')
              if len(err) > 0:
                  print(f"ERROR: {err}")
@@ -54,9 +59,12 @@ def test_encrypteddns(key, conf, results, quiet = False):
                  error_found = True
                  continue
              dig_res[f'{resolver}_{label}'] = out
+             dig_res[f'ping_{resolver}_{label}'] = ping_out
              try:
                 dig_res_qt = re.findall('Query time: ([0-9]*) msec',dig_res[f'{resolver}_{label}'], re.MULTILINE)[0]
+                ping_time = dig_res[f'ping_{resolver}_{label}']
                 results[key][f'{resolver}_{label}_encrypted_dns_latency'] = int(dig_res_qt)
+                results[key][f'ping_{resolver}_{label}_encrypted_dns_latency'] = ping_time
              except IndexError as e:
                  print(f"ERROR: encrypted DNS lookup failed for {resolver} {site}")
                  continue
